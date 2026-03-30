@@ -16,8 +16,15 @@ import SettingsModal from './SettingsModal'
 import '../styles/components/Sidebar.css'
 
 export default function Sidebar({ user, onLogout }) {
-  const isProvincial = user?.account_type === 'Provincial'
-  const isRegional = user?.account_type === 'Regional'
+  const accountType = user?.account_type || ''
+  const isRegional = accountType === 'Regional' || accountType === 'Regional Admin'
+  const isProvincial = accountType === 'Provincial' || accountType === 'Provincial Admin'
+  const isRegionalAdmin = accountType === 'Regional Admin'
+  const isProvincialAdmin = accountType === 'Provincial Admin'
+  const isLguAdmin = accountType === 'LGU Admin'
+  const isSuperAdmin = user?.role === 'Super Admin' || accountType === 'Super Admin'
+  // Any admin type (can see Users sidebar)
+  const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
   const navigate = useNavigate()
   const location = useLocation()
   const { currentEvent, notifications, pendingUsersCount } = useEvents()
@@ -69,9 +76,7 @@ export default function Sidebar({ user, onLogout }) {
     return () => window.removeEventListener('keydown', onEscape)
   }, [showLogoutModal])
 
-  const navItemsAfterAddReport = [
-    { to: '/users', icon: Users, label: 'Users' },
-  ]
+  // Users link is now handled conditionally (admin-only) below
 
 
 
@@ -93,7 +98,7 @@ export default function Sidebar({ user, onLogout }) {
             <span className="sidebar-nav-badge">{getNavCount('/dashboard')}</span>
           )}
         </NavLink>
-        {(isRegional || user?.account_type === 'Super Admin' || user?.role === 'Super Admin') && (
+        {(isRegional || isSuperAdmin) && (
           <NavLink
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -105,7 +110,7 @@ export default function Sidebar({ user, onLogout }) {
             )}
           </NavLink>
         )}
-        {(isProvincial || isRegional || user?.account_type === 'Provincial Approver' || user?.account_type === 'Super Admin' || user?.role === 'Super Admin') && (
+        {(isProvincial || isRegional || accountType === 'Provincial Approver' || isSuperAdmin) && (
           <div className="sidebar-nav-group">
             <NavLink
               to="/consolidated-report"
@@ -131,19 +136,18 @@ export default function Sidebar({ user, onLogout }) {
             )}
           </NavLink>
         )}
-        {navItemsAfterAddReport.map(({ to, icon: Icon, label }) => (
+        {isAdmin && (
           <NavLink
-            key={to}
-            to={to}
+            to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           >
-            <Icon size={16} strokeWidth={2} />
-            <span>{label}</span>
-            {getNavCount(to) > 0 && (
-              <span className="sidebar-nav-badge">{getNavCount(to)}</span>
+            <Users size={16} strokeWidth={2} />
+            <span>Users</span>
+            {getNavCount('/users') > 0 && (
+              <span className="sidebar-nav-badge">{getNavCount('/users')}</span>
             )}
           </NavLink>
-        ))}
+        )}
       </nav>
 
       <div className="sidebar-footer">

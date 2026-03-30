@@ -497,9 +497,9 @@ export default function AddReport() {
   const [showRejectInput, setShowRejectInput] = useState(false)
   const [processingReview, setProcessingReview] = useState(false)
   const APPROVAL_BUCKET = 'consolidated-report-approvals'
-  const isProvincial = user?.account_type === 'Provincial'
+  const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isProvincialApprover = user?.account_type === 'Provincial Approver'
-  const isRegional = user?.account_type === 'Regional'
+  const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
   
   const userProvince = useMemo(() => {
@@ -2776,7 +2776,7 @@ export default function AddReport() {
                     <th>Report Title</th>
                     <th>Date Created</th>
                     <th>Status</th>
-                    {(user?.account_type === 'LGU' || user?.account_type === 'Provincial' || user?.account_type === 'Regional' || user?.account_type === 'Super Admin') && <th>Action</th>}
+                    {(user?.account_type === 'LGU' || user?.account_type === 'LGU Admin' || user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.account_type === 'Super Admin') && <th>Action</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -2822,10 +2822,10 @@ export default function AddReport() {
                                 }}
                               >
                                 <FileText size={14} />
-                                {user?.account_type === 'LGU' ? 'View Details' : 'Manage Entries'}
+                                {(user?.account_type === 'LGU' || user?.account_type === 'LGU Admin') ? 'View Details' : 'Manage Entries'}
                               </button>
                               
-                              {user?.account_type === 'Provincial' && (!sr.status || ['draft', 'sent'].includes(sr.status.toLowerCase())) && (
+                              {(user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') && (!sr.status || ['draft', 'sent'].includes(sr.status.toLowerCase())) && (
                                 <button
                                   type="button"
                                   className="add-report-btn-action send-btn"
@@ -2836,7 +2836,7 @@ export default function AddReport() {
                                   Send
                                 </button>
                               )}
-                              {user?.account_type === 'Provincial' && sr.status?.toLowerCase() === 'pending approval' && (
+                              {(user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') && sr.status?.toLowerCase() === 'pending approval' && (
                                 <button
                                   type="button"
                                   className="add-report-btn-action upload-btn"
@@ -2858,7 +2858,7 @@ export default function AddReport() {
                                   Review
                                 </button>
                               )}
-                              {(user?.account_type === 'Regional' || user?.account_type === 'Super Admin') && (
+                              {(user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.account_type === 'Super Admin') && (
                                 <Button
                                   type="button"
                                   className="add-report-btn-action pdf-btn"

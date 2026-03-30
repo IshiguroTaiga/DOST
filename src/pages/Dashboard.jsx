@@ -156,8 +156,8 @@ export default function Dashboard() {
     }
     return rawCurrentEvent
   }, [rawCurrentEvent])
-  const provinceFilter = user?.account_type === 'Provincial' ? (user?.province || null) : null
-  const canManageEvents = user?.account_type === 'Provincial' || user?.account_type === 'Regional' || user?.role === 'Super Admin' || user?.account_type === 'Super Admin'
+  const provinceFilter = (user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') ? (user?.province || null) : null
+  const canManageEvents = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.role === 'Super Admin' || user?.account_type === 'Super Admin'
   const T = {
     blue: '#3b82f6',    // Vivid Blue
     purple: '#8b5cf6',  // Vivid Purple

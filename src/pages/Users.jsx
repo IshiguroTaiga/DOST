@@ -39,22 +39,31 @@ const MOCK_USERS = [
 export default function Users() {
   const { user: currentUser } = useOutletContext() ?? {}
   const { showSuccess, showConfirm, fetchPendingUsersCount } = useEvents()
-  const isSuperAdmin = currentUser?.role === 'Super Admin'
-  const currentAccountType = currentUser?.account_type || (isSuperAdmin ? 'Super Admin' : '')
-  const isRegionalOrSuper = isSuperAdmin || currentAccountType === 'Regional'
-  const isProvincial = currentAccountType === 'Provincial'
-  const isLgu = currentAccountType === 'LGU'
 
-  // Determine which account types the current user can create
+  const accountType = currentUser?.account_type || ''
+  const isSuperAdmin = currentUser?.role === 'Super Admin' || accountType === 'Super Admin'
+  const isRegionalAdmin = accountType === 'Regional Admin'
+  const isProvincialAdmin = accountType === 'Provincial Admin'
+  const isLguAdmin = accountType === 'LGU Admin'
+  // Any admin that has access to this page
+  const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
+
+  // --- Allowed account types each admin tier can create (hierarchy) ---
   const allowedAccountTypes = (() => {
-    if (currentUser.account_type === 'Regional') return ['Regional', 'Provincial', 'Provincial Approver', 'LGU']
-    if (currentUser.account_type === 'Provincial') return ['Provincial', 'Provincial Approver', 'LGU']
-    if (isLgu) return ['LGU']
+    if (isSuperAdmin || isRegionalAdmin)
+      return ['Regional Admin', 'Regional', 'Provincial Admin', 'Provincial Approver', 'Provincial', 'LGU Admin', 'LGU']
+    if (isProvincialAdmin)
+      return ['Provincial Admin', 'Provincial Approver', 'Provincial', 'LGU Admin', 'LGU']
+    if (isLguAdmin)
+      return ['LGU Admin', 'LGU']
     return []
   })()
 
-  // Whether this user can create accounts at all (has the invite flow)
   const canCreateAccounts = allowedAccountTypes.length > 0
+  // Convenience flags used in the form for province/city locking
+  const isRegionalOrSuper = isSuperAdmin || isRegionalAdmin
+  const isProvincial = isProvincialAdmin
+  const isLgu = isLguAdmin
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -85,10 +94,23 @@ export default function Users() {
     }
     try {
       setError(null)
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('users')
         .select('*')
         .order('created_at', { ascending: false })
+
+      // Scope data by admin type:
+      // Provincial Admin → only their province
+      if (isProvincialAdmin && !isSuperAdmin && !isRegionalAdmin) {
+        query = query.eq('province', currentUser?.province)
+      }
+      // LGU Admin → only their city
+      if (isLguAdmin && !isSuperAdmin && !isRegionalAdmin && !isProvincialAdmin) {
+        query = query.eq('city', currentUser?.city)
+      }
+      // Regional Admin / Super Admin → see all (no extra filter)
+
+      const { data, error: fetchError } = await query
       if (fetchError) throw fetchError
       setUsers(data || [])
     } catch (err) {
@@ -384,6 +406,19 @@ export default function Users() {
     return sortAsc ? <ChevronUp size={14} className="users-sort-icon" /> : <ChevronDown size={14} className="users-sort-icon" />
   }
 
+  if (!isAdmin) {
+    return (
+      <div className="page users-page">
+        <div className="users-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <h2 style={{ color: 'var(--color-danger, #ef4444)', marginBottom: '12px' }}>Access Denied</h2>
+          <p style={{ color: 'var(--color-text-muted, #64748b)' }}>
+            You do not have permission to view this page. Only Admin accounts can manage users.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="page users-page">
       <div className="users-card">
@@ -457,7 +492,7 @@ export default function Users() {
                       </button>
                     </th>
                     <th>Number</th>
-                    {isSuperAdmin && (
+                    {(isSuperAdmin || isRegionalAdmin) && (
                       <>
                         <th>Account type</th>
                         <th>Province</th>
@@ -488,7 +523,7 @@ export default function Users() {
                           </td>
                           <td>{user.email}</td>
                           <td>{user.phone || '-'}</td>
-                          {isSuperAdmin && (
+                          {(isSuperAdmin || isRegionalAdmin) && (
                             <>
                               <td>{user.account_type || '-'}</td>
                               <td>{user.province || '-'}</td>
@@ -808,17 +843,17 @@ export default function Users() {
                     <label htmlFor="edit-user-accountType">Account type *</label>
                     <SearchableSelect
                       value={form.accountType}
-                      options={isSuperAdmin ? ['Regional', 'Provincial', 'Provincial Approver', 'LGU'] : allowedAccountTypes}
+                      options={allowedAccountTypes}
                       onChange={(e) => {
                         const newType = e.target.value
                         handleChange('accountType', newType)
-                        // Auto-fill province for Provincial/LGU creators
+                        // Auto-fill province for Provincial/LGU admins
                         if (isProvincial || isLgu) {
                           handleChange('province', currentUser?.province || '')
                         } else {
                           handleChange('province', '')
                         }
-                        // Auto-fill city for LGU creators
+                        // Auto-fill city for LGU admins
                         if (isLgu) {
                           handleChange('city', currentUser?.city || '')
                         } else {

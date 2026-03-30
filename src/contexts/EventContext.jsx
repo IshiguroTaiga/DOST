@@ -232,17 +232,21 @@ export function EventProvider({ children, user }) {
 
   const fetchPendingUsersCount = useCallback(async () => {
     if (!supabase || !user) return
-    // Only fetch if admin/super admin/regional/provincial
-    const canManageUsers = user.account_type === 'Regional' || user.account_type === 'Provincial' || user.account_type === 'Super Admin' || user.role === 'Super Admin'
+    // Only admin types can see the Users sidebar badge
+    const adminTypes = ['Regional Admin', 'Provincial Admin', 'LGU Admin', 'Super Admin']
+    const canManageUsers = adminTypes.includes(user.account_type) || user.role === 'Super Admin'
     if (!canManageUsers) return
 
     try {
       let query = supabase.from('users').select('id', { count: 'exact', head: true })
       
-      // Filtering based on permissions
-      if (user.account_type === 'Provincial') {
+      // Scope the count to match each admin's visibility:
+      if (user.account_type === 'Provincial Admin') {
         query = query.eq('province', user.province)
+      } else if (user.account_type === 'LGU Admin') {
+        query = query.eq('city', user.city)
       }
+      // Regional Admin / Super Admin → count all (no extra filter)
 
       // Count those who are Pending OR must change password
       const { count, error } = await query.or('status.eq.Pending,must_change_password.eq.true')

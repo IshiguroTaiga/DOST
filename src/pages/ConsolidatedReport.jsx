@@ -97,9 +97,9 @@ export default function ConsolidatedReport() {
     })
   }, [unreadNotifs])
 
-  const isProvincial = user?.account_type === 'Provincial'
+  const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isProvincialApprover = user?.account_type === 'Provincial Approver'
-  const isRegional = user?.account_type === 'Regional'
+  const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
   const isAllowed = isProvincial || isProvincialApprover || isRegional || isSuperAdmin
 
