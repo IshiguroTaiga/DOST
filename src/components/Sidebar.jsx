@@ -2,15 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  FilePlus,
-  Users,
-  Settings,
-  LogOut,
-  FileText,
-  FileBarChart,
-  User,
-} from 'lucide-react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import '../styles/components/Sidebar.css'
@@ -92,7 +84,7 @@ export default function Sidebar({ user, onLogout }) {
           to="/dashboard"
           className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
         >
-          <LayoutDashboard size={16} strokeWidth={2} />
+          <SquaresFour size={16} weight="bold" />
           <span>Dashboard</span>
           {getNavCount('/dashboard') > 0 && (
             <span className="sidebar-nav-badge">{getNavCount('/dashboard')}</span>
@@ -103,7 +95,7 @@ export default function Sidebar({ user, onLogout }) {
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           >
-            <Settings size={16} strokeWidth={2} />
+            <CalendarCheck size={16} weight="bold" />
             <span>Manage Events</span>
             {getNavCount('/manage-events') > 0 && (
               <span className="sidebar-nav-badge">{getNavCount('/manage-events')}</span>
@@ -116,7 +108,7 @@ export default function Sidebar({ user, onLogout }) {
               to="/consolidated-report"
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
             >
-              <FileBarChart size={16} strokeWidth={2} />
+              <ChartBar size={16} weight="bold" />
               <span>Consolidated Report</span>
               {getNavCount('/consolidated-report') > 0 && (
                 <span className="sidebar-nav-badge">{getNavCount('/consolidated-report')}</span>
@@ -129,7 +121,7 @@ export default function Sidebar({ user, onLogout }) {
             to="/add-report"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           >
-            <FilePlus size={16} strokeWidth={2} />
+            <FilePlus size={16} weight="bold" />
             <span>Add Report</span>
             {getNavCount('/add-report') > 0 && (
               <span className="sidebar-nav-badge">{getNavCount('/add-report')}</span>
@@ -141,7 +133,7 @@ export default function Sidebar({ user, onLogout }) {
             to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
           >
-            <Users size={16} strokeWidth={2} />
+            <Users size={16} weight="bold" />
             <span>Users</span>
             {getNavCount('/users') > 0 && (
               <span className="sidebar-nav-badge">{getNavCount('/users')}</span>
@@ -168,11 +160,11 @@ export default function Sidebar({ user, onLogout }) {
           onClick={() => setShowSettingsModal(true)}
           style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
         >
-          <Settings size={16} strokeWidth={2} />
+          <Gear size={16} weight="bold" />
           <span>Settings</span>
         </button>
         <button className="sidebar-link logout-btn" onClick={openLogoutModal}>
-          <LogOut size={16} strokeWidth={2} />
+          <SignOut size={16} weight="bold" />
           <span>Logout</span>
         </button>
       </div>
@@ -182,7 +174,7 @@ export default function Sidebar({ user, onLogout }) {
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '380px' }}>
             <div className="modal-confirm">
               <div className="modal-confirm-icon modal-confirm-icon--warning">
-                <LogOut size={28} />
+                <SignOut size={28} />
               </div>
               <h2 id="logout-modal-title" className="modal-confirm-title">Log out</h2>
               <p className="modal-confirm-text">Are you sure you want to log out?</p>

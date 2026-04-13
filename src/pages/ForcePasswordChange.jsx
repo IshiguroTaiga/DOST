@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShieldAlert, Eye, EyeOff } from 'lucide-react'
+import { ShieldWarning, Eye, EyeClosed } from '@phosphor-icons/react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { supabase } from '../lib/supabase'
 import { hashPassword, validatePassword, getPasswordRules } from '../lib/passwordUtils'
@@ -37,7 +37,7 @@ export default function ForcePasswordChange({ user, onLogout }) {
         setSubmitting(true)
 
         try {
-            const hashed = await hashPassword(password)
+            const hashed = await hashPassword(password, user.email)
 
             // Update password and clear must_change_password flag
             const { error: updateError } = await supabase
@@ -72,7 +72,7 @@ export default function ForcePasswordChange({ user, onLogout }) {
         <div className="force-pwd-page">
             <div className="force-pwd-card">
                 <div className="force-pwd-header">
-                    <ShieldAlert className="force-pwd-logo" size={32} />
+                    <ShieldWarning className="force-pwd-logo" size={32} />
                     <h1>Update Required</h1>
                     <p>For security reasons, you must change your temporary password before continuing.</p>
                 </div>
@@ -95,7 +95,7 @@ export default function ForcePasswordChange({ user, onLogout }) {
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex={-1}
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {showPassword ? <EyeClosed size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                     </div>
@@ -117,7 +117,7 @@ export default function ForcePasswordChange({ user, onLogout }) {
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                 tabIndex={-1}
                             >
-                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {showConfirmPassword ? <EyeClosed size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                         {confirmPassword.length > 0 && (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { History, ChevronDown, ChevronUp, Upload } from 'lucide-react'
+import { ClockCounterClockwise, CaretDown, CaretUp, Upload } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { supabase } from '../lib/supabase'
@@ -151,8 +151,8 @@ export default function EventLogs() {
     }
 
     const SortIcon = ({ columnKey }) => {
-        if (sortKey !== columnKey) return <ChevronDown size={14} className="logs-sort-icon inactive" />
-        return sortAsc ? <ChevronUp size={14} className="logs-sort-icon" /> : <ChevronDown size={14} className="logs-sort-icon" />
+        if (sortKey !== columnKey) return <CaretDown size={14} className="logs-sort-icon inactive" />
+        return sortAsc ? <CaretUp size={14} className="logs-sort-icon" /> : <CaretDown size={14} className="logs-sort-icon" />
     }
 
     const firstLetter = (log) => {
@@ -173,7 +173,7 @@ export default function EventLogs() {
             <div className="logs-card">
                 <div className="logs-toolbar">
                     <h1 className="logs-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 0 }}>
-                        <History size={24} color="#6366f1" />
+                        <ClockCounterClockwise size={24} color="#6366f1" />
                         Event Logs
                     </h1>
                     <div className="logs-toolbar-controls">

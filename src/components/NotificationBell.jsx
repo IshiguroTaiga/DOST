@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, X, Calendar, Send, Info, CheckCircle2 } from 'lucide-react'
+import { Bell, X, Calendar, PaperPlaneRight, Info, CheckCircle } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import '../styles/components/NotificationBell.css'
 
@@ -67,7 +67,7 @@ export default function NotificationBell({ onNotificationClick }) {
                   onClick={() => handleItemClick(notif)}
                 >
                   <div className="notification-icon-wrap">
-                    {notif.type === 'event_deployment' ? <Send size={16} /> : <Info size={16} />}
+                    {notif.type === 'event_deployment' ? <PaperPlaneRight size={16} /> : <Info size={16} />}
                   </div>
                   <div className="notification-content">
                     <p className="notification-title">{notif.title}</p>

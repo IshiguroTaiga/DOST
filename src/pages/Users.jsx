@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Upload, UserPlus, X, ChevronDown, ChevronUp, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Upload, UserPlus, X, CaretDown, CaretUp, Eye, EyeClosed, WarningCircle } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -264,6 +264,7 @@ export default function Users() {
             account_type: form.accountType || null,
             province: form.province || null,
             city: form.accountType === 'LGU' ? (form.city.trim() || null) : null,
+            caller_id: currentUser?.id,
           }),
         })
         const data = await res.json().catch(() => ({}))
@@ -311,7 +312,7 @@ export default function Users() {
         alert('Please enter the current password to change password.')
         return
       }
-      const currentHash = await hashPassword(form.currentPassword)
+      const currentHash = await hashPassword(form.currentPassword, currentUser?.email || '')
       const storedHash = editingUser.password_hash || ''
       if (storedHash && currentHash !== storedHash) {
         alert('Current password is incorrect.')
@@ -352,7 +353,7 @@ export default function Users() {
         payload.city = form.accountType === 'LGU' ? (form.city.trim() || null) : null
       }
       if (form.password) {
-        payload.password_hash = await hashPassword(form.password)
+        payload.password_hash = await hashPassword(form.password, form.email)
         payload.must_change_password = true
       }
       const { error: updateError } = await supabase
@@ -402,8 +403,8 @@ export default function Users() {
   }
 
   const SortIcon = ({ columnKey }) => {
-    if (sortKey !== columnKey) return <ChevronDown size={14} className="users-sort-icon inactive" />
-    return sortAsc ? <ChevronUp size={14} className="users-sort-icon" /> : <ChevronDown size={14} className="users-sort-icon" />
+    if (sortKey !== columnKey) return <CaretDown size={14} className="users-sort-icon inactive" />
+    return sortAsc ? <CaretUp size={14} className="users-sort-icon" /> : <CaretDown size={14} className="users-sort-icon" />
   }
 
   if (!isAdmin) {
@@ -938,7 +939,7 @@ export default function Users() {
                         aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                       >
-                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showCurrentPassword ? <EyeClosed size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                   </div>
@@ -962,7 +963,7 @@ export default function Users() {
                         aria-label={showEditPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                       >
-                        {showEditPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showEditPassword ? <EyeClosed size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                     <div className="users-password-rules" aria-live="polite">
@@ -997,7 +998,7 @@ export default function Users() {
                         aria-label={showEditConfirmPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                       >
-                        {showEditConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showEditConfirmPassword ? <EyeClosed size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                     {form.confirmPassword.length > 0 && (
@@ -1026,7 +1027,7 @@ export default function Users() {
           <div className="modal-content glass-modal" style={{ maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-confirm">
               <div className="modal-confirm-icon modal-confirm-icon--warning">
-                <AlertCircle size={32} />
+                <WarningCircle size={32} />
               </div>
               <h3 className="modal-confirm-title">Confirm Changes</h3>
               <p className="modal-confirm-text">Are you sure you want to save these changes to the user account?</p>

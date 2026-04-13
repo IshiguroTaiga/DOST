@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, Clock, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Check, X, CaretLeft, CaretRight } from '@phosphor-icons/react';
 
 const ModernDateTimePicker = ({
   value,

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FileText, Eye, EyeOff } from 'lucide-react'
+import { FileText, Eye, EyeClosed } from '@phosphor-icons/react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { supabase } from '../lib/supabase'
 import { hashPassword } from '../lib/passwordUtils'
@@ -104,7 +104,7 @@ export default function Login({ onLogin }) {
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>

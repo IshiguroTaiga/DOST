@@ -2,19 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef } f
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import {
-  AlertTriangle,
-  CloudRain,
-  Activity,
-  Flame,
-  Info,
-  Check,
-  Calendar,
-  ChevronRight,
-  PlusCircle,
-  Clock,
-  X,
-  CheckCircle2
-} from 'lucide-react'
+  Warning, CloudRain, Flame, Info, Check, Calendar, CaretRight, PlusCircle, Clock, X, CheckCircle } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import '../styles/components/EventModal.css'
 import '../styles/components/Toast.css'
@@ -174,6 +162,7 @@ export function EventProvider({ children, user }) {
         summary: e.summary || '',
         pingedReportTypes: e.pinged_report_types || [],
         affectedProvinces: e.affected_provinces || [],
+        gdacsId: e.gdacs_id || '',
         isDeployed: e.is_deployed || false,
         deployedAt: e.deployed_at || null,
         deployedSnapshot: e.deployed_snapshot || null
@@ -371,6 +360,7 @@ export function EventProvider({ children, user }) {
               summary: payload.new.summary || '',
               pingedReportTypes: payload.new.pinged_report_types || [],
               affectedProvinces: payload.new.affected_provinces || [],
+              gdacsId: payload.new.gdacs_id || '',
               isDeployed: payload.new.is_deployed || false,
               deployedAt: payload.new.deployed_at || null,
               deployedSnapshot: payload.new.deployed_snapshot || null
@@ -1042,7 +1032,7 @@ export function EventProvider({ children, user }) {
         <div className="modal-overlay" onClick={closeSuccess}>
           <div className="modal-content glass-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <div className="modal-confirm">
-              <div className="modal-confirm-icon modal-confirm-icon--success"><CheckCircle2 size={32} /></div>
+              <div className="modal-confirm-icon modal-confirm-icon--success"><CheckCircle size={32} /></div>
               <h2 className="modal-confirm-title">{successModal.title || 'Success'}</h2>
               <p className="modal-confirm-text">{successModal.message}</p>
               <div className="modal-confirm-footer">
@@ -1057,7 +1047,7 @@ export function EventProvider({ children, user }) {
         <div className="modal-overlay" onClick={closeConfirm}>
           <div className="modal-content glass-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <div className="modal-confirm">
-              <div className={`modal-confirm-icon modal-confirm-icon--${confirmModal.type}`}>{confirmModal.type === 'danger' ? <AlertTriangle size={32} /> : <Info size={32} />}</div>
+              <div className={`modal-confirm-icon modal-confirm-icon--${confirmModal.type}`}>{confirmModal.type === 'danger' ? <Warning size={32} /> : <Info size={32} />}</div>
               <h2 className="modal-confirm-title">{confirmModal.title}</h2>
               <p className="modal-confirm-text">{confirmModal.message}</p>
               <div className="modal-confirm-footer">
@@ -1125,7 +1115,7 @@ function SelectEventModal({ events, onClose, onSelect }) {
         </div>
         <div className="modal-footer">
           <button type="button" className="modal-btn-cancel" onClick={onClose}>Cancel</button>
-          {events.length > 0 && <button type="button" className="modal-btn-primary" onClick={() => selected && onSelect(selected)} disabled={!selectedId}>Continue<ChevronRight size={16} /></button>}
+          {events.length > 0 && <button type="button" className="modal-btn-primary" onClick={() => selected && onSelect(selected)} disabled={!selectedId}>Continue<CaretRight size={16} /></button>}
         </div>
       </div>
     </div>

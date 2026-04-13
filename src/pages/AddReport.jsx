@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, useLocation, useOutletContext } from 'react-router-dom'
-import { FilePlus, Plus, Trash2, X, Eye, Edit3, Upload, Send, ChevronDown, ChevronUp, ArrowLeft, Zap, Droplets, AlertTriangle, CloudRain, Info, ShieldAlert, Phone, HardHat, Home, FileText, CalendarX, HandHelping, Users, Activity, FileDown, FileBarChart, RefreshCw, Check, CheckCircle, Sparkles, Download, ExternalLink } from 'lucide-react'
+import { FilePlus, Plus, Trash, X, Eye, PencilSimple, Upload, PaperPlaneRight, CaretDown, CaretUp, ArrowLeft, Lightning, Drop, Warning, CloudRain, Info, ShieldWarning, Phone, HardHat, House, FileText, CalendarX, Handshake, Users, Pulse, FileArrowDown, ChartBar, ArrowsClockwise, Check, CheckCircle, Sparkle, Download, ArrowSquareOut } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import ModernDateTimePicker from '../components/ModernDateTimePicker'
@@ -43,20 +43,20 @@ const PAGE_SIZES = [10, 25, 50]
 
 const REPORT_CATEGORIES = [
    { id: 'evacuation', title: 'Affected Population', icon: <Users size={24} />, color: '#3b82f6', description: 'Track families/persons in/out of ECs' },
-  { id: 'assistance_lgus', title: 'Assistance (LGUs/Agencies)', icon: <HandHelping size={24} />, color: '#10b981', description: 'Relief and assistance from LGUs and other agencies' },
-  { id: 'agriculture', title: 'Agriculture Damage', icon: <Zap size={24} />, color: '#f59e0b', description: 'Damage and losses to agriculture' },
+  { id: 'assistance_lgus', title: 'Assistance (LGUs/Agencies)', icon: <Handshake size={24} />, color: '#10b981', description: 'Relief and assistance from LGUs and other agencies' },
+  { id: 'agriculture', title: 'Agriculture Damage', icon: <Lightning size={24} />, color: '#f59e0b', description: 'Damage and losses to agriculture' },
   { id: 'infrastructure', title: 'Infrastructure Damage', icon: <HardHat size={24} />, color: '#6366f1', description: 'Damage to roads, bridges, and other infrastructure' },
-  { id: 'power', title: 'Power Status', icon: <Zap size={24} />, color: '#f97316', description: 'Monitor interruptions and restoration' },
-  { id: 'water', title: 'Water Status', icon: <Droplets size={24} />, color: '#0ea5e9', description: 'Monitor water supply availability' },
-  { id: 'roads', title: 'Roads & Bridges', icon: <Activity size={24} />, color: '#6366f1', description: 'Passability of major thoroughfares' },
+  { id: 'power', title: 'Power Status', icon: <Lightning size={24} />, color: '#f97316', description: 'Monitor interruptions and restoration' },
+  { id: 'water', title: 'Water Status', icon: <Drop size={24} />, color: '#0ea5e9', description: 'Monitor water supply availability' },
+  { id: 'roads', title: 'Roads & Bridges', icon: <Pulse size={24} />, color: '#6366f1', description: 'Passability of major thoroughfares' },
   { id: 'communication', title: 'Communication', icon: <Phone size={24} />, color: '#14b8a6', description: 'Mobile and internet connectivity' },
-  { id: 'incidents', title: 'Related Incidents', icon: <AlertTriangle size={24} />, color: '#ef4444', description: 'Floods, landslides, and fire' },
-  { id: 'houses', title: 'Damaged Houses', icon: <Home size={24} />, color: '#f43f5e', description: 'Totally and partially damaged homes' },
+  { id: 'incidents', title: 'Related Incidents', icon: <Warning size={24} />, color: '#ef4444', description: 'Floods, landslides, and fire' },
+  { id: 'houses', title: 'Damaged Houses', icon: <House size={24} />, color: '#f43f5e', description: 'Totally and partially damaged homes' },
   { id: 'class', title: 'Class Suspension', icon: <CalendarX size={24} />, color: '#8b5cf6', description: 'School/Class cancellation logs' },
   { id: 'work', title: 'Work Suspension', icon: <FileText size={24} />, color: '#64748b', description: 'Government/Private work status' },
-   { id: 'calamity', title: 'State of Calamity', icon: <ShieldAlert size={24} />, color: '#d946ef', description: 'Official LGU calamity declarations' },
-  { id: 'preemptive', title: 'Pre-emptive Evac', icon: <Activity size={24} />, color: '#f59e0b', description: 'Early evacuation demographic data' },
-  { id: 'assistance', title: 'Assistance Provided', icon: <HandHelping size={24} />, color: '#10b981', description: 'Relief distribution and PNFI' },
+   { id: 'calamity', title: 'State of Calamity', icon: <ShieldWarning size={24} />, color: '#d946ef', description: 'Official LGU calamity declarations' },
+  { id: 'preemptive', title: 'Pre-emptive Evac', icon: <Pulse size={24} />, color: '#f59e0b', description: 'Early evacuation demographic data' },
+  { id: 'assistance', title: 'Assistance Provided', icon: <Handshake size={24} />, color: '#10b981', description: 'Relief distribution and PNFI' },
 ]
 
 const emptyRow = (catId = 'evacuation', city = '') => {
@@ -498,6 +498,7 @@ export default function AddReport() {
   const [processingReview, setProcessingReview] = useState(false)
   const APPROVAL_BUCKET = 'consolidated-report-approvals'
   const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
+  const isLGU = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
   const isProvincialApprover = user?.account_type === 'Provincial Approver'
   const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
@@ -676,7 +677,7 @@ export default function AddReport() {
       const merged = results.flat().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
 
       // LGU accounts: only show reports from barangays that belong to their city
-      const isLgu = user?.account_type === 'LGU'
+      const isLgu = isLGU
       const lguCity = user?.city
       let finalReports = merged
       if (isLgu && lguCity) {
@@ -1376,8 +1377,8 @@ export default function AddReport() {
   }
 
   const SortIcon = ({ columnKey }) => {
-    if (sortKey !== columnKey) return <ChevronDown size={14} className="add-report-sort-icon inactive" />
-    return sortAsc ? <ChevronUp size={14} className="add-report-sort-icon" /> : <ChevronDown size={14} className="add-report-sort-icon" />
+    if (sortKey !== columnKey) return <CaretDown size={14} className="add-report-sort-icon inactive" />
+    return sortAsc ? <CaretUp size={14} className="add-report-sort-icon" /> : <CaretDown size={14} className="add-report-sort-icon" />
   }
 
   const handleRowChange = (rowIndex, field, value) => {
@@ -1459,7 +1460,7 @@ export default function AddReport() {
   }
 
   const addRow = () => {
-    const defaultRowCity = user?.account_type === 'LGU' ? user.city : defaultCity
+    const defaultRowCity = isLGU ? user.city : defaultCity
     setRows((prev) => [...prev, emptyRow(defaultRowCity)])
   }
 
@@ -1477,7 +1478,7 @@ export default function AddReport() {
     setShowCategoryModal(false)
 
     setActiveCategoryModal(catId)
-    const defaultRowCity = user?.account_type === 'LGU' ? user.city : defaultCity
+    const defaultRowCity = isLGU ? user.city : defaultCity
     setRows([emptyRow(catId, defaultRowCity)])
   }
 
@@ -1884,7 +1885,7 @@ export default function AddReport() {
         case 'power':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Status</th>
               <th>Type</th>
@@ -1898,7 +1899,7 @@ export default function AddReport() {
         case 'water':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Status</th>
               <th>Type</th>
@@ -1912,7 +1913,7 @@ export default function AddReport() {
         case 'roads':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th>Road Section/Bridge</th>
               <th className="col-barangay">Barangay</th>
               <th>Classification</th>
@@ -1926,7 +1927,7 @@ export default function AddReport() {
         case 'incidents':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Type of Incident</th>
               <th>Date/Time of Occurrence</th>
@@ -1940,7 +1941,7 @@ export default function AddReport() {
         case 'houses':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Totally Damaged</th>
               <th>Partially Damaged</th>
@@ -1954,7 +1955,7 @@ export default function AddReport() {
         case 'work':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               {activeCategoryModal === 'class' && <th>Education Level</th>}
               <th>Type of Suspension</th>
@@ -1967,7 +1968,7 @@ export default function AddReport() {
         case 'calamity':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Type of Calamity</th>
               <th>Count SOC</th>
@@ -1980,7 +1981,7 @@ export default function AddReport() {
         case 'preemptive':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Families</th>
               <th>Male Count</th>
@@ -1993,7 +1994,7 @@ export default function AddReport() {
         case 'assistance':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>No. Families Affected</th>
               <th>Families Req. Asst.</th>
@@ -2011,7 +2012,7 @@ export default function AddReport() {
         case 'communication':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Telecompany</th>
               <th>Status</th>
@@ -2027,7 +2028,7 @@ export default function AddReport() {
         case 'assistance_lgus':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Source</th>
               <th>Relief Type</th>
@@ -2043,7 +2044,7 @@ export default function AddReport() {
         case 'agriculture':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Classification</th>
               <th>Commodity/Type</th>
@@ -2062,7 +2063,7 @@ export default function AddReport() {
         case 'infrastructure':
           return (
             <tr>
-              {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+              {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
               <th>Infra Type</th>
               <th>Infra Classification</th>
@@ -2086,7 +2087,7 @@ export default function AddReport() {
           {activeCategoryModal === 'roads' && (
             <td><input type="text" value={row.roadBridgeName} onChange={(e) => handleRowChange(index, 'roadBridgeName', e.target.value)} placeholder="Name..." style={{ width: '150px' }} /></td>
           )}
-          {user?.account_type !== 'LGU' && (
+          {!isLGU && (
             <td className="col-city">
               <SearchableSelect
                 value={row.city}
@@ -2096,7 +2097,7 @@ export default function AddReport() {
                   handleRowChange(index, 'barangay', '')
                 }}
                 placeholder="Select city..."
-                disabled={user?.account_type === 'LGU'}
+                disabled={isLGU}
               />
             </td>
           )}
@@ -2523,7 +2524,7 @@ export default function AddReport() {
           </td>
           <td className="col-actions">
             <button type="button" className="btn-icon" onClick={() => removeRow(index)} disabled={rows.length <= 1}>
-              <Trash2 size={16} />
+              <Trash size={16} />
             </button>
           </td>
         </tr>
@@ -2600,7 +2601,7 @@ export default function AddReport() {
               <>
                 {view === 'entries' && (
                   <>
-                    {user?.account_type !== 'LGU' && (
+                    {!isLGU && (
                       <button
                         type="button"
                         className="btn-secondary"
@@ -2608,7 +2609,7 @@ export default function AddReport() {
                         title="Edit Report Details"
                         style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                       >
-                        <Edit3 size={16} />
+                        <PencilSimple size={16} />
                         Edit Report
                       </button>
                     )}
@@ -2619,14 +2620,14 @@ export default function AddReport() {
                       disabled={processingExportId === currentSituationalReport?.id}
                       style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
-                      {processingExportId === currentSituationalReport?.id ? <RefreshCw size={16} className="animate-spin" /> : <Download size={16} />}
+                      {processingExportId === currentSituationalReport?.id ? <ArrowsClockwise size={16} className="animate-spin" weight="bold" /> : <Download size={16} />}
                       Download Report
                     </button>
                   </>
                 )}
 
                 {/* Only non-LGUs can create new Situation Reports. Everyone can add entries to an existing report. */}
-                {(view === 'entries' || (view === 'versions' && user?.account_type !== 'LGU')) && (
+                {(view === 'entries' || (view === 'versions' && !isLGU)) && (
                   <button type="button" className="btn-primary add-report-btn-add" onClick={() => {
                     if (view === 'versions') {
                       setNewSitRepTitle(`Situational Report No. ${situationalReports.length + 1}`)
@@ -2776,7 +2777,7 @@ export default function AddReport() {
                     <th>Report Title</th>
                     <th>Date Created</th>
                     <th>Status</th>
-                    {(user?.account_type === 'LGU' || user?.account_type === 'LGU Admin' || user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.account_type === 'Super Admin') && <th>Action</th>}
+                    {(isLGU || user?.account_type === 'LGU Admin' || user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.account_type === 'Super Admin') && <th>Action</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -2797,7 +2798,7 @@ export default function AddReport() {
                           </div>
                           {sr.rejection_remarks && (
                             <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <AlertTriangle size={12} />
+                              <Warning size={12} />
                               <span>Rejection: {sr.rejection_remarks}</span>
                             </div>
                           )}
@@ -2822,7 +2823,7 @@ export default function AddReport() {
                                 }}
                               >
                                 <FileText size={14} />
-                                {(user?.account_type === 'LGU' || user?.account_type === 'LGU Admin') ? 'View Details' : 'Manage Entries'}
+                                {(isLGU || user?.account_type === 'LGU Admin') ? 'View Details' : 'Manage Entries'}
                               </button>
                               
                               {(user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') && (!sr.status || ['draft', 'sent'].includes(sr.status.toLowerCase())) && (
@@ -2832,7 +2833,7 @@ export default function AddReport() {
                                   onClick={() => handleUploadPdfClick(sr)}
                                   title="Send Report"
                                 >
-                                  <Send size={14} />
+                                  <PaperPlaneRight size={14} />
                                   Send
                                 </button>
                               )}
@@ -2951,7 +2952,7 @@ export default function AddReport() {
                               onClick={() => handleConfirmDelete(item)}
                               title="Delete Report"
                             >
-                              <Trash2 size={14} />
+                              <Trash size={14} />
                             </button>
                           </div>
                         </td>
@@ -3103,7 +3104,7 @@ export default function AddReport() {
                     <table className="report-table">
                       <thead>
                         <tr className="report-table-header-row-1">
-                          <th colSpan={user?.account_type === 'LGU' ? 3 : 4} className="col-group col-barangay">
+                          <th colSpan={isLGU ? 3 : 4} className="col-group col-barangay">
                             NO. OF AFFECTED
                           </th>
                           <th colSpan={2} className="col-group">
@@ -3119,7 +3120,7 @@ export default function AddReport() {
                           <th rowSpan={2} className="col-actions">Actions</th>
                         </tr>
                         <tr className="report-table-header-row-2">
-                          {user?.account_type !== 'LGU' && <th className="col-city">City</th>}
+                          {!isLGU && <th className="col-city">City</th>}
                           <th className="col-barangay">Barangay</th>
                           <th>Families</th>
                           <th>Persons</th>
@@ -3138,7 +3139,7 @@ export default function AddReport() {
                       <tbody>
                         {rows.map((row, rowIndex) => (
                           <tr key={rowIndex} className="report-table-data-row">
-                            {user?.account_type !== 'LGU' && (
+                            {!isLGU && (
                               <td className="col-city">
                                 <SearchableSelect
                                   value={row.city}
@@ -3148,7 +3149,7 @@ export default function AddReport() {
                                     handleRowChange(rowIndex, 'barangay', '')
                                   }}
                                   placeholder="Select city..."
-                                  disabled={user?.account_type === 'LGU'}
+                                  disabled={isLGU}
                                 />
                               </td>
                             )}
@@ -3352,7 +3353,7 @@ export default function AddReport() {
                                 title="Remove row"
                                 disabled={rows.length === 1}
                               >
-                                <Trash2 size={16} />
+                                <Trash size={16} />
                               </button>
                             </td>
                           </tr>
@@ -3517,7 +3518,7 @@ export default function AddReport() {
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ backgroundColor: '#6366f115', color: '#6366f1', padding: '0.5rem', borderRadius: '8px' }}>
-                  <Edit3 size={20} />
+                  <PencilSimple size={20} />
                 </div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#1e293b' }}>Edit Situational Report</h2>
               </div>
@@ -3754,7 +3755,7 @@ export default function AddReport() {
                   }
                 }}
               >
-                {signatoriesReturnToPdf ? <><Check size={16} /> Apply Signatories</> : <><FileDown size={16} /> Download PDF</>}
+                {signatoriesReturnToPdf ? <><Check size={16} /> Apply Signatories</> : <><FileArrowDown size={16} /> Download PDF</>}
               </button>
             </div>
           </div>
@@ -3788,7 +3789,7 @@ export default function AddReport() {
                     signatories: { preparedBy: [], notedBy: null, approvedBy: null }
                   })
                 }}>
-                  <div className="download-option-icon"><FileBarChart size={32} /></div>
+                  <div className="download-option-icon"><ChartBar size={32} /></div>
                   <div className="download-option-title">CSV Dataset</div>
                 </div>
               </div>
@@ -3852,7 +3853,7 @@ export default function AddReport() {
                   <div className="approval-file-selected modern-file-selected">
                     <div className="modern-file-info">
                       <div className="modern-file-icon-wrapper">
-                        <FileDown size={24} className="approval-file-icon modern-file-icon" />
+                        <FileArrowDown size={24} className="approval-file-icon modern-file-icon" />
                       </div>
                       <div className="modern-file-details">
                         <span className="approval-file-name" title={approvalFile.name}>{approvalFile.name}</span>
@@ -3903,7 +3904,7 @@ export default function AddReport() {
               <div className="preview-modal-title-stack">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div className="download-option-icon" style={{ width: '32px', height: '32px', borderRadius: '8px', margin: 0 }}>
-                    <FileDown size={18} />
+                    <FileArrowDown size={18} />
                   </div>
                   <h2 className="preview-modal-title">Finalize PDF Report</h2>
                 </div>
@@ -3933,7 +3934,7 @@ export default function AddReport() {
                       setPdfPreviewBlobUrl(newUrl)
                     }}
                   >
-                    <RefreshCw size={14} />
+                    <ArrowsClockwise size={14} />
                     Refresh Preview
                   </button>
                 </div>
@@ -3959,7 +3960,7 @@ export default function AddReport() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minHeight: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div className="gemini-badge">
-                      <Sparkles size={14} />
+                      <Sparkle size={14} />
                       Gemini AI Summary
                     </div>
                     <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>Editable</span>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useOutletContext, Link, useNavigate, useLocation } from 'react-router-dom'
-import { ChevronDown, ChevronUp, ArrowLeft, Download, FileText, FileDown, FileBarChart, Edit3, Trash2, Eye, Plus, X, CheckCircle, Check, Upload, Calendar, Clock, Send, ExternalLink, Sparkles, RefreshCw, Users } from 'lucide-react'
+import { CaretDown, CaretUp, ArrowLeft, Download, FileText, FileArrowDown, ChartBar, PencilSimple, Trash, Eye, Plus, X, CheckCircle, Check, Upload, Calendar, Clock, PaperPlaneRight, ArrowSquareOut, Sparkle, ArrowsClockwise, Users } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import ModernDateTimePicker from '../components/ModernDateTimePicker'
@@ -907,7 +907,7 @@ export default function ConsolidatedReport() {
             <td><input type="number" value={row.outside_persons_now || 0} onChange={(e) => handleRowChange(idx, 'outside_persons_now', parseInt(e.target.value) || 0)} /></td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -947,12 +947,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'description', row.description, 'Edit Description')}
               >
                 {row.description || <span className="placeholder">Add description...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -996,7 +996,7 @@ export default function ConsolidatedReport() {
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1041,7 +1041,7 @@ export default function ConsolidatedReport() {
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1064,7 +1064,7 @@ export default function ConsolidatedReport() {
             <td><input type="number" value={row.amount_php || 0} onChange={(e) => handleRowChange(idx, 'amount_php', parseInt(e.target.value) || 0)} /></td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1102,7 +1102,7 @@ export default function ConsolidatedReport() {
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1129,7 +1129,7 @@ export default function ConsolidatedReport() {
             <td><input value={row.fnfi_source || row.source} onChange={(e) => handleRowChange(idx, row.fnfi_source !== undefined ? 'fnfi_source' : 'source', e.target.value)} /></td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1173,7 +1173,7 @@ export default function ConsolidatedReport() {
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1198,12 +1198,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1235,12 +1235,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1276,12 +1276,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1316,12 +1316,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1345,7 +1345,7 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'damage_description', row.damage_description, 'Edit Damage Description')}
               >
                 {row.damage_description || <span className="placeholder">Add description...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td><input type="number" value={row.cost || row.estimated_cost || 0} onChange={(e) => handleRowChange(idx, row.estimated_cost !== undefined ? 'estimated_cost' : 'cost', parseInt(e.target.value) || 0)} /></td>
@@ -1355,12 +1355,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1392,12 +1392,12 @@ export default function ConsolidatedReport() {
                 onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
               >
                 {row.remarks || <span className="placeholder">Add remarks...</span>}
-                <Edit3 size={14} />
+                <PencilSimple size={14} />
               </div>
             </td>
             <td className="col-actions">
               <button type="button" className="btn-icon delete" onClick={() => handleDeleteRow(idx)} title="Delete Row">
-                <Trash2 size={14} />
+                <Trash size={14} />
               </button>
             </td>
           </>
@@ -1793,8 +1793,8 @@ export default function ConsolidatedReport() {
   }
 
   const SortIcon = ({ columnKey }) => {
-    if (sortKey !== columnKey) return <ChevronDown size={14} className="consolidated-sort-icon inactive" />
-    return sortAsc ? <ChevronUp size={14} className="consolidated-sort-icon" /> : <ChevronDown size={14} className="consolidated-sort-icon" />
+    if (sortKey !== columnKey) return <CaretDown size={14} className="consolidated-sort-icon inactive" />
+    return sortAsc ? <CaretUp size={14} className="consolidated-sort-icon" /> : <CaretDown size={14} className="consolidated-sort-icon" />
   }
 
   const fetchEventConsolidatedData = async (event, situationalReportId = null) => {
@@ -2443,7 +2443,7 @@ export default function ConsolidatedReport() {
                             isLoading={processingId === v.id}
                             onClick={() => handleSitRepDownloadClick(v)}
                           >
-                            <FileDown size={14} />
+                            <FileArrowDown size={14} />
                             Download
                           </Button>
                           <Button
@@ -2496,7 +2496,7 @@ export default function ConsolidatedReport() {
                         className="consolidated-report-btn-sitrep download-btn"
                         onClick={() => handleConsolidatedDownloadClick(prov, null, 'both')}
                       >
-                        <FileDown size={14} />
+                        <FileArrowDown size={14} />
                         Download
                       </Button>
                       <Button
@@ -2557,7 +2557,7 @@ export default function ConsolidatedReport() {
                           className="consolidated-report-btn-sitrep download-btn"
                           onClick={() => handleConsolidatedDownloadClick(null, null, 'both')}
                         >
-                          <FileDown size={14} />
+                          <FileArrowDown size={14} />
                           Download
                         </Button>
                         <Button
@@ -2644,7 +2644,7 @@ export default function ConsolidatedReport() {
                           className="consolidated-report-btn-sitrep download-btn"
                           onClick={() => handleConsolidatedDownloadClick(null, city, 'both')}
                         >
-                          <FileDown size={14} />
+                          <FileArrowDown size={14} />
                           Download
                         </Button>
                         <Button
@@ -2775,7 +2775,7 @@ export default function ConsolidatedReport() {
             {/* Header */}
             <div className="preview-modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                <FileDown size={20} style={{ color: '#2563eb' }} />
+                <FileArrowDown size={20} style={{ color: '#2563eb' }} />
                 <div>
                   <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#0f172a' }}>Download PDF Report</h2>
                   <p style={{ margin: 0, fontSize: '0.8125rem', color: '#64748b' }}>{generatedSummaryData.pdfParams.reportTitle}</p>
@@ -2802,7 +2802,7 @@ export default function ConsolidatedReport() {
                       setPdfPreviewBlobUrl(newUrl)
                     }}
                   >
-                    <RefreshCw size={13} />
+                    <ArrowsClockwise size={13} />
                     Refresh Preview
                   </button>
                 </div>
@@ -2827,7 +2827,7 @@ export default function ConsolidatedReport() {
                 {/* Summary editor */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', overflow: 'hidden', minHeight: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem', flexShrink: 0 }}>
-                    <Sparkles size={15} style={{ color: '#7c3aed', flexShrink: 0 }} />
+                    <Sparkle size={15} style={{ color: '#7c3aed', flexShrink: 0 }} />
                     <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>AI-Generated Summary</span>
                     <span style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '0.1rem 0.5rem', background: '#f1f5f9', borderRadius: '9999px' }}>editable</span>
                   </div>
@@ -2902,7 +2902,7 @@ export default function ConsolidatedReport() {
                     }}
                     onClick={handleConfirmDownload}
                   >
-                    <FileDown size={16} />
+                    <FileArrowDown size={16} />
                     Download PDF
                   </button>
                 </div>
@@ -2921,7 +2921,7 @@ export default function ConsolidatedReport() {
             <div className="modal-header">
               <div className="versions-title-stack">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                  <div style={{ color: '#2563eb' }}><Sparkles size={18} /></div>
+                  <div style={{ color: '#2563eb' }}><Sparkle size={18} /></div>
                   <h2 className="versions-event-name">Report Signatories</h2>
                 </div>
                 <p className="modal-subtitle">Assign who prepared, noted, and approved this report. Only active users from {province || 'this region'} are shown.</p>
@@ -3014,7 +3014,7 @@ export default function ConsolidatedReport() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           color: 'white', transition: 'all 0.15s ease'
                         }}>
-                          {isSelected && <Check size={12} strokeWidth={3} />}
+                          {isSelected && <Check size={12} weight="bold" />}
                         </div>
                       </div>
                     )
@@ -3041,7 +3041,7 @@ export default function ConsolidatedReport() {
                 Cancel
               </button>
               <button className="modal-btn-primary" onClick={handleConfirmDownload}>
-                <FileDown size={16} />
+                <FileArrowDown size={16} />
                 Download PDF
               </button>
             </div>
@@ -3102,7 +3102,7 @@ export default function ConsolidatedReport() {
                   <div className="approval-file-selected modern-file-selected">
                     <div className="modern-file-info">
                       <div className="modern-file-icon-wrapper">
-                        <FileDown size={24} className="approval-file-icon modern-file-icon" />
+                        <FileArrowDown size={24} className="approval-file-icon modern-file-icon" />
                       </div>
                       <div className="modern-file-details">
                         <span className="approval-file-name" title={approvalFile.name}>{approvalFile.name}</span>
@@ -3226,7 +3226,7 @@ export default function ConsolidatedReport() {
                 onClick={() => handleEditApprovedReport(approvedViewEvent)}
                 style={{ flex: 1, justifyContent: 'center' }}
               >
-                <Edit3 size={16} />
+                <PencilSimple size={16} />
                 Edit Report
               </button>
             </div>
@@ -3262,14 +3262,14 @@ export default function ConsolidatedReport() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
                     borderRadius: 'inherit'
                   }}>
-                    <RefreshCw size={28} className="animate-spin" style={{ color: '#2563eb' }} />
+                    <ArrowsClockwise size={28} className="animate-spin" weight="bold" style={{ color: '#2563eb' }} />
                     <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Generating Report...</span>
                     <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Fetching data and building PDF preview</span>
                   </div>
                 )}
                 {versionsLoading ? (
                   <div className="versions-loading">
-                    <RefreshCw size={24} className="animate-spin" />
+                    <ArrowsClockwise size={24} className="animate-spin" weight="bold" />
                     <span>Loading versions...</span>
                   </div>
                 ) : sitRepVersions.length === 0 ? (
@@ -3298,7 +3298,7 @@ export default function ConsolidatedReport() {
                             onClick={(e) => { e.stopPropagation(); handleOpenLguStatus(versionsEvent, v); }}
                             title="View LGU Submission Status"
                           >
-                            <FileBarChart size={14} />
+                            <ChartBar size={14} />
                             <span>LGUs</span>
                           </button>
                         </div>
@@ -3370,7 +3370,7 @@ export default function ConsolidatedReport() {
                       {lguStatusData.pending.length > 0 ? (
                         lguStatusData.pending.map(lgu => (
                           <li key={lgu} className="lgu-item pending">
-                            <RefreshCw size={16} className="lgu-icon" />
+                            <ArrowsClockwise size={16} className="lgu-icon" />
                             {lgu}
                           </li>
                         ))
@@ -3448,7 +3448,7 @@ export default function ConsolidatedReport() {
                     signatories: { preparedBy: [], notedBy: null, approvedBy: null }
                   })
                 }}>
-                  <div className="download-option-icon"><FileBarChart size={28} /></div>
+                  <div className="download-option-icon"><ChartBar size={28} /></div>
                   <div>
                     <div className="download-option-title">CSV Datasets</div>
                     <div className="download-option-desc">Clean data in ZIP format (Excel compatible)</div>

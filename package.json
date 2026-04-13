@@ -11,13 +11,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.93.3",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "fflate": "^0.8.2",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
-    "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",

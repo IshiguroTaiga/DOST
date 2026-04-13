@@ -137,7 +137,20 @@ Deno.serve(async (req: Request) => {
   }
 
   // -------------------------------------------------------------------------
-  // Authorization: verify the caller is an authenticated Admin
+  // Parse body
+  // -------------------------------------------------------------------------
+  let reqBody: Record<string, unknown>
+  try {
+    reqBody = (await req.json()) as Record<string, unknown>
+  } catch {
+    return new Response(
+      JSON.stringify({ error: 'Invalid JSON body' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // -------------------------------------------------------------------------
+  // Authorization: verify the caller is an active Admin
   // -------------------------------------------------------------------------
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
@@ -147,23 +160,10 @@ Deno.serve(async (req: Request) => {
     )
   }
 
-  // Decode the JWT payload to extract the caller's user ID
-  const callerToken = authHeader.replace('Bearer ', '').trim()
-  let callerId: string | null = null
-  try {
-    const payloadB64 = callerToken.split('.')[1]
-    const payload = JSON.parse(atob(payloadB64))
-    callerId = payload?.sub ?? null
-  } catch {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized.' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
+  const callerId = reqBody?.caller_id ? String(reqBody.caller_id) : null
   if (!callerId) {
     return new Response(
-      JSON.stringify({ error: 'Unauthorized.' }),
+      JSON.stringify({ error: 'Unauthorized. Missing caller_id.' }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
@@ -173,37 +173,31 @@ Deno.serve(async (req: Request) => {
   // Verify caller is an active Admin in the users table
   const { data: callerUser, error: callerError } = await supabase
     .from('users')
-    .select('role, status')
+    .select('role, status, account_type')
     .eq('id', callerId)
     .maybeSingle()
 
-  if (callerError || !callerUser || callerUser.role !== 'Admin' || callerUser.status !== 'Active') {
+  if (
+    callerError || 
+    !callerUser || 
+    callerUser.status !== 'Active' || 
+    (callerUser.role !== 'Admin' && callerUser.role !== 'Super Admin' && !callerUser.account_type?.includes('Admin'))
+  ) {
     return new Response(
       JSON.stringify({ error: 'Forbidden. Admin access required.' }),
       { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 
-  // -------------------------------------------------------------------------
-  // Parse body
-  // -------------------------------------------------------------------------
-  let body: Record<string, unknown>
-  try {
-    body = (await req.json()) as Record<string, unknown>
-  } catch {
-    return new Response(
-      JSON.stringify({ error: 'Invalid JSON body' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
+  // Body was already parsed above
 
   try {
-    const email = String(body?.email ?? '').trim().toLowerCase()
-    const firstName = String(body?.first_name ?? '').trim()
-    const lastName = String(body?.last_name ?? '').trim()
-    const accountType = body?.account_type || null
-    const province = body?.province || null
-    const city = body?.city ?? null
+    const email = String(reqBody?.email ?? '').trim().toLowerCase()
+    const firstName = String(reqBody?.first_name ?? '').trim()
+    const lastName = String(reqBody?.last_name ?? '').trim()
+    const accountType = reqBody?.account_type || null
+    const province = reqBody?.province || null
+    const city = reqBody?.city ?? null
 
     if (!email || !firstName || !lastName) {
       return new Response(

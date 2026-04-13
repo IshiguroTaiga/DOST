@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Shield, Palette, Bell, Eye, EyeOff, History } from 'lucide-react'
+import { X, Shield, Palette, Bell, Eye, EyeClosed, ClockCounterClockwise } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { hashPassword, validatePassword } from '../lib/passwordUtils'
 import LoadingSpinner from './LoadingSpinner'
@@ -85,12 +85,12 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                 throw new Error('Failed to verify current password.')
             }
 
-            const currentHashInput = await hashPassword(currentPassword)
+            const currentHashInput = await hashPassword(currentPassword, user.email)
             if (currentHashInput !== userData.password_hash) {
                 throw new Error('Current password is incorrect.')
             }
 
-            const newHash = await hashPassword(newPassword)
+            const newHash = await hashPassword(newPassword, user.email)
 
             // Update the db
             const { error: updateError } = await supabase
@@ -169,7 +169,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             }}
                             className="modal-sidebar-tab"
                         >
-                            <History size={16} /> Event Logs
+                            <ClockCounterClockwise size={16} /> Event Logs
                         </button>
                         <button
                             onClick={() => setActiveTab('appearance')}
@@ -199,7 +199,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                                                 required
                                             />
                                             <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="password-toggle-btn">
-                                                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                {showCurrent ? <EyeClosed size={16} /> : <Eye size={16} />}
                                             </button>
                                         </div>
                                     </div>
@@ -216,7 +216,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                                                 required
                                             />
                                             <button type="button" onClick={() => setShowNew(!showNew)} className="password-toggle-btn">
-                                                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                {showNew ? <EyeClosed size={16} /> : <Eye size={16} />}
                                             </button>
                                         </div>
                                     </div>

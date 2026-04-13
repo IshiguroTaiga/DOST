@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
-import { RefreshCw, MoreHorizontal, ArrowRight, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Pencil, AlertTriangle, CloudRain, Activity, Flame, Info, Check, Calendar, Bell, X, BarChart as BarChartIcon, PieChart as PieChartIcon, LineChart as LineChartIcon, ShieldCheck, Send } from 'lucide-react'
+import { ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight } from '@phosphor-icons/react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -48,19 +48,19 @@ const CATEGORY_LABELS = {
 }
 
 const CATEGORY_ICONS = {
-  relatedIncidents: <Activity size={18} />,
-  affectedPopulation: <AlertTriangle size={18} />,
+  relatedIncidents: <Pulse size={18} />,
+  affectedPopulation: <Warning size={18} />,
   assistanceLgus: <Check size={18} />,
-  agricultureDamage: <Activity size={18} />,
-  infrastructureDamage: <MoreHorizontal size={18} />,
+  agricultureDamage: <Pulse size={18} />,
+  infrastructureDamage: <DotsThree size={18} />,
   roadsAndBridges: <ArrowRight size={18} />,
-  power: <Activity size={18} />,
+  power: <Pulse size={18} />,
   waterSupply: <CloudRain size={18} />,
-  communicationLines: <Activity size={18} />,
+  communicationLines: <Pulse size={18} />,
   damagedHouses: <Flame size={18} />,
   classSuspension: <Calendar size={18} />,
   workSuspension: <Calendar size={18} />,
-  stateOfCalamity: <AlertTriangle size={18} />,
+  stateOfCalamity: <Warning size={18} />,
   preEmptiveEvacuation: <ArrowRight size={18} />,
   assistanceProvided: <Check size={18} />,
 }
@@ -76,12 +76,12 @@ const TYPHOON_NAMES = [
 // Philippine standard alert / warning levels per event type
 const ALERT_LEVELS = {
   typhoon: [
-    { value: '', label: '— Select Signal —' },
-    { value: 'Signal #1', label: '🌀 Signal #1 — Winds 60–89 km/h (minimal threat)' },
-    { value: 'Signal #2', label: '🌀 Signal #2 — Winds 60–120 km/h (moderate)' },
-    { value: 'Signal #3', label: '🌀 Signal #3 — Winds 121–170 km/h (severe)' },
-    { value: 'Signal #4', label: '🌀 Signal #4 — Winds 171–220 km/h (very destructive)' },
-    { value: 'Signal #5', label: '🌀 Signal #5 — Winds >220 km/h (catastrophic / supertyphoon)' },
+    { value: '', label: '— Select Category —' },
+    { value: 'Tropical Depression', label: '🌀 Tropical Depression (TD) — ≤ 61 km/h' },
+    { value: 'Tropical Storm', label: '🌀 Tropical Storm (TS) — 62–88 km/h' },
+    { value: 'Severe Tropical Storm', label: '🌀 Severe Tropical Storm (STS) — 89–117 km/h' },
+    { value: 'Typhoon', label: '🌀 Typhoon (TY) — 118–184 km/h' },
+    { value: 'Super Typhoon', label: '🌀 Super Typhoon (STY) — ≥ 185 km/h' },
   ],
   earthquake: [
     { value: '', label: '— Select Intensity —' },
@@ -355,7 +355,7 @@ export default function Dashboard() {
       const mMatch = overview.match(/(?:Magnitude|Mw)\s*\(Mw\)?\*?:\s*(.*)/i);
       const iMatch = overview.match(/(?:Intensity|PEIS)\s*\(PEIS\)?\*?:\s*(.*)/i);
       const dMatch = overview.match(/Depth\*?:\s*(.*)/i);
-      const wMatch = overview.match(/(?:Warning Signal|Signal)\*?:\s*(.*)/i);
+      const wMatch = overview.match(/(?:Warning Signal|Signal|Category)\*?:\s*(.*)/i);
       const pMatch = overview.match(/(?:PTWC|Tsunami Level)\*?:\s*(.*)/i);
       const sMatch = overview.match(/Status\*?:\s*(.*)/i);
 
@@ -676,9 +676,7 @@ export default function Dashboard() {
       populationByLgu: {},
       damagedHouses: [],
       commLines: [],
-      ageTally: { kids: 0, adults: 0, seniors: 0 },
-      populationByLgu: {}, // { 'City Name': { families: 0, persons: 0, inFam: 0, inPer: 0, outFam: 0, outPer: 0, ecs: 0 } },
-      byCity: {} // { 'City Name': { persons: 0, families: 0, inside: 0, outside: 0, dmg: 0, served: 0, ecs: 0, powerInt: 0, powerRes: 0, roadsNotPassable: 0, brgys: Set } }
+      ageTally: { kids: 0, adults: 0, seniors: 0 }
     }
 
     // 1. Fetch 14 days of data for all standard tables in parallel
@@ -1346,7 +1344,7 @@ export default function Dashboard() {
         const mMatch = eventData.summary.match(/Magnitude\s*\(Mw\)\*?:\s*(.*)/i);
         const iMatch = eventData.summary.match(/Intensity\s*\(PEIS\)\*?:\s*(.*)/i);
         const dMatch = eventData.summary.match(/Depth\*?:\s*(.*)/i);
-        const wMatch = eventData.summary.match(/Warning Signal\*?:\s*(.*)/i);
+        const wMatch = eventData.summary.match(/(?:Warning Signal|Signal|Category)\*?:\s*(.*)/i);
         const pMatch = eventData.summary.match(/PTWC Warning Level\*?:\s*(.*)/i);
         const sMatch = eventData.summary.match(/Status\*?:\s*(.*)/i);
 
@@ -1374,16 +1372,8 @@ export default function Dashboard() {
         alertLevel: eventData.alertLevel || '',
         ...existingDetails
       })
-    } else {
-      setIsEditingExistingEvent(false)
-      const now = new Date();
-      const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      setEditForm({
-        name: '', color: '#6366f1', startDate: localNow, endDate: '', eventType: 'calamity', alertStatus: 'white', pingedReportTypes: [], affectedProvinces: [],
-        classificationValue: '', magnitude: '', intensity: '', depth: '', windSpeed: '', ptwcLevel: '', alertLevel: ''
-      })
+      setShowEditEventModal(true)
     }
-    setShowEditEventModal(true)
   }
 
   const openSelectEventToEdit = () => {
@@ -1427,8 +1417,8 @@ CHRONOLOGY OF EVENTS`;
 
 **TYPHOON / TROPICAL CYCLONE CLASSIFICATION**
 
-* **Classification**: ${classificationValue || 'None'}
-* **Warning Signal**: ${windSpeed || 'None Assigned'}
+* **Category**: ${editForm.alertLevel || 'Monitoring'}
+* **Wind Details**: ${windSpeed ? windSpeed + ' km/h' : 'None Assigned'}
 * **PAGASA Scale vs Saffir-Simpson Scale**:
 * **Tropical Depression**: = 61 km/h (No Saffir-Simpson equivalent)
 * **Tropical Storm**: 62 - 88 km/h (No SS equivalent)
@@ -1495,7 +1485,8 @@ CHRONOLOGY OF EVENTS`;
       const typeLevels = ALERT_LEVELS[eventType] || ALERT_LEVELS.calamity;
       const levelObj = typeLevels.find(l => l.value === editForm.alertLevel);
       if (levelObj && levelObj.value) {
-        const levelHeader = `\n* **Current Alert/Signal**: ${levelObj.label}\n`;
+        const labelText = eventType === 'typhoon' ? 'Current Category' : 'Current Alert/Signal';
+        const levelHeader = `\n* **${labelText}**: ${levelObj.label}\n`;
         // Insert after the main classification header
         summary = summary.replace(/(\*\*.*CLASSIFICATION\*\*)/i, `$1${levelHeader}`);
       }
@@ -1654,7 +1645,7 @@ CHRONOLOGY OF EVENTS`;
 
             <div className="sidebar-rankings">
               <h4 style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <TrendingUp size={14} /> Top Breakdown
+                <TrendUp size={14} /> Top Breakdown
               </h4>
               <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
                 <table className="premium-table">
@@ -1706,7 +1697,7 @@ CHRONOLOGY OF EVENTS`;
         {console.log('Current Event for Meta Bar:', currentEvent)}
         <section className="dash-hero">
           <div className={`dash-hero-icon alert-status-${currentEvent?.alertStatus || 'white'}`}>
-            <Bell size={32} strokeWidth={2.5} />
+            <Bell size={32} weight="bold" />
           </div>
           <div className="dash-hero-title-wrap">
             <h2 className="dash-hero-amount">
@@ -1719,7 +1710,7 @@ CHRONOLOGY OF EVENTS`;
 
           <div className={`dash-hero-meta alert-status-${currentEvent?.alertStatus || 'white'}`}>
             <div className="meta-item">
-              <div className="meta-icon"><AlertTriangle size={18} /></div>
+              <div className="meta-icon"><Warning size={18} /></div>
               <div className="meta-content">
                 <span className="meta-label">Type</span>
                 <span className="meta-value">{currentEvent?.eventType || 'Operational'}</span>
@@ -2695,8 +2686,8 @@ CHRONOLOGY OF EVENTS`;
                 <Calendar size={24} />
               </div>
               <div className="header-text" style={{ marginLeft: '12px', flex: 1 }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>{isEditingExistingEvent ? 'Edit Event' : 'Add New Event'}</h2>
-                <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '2px 0 0' }}>{isEditingExistingEvent ? 'Modify event details.' : 'Create a new event context.'}</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Edit Event</h2>
+                <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '2px 0 0' }}>Modify event details.</p>
               </div>
               <button className="modal-close" onClick={() => setShowEditEventModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
                 <X size={20} />
@@ -2744,7 +2735,7 @@ CHRONOLOGY OF EVENTS`;
               {/* Alert Level / Warning Signal — options change based on selected event type */}
               <div className="form-group" style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>
-                  Alert Level / Warning Signal
+                  {editForm.eventType === 'typhoon' ? 'Typhoon Category' : 'Alert Level / Warning Signal'}
                 </label>
                 <select
                   value={editForm.alertLevel || ''}
@@ -2814,12 +2805,10 @@ CHRONOLOGY OF EVENTS`;
             <div className="modal-footer" style={{ padding: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button className="modal-btn-cancel" onClick={() => setShowEditEventModal(false)} style={{ padding: '10px 20px', borderRadius: '8px' }}>Cancel</button>
               <button className="modal-btn-primary" onClick={async () => {
-                const success = isEditingExistingEvent
-                  ? await updateEvent(selectedEventIdToEdit, editForm)
-                  : await addEvent(editForm)
+                const success = await updateEvent(selectedEventIdToEdit, editForm)
                 if (success !== false) setShowEditEventModal(false)
               }} style={{ padding: '10px 24px', borderRadius: '8px', background: '#6366f1', color: 'white', border: 'none', fontWeight: 600 }}>
-                {isEditingExistingEvent ? 'Save Changes' : 'Create Event'}
+                Save Changes
               </button>
             </div>
           </div>
@@ -2832,7 +2821,7 @@ CHRONOLOGY OF EVENTS`;
           <div className="modal-content glass-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header" style={{ flexShrink: 0 }}>
               <div className="header-icon deployment" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', padding: '12px', borderRadius: '12px' }}>
-                <Send size={24} />
+                <PaperPlaneRight size={24} />
               </div>
               <div className="header-text" style={{ marginLeft: '12px', flex: 1 }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Deploy to LGUs</h2>
@@ -2982,7 +2971,7 @@ CHRONOLOGY OF EVENTS`;
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="modal-content glass-modal" style={{ maxWidth: '400px' }}>
             <div className="modal-confirm">
-              <AlertTriangle size={32} color="#ef4444" />
+              <Warning size={32} color="#ef4444" />
               <h2>Delete Event?</h2>
               <p>Are you sure? This cannot be undone.</p>
               <div className="modal-confirm-footer">

@@ -2,19 +2,9 @@ import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
 import {
-  Plus,
-  Calendar,
-  Pencil,
-  Trash2,
-  Send,
-  AlertTriangle,
-  CheckCircle2,
-  X,
-  Info,
-  ChevronDown,
-  ChevronUp
-} from 'lucide-react'
+  Plus, Calendar, Pencil, Trash, PaperPlaneRight, Warning, CheckCircle, X, Info, CaretDown, CaretUp, ArrowsClockwise, Globe, ArrowRight, Hurricane, Waves, Waveform, CloudWarning, DotsThreeCircle } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
+import { fetchGDACSEvents, fetchGDACSEventDetails, gdacsTypeLabel } from '../services/gdacsService'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { PROVINCE_NAMES } from '../data/provinces'
 import SearchInput from '../components/SearchInput'
@@ -25,40 +15,13 @@ import '../styles/components/EventModal.css'
 
 const PAGE_SIZES = [10, 25, 50]
 
-// SVG icons for event category cards
-const TyphoonIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12a3 3 0 1 0 3 3"/>
-    <path d="M12 2c1.5 2.5 2 5.5 0 10"/><path d="M12 2c-1.5 2.5-2 5.5 0 10"/>
-  </svg>
-)
-const FloodIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-  </svg>
-)
-const EarthquakeIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-  </svg>
-)
-const TsunamiIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-  </svg>
-)
-const WeatherIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-  </svg>
-)
-const OtherIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-  </svg>
-)
+// Phosphor icons for event category cards
+const TyphoonIcon = () => <Hurricane size={32} weight="duotone" />
+const FloodIcon = () => <Waves size={32} weight="duotone" />
+const EarthquakeIcon = () => <Waveform size={32} weight="duotone" />
+const TsunamiIcon = () => <Waves size={32} weight="duotone" />
+const WeatherIcon = () => <CloudWarning size={32} weight="duotone" />
+const OtherIcon = () => <DotsThreeCircle size={32} weight="duotone" />
 
 const EVENT_CATEGORIES = [
   { value: 'typhoon',    label: 'Typhoon',        Icon: TyphoonIcon },
@@ -71,11 +34,11 @@ const EVENT_CATEGORIES = [
 
 const ALERT_LEVELS = {
   typhoon: [
-    { value: 'Signal #1', label: 'Signal #1', desc: 'Winds 60–89 km/h — minimal threat; some damage to light structures' },
-    { value: 'Signal #2', label: 'Signal #2', desc: 'Winds 60–120 km/h — moderate; classes & work may be suspended' },
-    { value: 'Signal #3', label: 'Signal #3', desc: 'Winds 121–170 km/h — severe; major damage, evacuations likely' },
-    { value: 'Signal #4', label: 'Signal #4', desc: 'Winds 171–220 km/h — very destructive; widespread evacuations' },
-    { value: 'Signal #5', label: 'Signal #5', desc: 'Winds >220 km/h — catastrophic; supertyphoon level' },
+    { value: 'Tropical Depression', label: 'Tropical Depression (TD)', desc: 'Winds ≤ 61 km/h' },
+    { value: 'Tropical Storm', label: 'Tropical Storm (TS)', desc: 'Winds 62–88 km/h' },
+    { value: 'Severe Tropical Storm', label: 'Severe Tropical Storm (STS)', desc: 'Winds 89–117 km/h' },
+    { value: 'Typhoon', label: 'Typhoon (TY)', desc: 'Winds 118–184 km/h' },
+    { value: 'Super Typhoon', label: 'Super Typhoon (STY)', desc: 'Winds ≥ 185 km/h' },
   ],
   earthquake: [
     { value: 'Intensity I', label: 'Intensity I', desc: 'Scarcely perceptible; detected only by instruments' },
@@ -147,7 +110,82 @@ export default function ManageEvents() {
     // flood-specific
     floodLevel: '',
     rainfall: '',
+    gdacsId: '',
+    windspeed: '',
+    depth: '',
+    affectedBarangays: '',
   })
+
+  // GDACS Integration State
+  const [gdacsEvents, setGdacsEvents] = useState([])
+  const [fetchingGdacs, setFetchingGdacs] = useState(false)
+  const [showGdacsBrowser, setShowGdacsBrowser] = useState(false)
+  const [gdacsError, setGdacsError] = useState(null)
+  const [gdacsDetails, setGdacsDetails] = useState(null)
+
+  const handleFetchGdacs = async () => {
+    setFetchingGdacs(true)
+    setGdacsError(null)
+    try {
+      const data = await fetchGDACSEvents()
+      setGdacsEvents(data)
+      setShowGdacsBrowser(true)
+    } catch (err) {
+      setGdacsError('Failed to fetch data from GDACS. Please try again.')
+      console.error(err)
+    } finally {
+      setFetchingGdacs(false)
+    }
+  }
+
+  const handleSelectGdacsEvent = async (gEvent) => {
+    setFetchingGdacs(true)
+    setGdacsError(null)
+    
+    try {
+      // 1. Fetch Granular Details from GDACS
+      const details = await fetchGDACSEventDetails(gEvent.gdacsType, gEvent.gdacsId)
+      setGdacsDetails(details)
+
+      const suggestedName = gEvent.gdacsName || ''
+      const statusColorMap = { red: '#ef4444', orange: '#f97316', yellow: '#eab308', white: '#64748b' }
+      const themeColor = statusColorMap[gEvent.alertStatus] || '#6366f1'
+
+      // 2. Automate Province Selection
+      const apiProvinces = details?.impact?.provinces || []
+
+      setForm(f => ({
+        ...f,
+        name: f.name || suggestedName, 
+        color: themeColor,
+        eventType: gEvent.eventType,
+        alertStatus: gEvent.alertStatus,
+        alertLevel: gEvent.alertLevel,
+        startDate: gEvent.startDate,
+        endDate: gEvent.endDate,
+        summary: gEvent.description,
+        affectedProvinces: Array.from(new Set([...f.affectedProvinces, ...apiProvinces])), // Merge existing with API detected
+        gdacsId: gEvent.gdacsId, // Mark as GDACS event to trigger UI visibility logic
+        // Type specific
+        typhoonCategory: gEvent.typhoonCategory || '',
+        magnitude: gEvent.magnitude || '',
+        intensity: gEvent.intensity || '',
+        waveHeight: gEvent.waveHeight || '',
+        tsunamiAlert: gEvent.tsunamiAlert || '',
+        floodLevel: gEvent.floodLevel || '',
+        windspeed: gEvent.windspeed || '',
+        depth: gEvent.depth || '',
+        affectedBarangays: (details?.impact?.localCommunities || []).join(', '),
+      }))
+      
+      setShowGdacsBrowser(false)
+    } catch (err) {
+      setGdacsError('Error processing GDACS event details.')
+      console.error(err)
+    } finally {
+      setFetchingGdacs(false)
+    }
+  }
 
   const handleSort = (key) => {
     if (sortKey === key) setSortAsc(a => !a)
@@ -168,7 +206,6 @@ export default function ManageEvents() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-
   const blankForm = () => ({
     name: '', color: '#6366f1',
     startDate: new Date().toISOString().slice(0, 16),
@@ -178,16 +215,19 @@ export default function ManageEvents() {
     magnitude: '', intensity: '',
     waveHeight: '', tsunamiAlert: '',
     floodLevel: '', rainfall: '',
+    gdacsId: '', windspeed: '', depth: '', affectedBarangays: '',
   })
 
   const openAddModal = () => {
     setEditingId(null)
+    setGdacsDetails(null)
     setForm(blankForm())
     setShowModal(true)
   }
 
   const openEditModal = (event) => {
     setEditingId(event.id)
+    setGdacsDetails(null) // Edit doesn't show the GDACS preview for now as it's not stored in the DB
     setForm({
       name: event.name,
       color: event.color,
@@ -206,6 +246,7 @@ export default function ManageEvents() {
       tsunamiAlert: event.tsunamiAlert || '',
       floodLevel: event.floodLevel || '',
       rainfall: event.rainfall || '',
+      gdacsId: event.gdacsId || '',
     })
     setShowModal(true)
   }
@@ -217,7 +258,7 @@ export default function ManageEvents() {
     let finalSummary = form.summary
     if (!finalSummary) {
       if (form.eventType === 'typhoon') {
-        finalSummary = `**TYPHOON ${form.name.toUpperCase()}**\n\n* **Category**: ${form.typhoonCategory || 'Monitoring'}\n* **Warning Signal**: ${form.alertLevel || 'Not Set'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
+        finalSummary = `**TYPHOON ${form.name.toUpperCase()}**\n\n* **Category**: ${form.typhoonCategory || 'Monitoring'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
       } else if (form.eventType === 'earthquake') {
         finalSummary = `**EARTHQUAKE: ${form.name}**\n\n* **Magnitude**: ${form.magnitude || '—'}\n* **Intensity**: Intensity ${form.intensity || '—'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
       } else if (form.eventType === 'tsunami') {
@@ -234,6 +275,11 @@ export default function ManageEvents() {
     const payload = {
       ...form,
       summary: finalSummary
+    }
+
+    // If typhoon, sync alertLevel with category to reflect on dashboard meta bar
+    if (form.eventType === 'typhoon') {
+      payload.alertLevel = form.typhoonCategory || 'Monitoring'
     }
 
     let result = null
@@ -268,8 +314,8 @@ export default function ManageEvents() {
     <button className="consolidated-th-sort" onClick={() => handleSort(colKey)}>
       {label}
       {sortKey === colKey
-        ? (sortAsc ? <ChevronUp size={13} className="consolidated-sort-icon" /> : <ChevronDown size={13} className="consolidated-sort-icon" />)
-        : <ChevronDown size={13} className="consolidated-sort-icon inactive" />}
+        ? (sortAsc ? <CaretUp size={13} className="consolidated-sort-icon" /> : <CaretDown size={13} className="consolidated-sort-icon" />)
+        : <CaretDown size={13} className="consolidated-sort-icon inactive" />}
     </button>
   )
 
@@ -309,7 +355,7 @@ export default function ManageEvents() {
                 <select className="consolidated-report-filter-dropdown consolidated-report-showing-dropdown" value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1) }}>
                   {PAGE_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <ChevronDown size={14} className="consolidated-report-dropdown-chevron" />
+                <CaretDown size={14} className="consolidated-report-dropdown-chevron" />
               </div>
             </div>
              <div className="consolidated-report-search-box">
@@ -358,7 +404,7 @@ export default function ManageEvents() {
                   </td>
                   <td>
                     {event.isDeployed
-                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: '#dcfce7', color: '#15803d', fontSize: '0.75rem', fontWeight: 700 }}><CheckCircle2 size={12} />Deployed</span>
+                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: '#dcfce7', color: '#15803d', fontSize: '0.75rem', fontWeight: 700 }}><CheckCircle size={12} />Deployed</span>
                       : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: '#f1f5f9', color: '#64748b', fontSize: '0.75rem', fontStyle: 'italic' }}><Info size={12} />Draft</span>
                     }
                   </td>
@@ -434,6 +480,34 @@ export default function ManageEvents() {
                   Define the details and timing for this event context.
                 </p>
               </div>
+
+              {/* GDACS IMPORT BUTTON */}
+              {!editingId && (
+                <button
+                  type="button"
+                  onClick={handleFetchGdacs}
+                  disabled={fetchingGdacs}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    background: fetchingGdacs ? '#f1f5f9' : 'rgba(99,102,241,0.1)',
+                    color: '#6366f1',
+                    border: '1px solid rgba(99,102,241,0.2)',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginRight: '12px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {fetchingGdacs ? <ArrowsClockwise size={14} className="animate-spin" weight="bold" /> : <Globe size={14} />}
+                  {fetchingGdacs ? 'Fetching GDACS...' : 'Import from GDACS'}
+                </button>
+              )}
+
               <button className="modal-close" onClick={() => setShowModal(false)}>
                 <X size={20} />
               </button>
@@ -442,36 +516,200 @@ export default function ManageEvents() {
             {/* Scrollable body */}
             <div className="modal-body" style={{ padding: '1.25rem 2rem', overflowY: 'auto', flex: 1 }}>
 
-              {/* EVENT CATEGORY */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={LABEL_STYLE}>Event Category</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                  {EVENT_CATEGORIES.map(({ value, label, Icon }) => {
-                    const isSelected = form.eventType === value
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, eventType: value }))}
-                        style={{
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          gap: '8px', padding: '16px 8px', minHeight: '88px',
-                          borderRadius: '12px',
-                          border: `1.5px solid ${isSelected ? '#6366f1' : '#e2e8f0'}`,
-                          background: isSelected ? 'rgba(99,102,241,0.06)' : '#fafafa',
-                          color: isSelected ? '#6366f1' : '#475569',
-                          fontWeight: 600, fontSize: '0.8125rem',
-                          cursor: 'pointer', transition: 'all 0.15s',
-                          boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none'
-                        }}
-                      >
-                        <span style={{ color: isSelected ? '#6366f1' : '#94a3b8' }}><Icon /></span>
-                        {label}
-                      </button>
-                    )
-                  })}
+              {/* GDACS BROWSER PANEL */}
+              {showGdacsBrowser && (
+                <div style={{ marginBottom: '1.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Globe size={16} color="#6366f1" />
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#1e293b' }}>Recent GDACS Events (Philippines Region)</span>
+                    </div>
+                    <button onClick={() => setShowGdacsBrowser(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}><X size={16} /></button>
+                  </div>
+                  <div style={{ maxHeight: '240px', overflowY: 'auto', padding: '8px' }}>
+                    {gdacsEvents.length === 0 ? (
+                      <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>No recent events found in the PH region.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {gdacsEvents.map(g => (
+                          <div 
+                            key={g.gdacsId} 
+                            onClick={() => handleSelectGdacsEvent(g)}
+                            style={{ 
+                              padding: '12px', 
+                              borderRadius: '10px', 
+                              background: 'white', 
+                              border: '1px solid #e2e8f0', 
+                              cursor: 'pointer',
+                              transition: 'all 0.15s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px'
+                            }}
+                            className="gdacs-item-hover"
+                          >
+                            <div style={{ 
+                              width: '36px', height: '36px', borderRadius: '8px', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: g.alertStatus === 'red' ? '#fee2e2' : g.alertStatus === 'orange' ? '#ffedd5' : '#fef9c3',
+                              color: g.alertStatus === 'red' ? '#ef4444' : g.alertStatus === 'orange' ? '#f97316' : '#eab308'
+                            }}>
+                              <Warning size={18} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#1e293b' }}>{g.gdacsName}</span>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>{new Date(g.startDate).toLocaleDateString()}</span>
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                                {gdacsTypeLabel(g.gdacsType)} • {g.alertLevel}
+                              </div>
+                            </div>
+                            <ArrowRight size={14} color="#94a3b8" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {gdacsError && (
+                <div style={{ marginBottom: '1.25rem', padding: '12px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', color: '#b91c1c', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Warning size={14} /> {gdacsError}
+                </div>
+              )}
+
+              {/* ══════════════ NEW ENHANCED GDACS PREVIEW ══════════════ */}
+              {form.gdacsId && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.05) 100%)', border: '1.5px solid rgba(99,102,241,0.2)' }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Globe size={18} />
+                        </div>
+                        <div>
+                          <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Source: GDACS Global Alert</span>
+                          <span style={{ display: 'block', fontSize: '0.625rem', color: '#64748b', fontWeight: 600 }}>Real-time automated sync active</span>
+                        </div>
+                      </div>
+                      <div style={{ padding: '4px 10px', borderRadius: '20px', background: form.alertStatus === 'red' ? '#fee2e2' : '#fef9c3', color: form.alertStatus === 'red' ? '#ef4444' : '#854d0e', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                        {form.alertStatus} Alert
+                      </div>
+                    </div>
+
+                    {/* Technical Specs Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
+                      {/* TYPE-SPECIFIC METRICS */}
+                      {form.eventType === 'typhoon' && (
+                        <>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>WIND SPEED</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{form.windspeed ? `${form.windspeed} km/h` : 'N/A'}</span>
+                          </div>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>COMMUNITIES</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#6366f1' }}>{gdacsDetails?.impact?.localCommunities?.length || 0} Found</span>
+                          </div>
+                        </>
+                      )}
+
+                      {form.eventType === 'earthquake' && (
+                        <>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>MAGNITUDE</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{form.magnitude || 'N/A'}</span>
+                          </div>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>DEPTH</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{form.depth ? `${form.depth} km` : 'N/A'}</span>
+                          </div>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>COMMUNITIES</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#6366f1' }}>{gdacsDetails?.impact?.localCommunities?.length || 0} Found</span>
+                          </div>
+                        </>
+                      )}
+
+                      {form.eventType === 'flood' && (
+                        <>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>FLOOD LEVEL</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{form.floodLevel || 'N/A'}</span>
+                          </div>
+                          <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>COMMUNITIES</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 800, color: '#6366f1' }}>{gdacsDetails?.impact?.localCommunities?.length || 0} Found</span>
+                          </div>
+                        </>
+                      )}
+
+                      <div style={{ padding: '12px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '0.625rem', fontWeight: 700, color: '#94a3b8' }}>ALERT SCORE</span>
+                        <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{gdacsDetails?.impact?.alertScore || (gdacsEvents.find(e => e.gdacsId === form.gdacsId)?.episodeAlertScore) || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    {/* Geograhic Impact Sub-panel */}
+                    <div style={{ padding: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '10px', border: '1px dashed rgba(99,102,241,0.3)' }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                         <Globe size={13} color="#6366f1" />
+                         <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Detected Philippine LGUs</span>
+                       </div>
+                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                         {(gdacsDetails?.impact?.lgus || []).length > 0 ? (
+                           gdacsDetails.impact.lgus.map(l => (
+                             <span key={l} style={{ padding: '3px 8px', background: 'white', border: '1px solid #e2e8f0', color: '#6366f1', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700 }}>{l}</span>
+                           ))
+                         ) : (
+                           <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontStyle: 'italic' }}>No specific LGUs detected in bulletin text.</span>
+                         )}
+                       </div>
+                    </div>
+
+                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Info size={14} color="#64748b" />
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>Manual overrides for classification levels are disabled for data integrity.</span>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* EVENT CATEGORY (Hidden for GDACS events) */}
+              {!form.gdacsId && (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={LABEL_STYLE}>Event Category</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                    {EVENT_CATEGORIES.map(({ value, label, Icon }) => {
+                      const isSelected = form.eventType === value
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, eventType: value }))}
+                          style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            gap: '8px', padding: '16px 8px', minHeight: '88px',
+                            borderRadius: '12px',
+                            border: `1.5px solid ${isSelected ? '#6366f1' : '#e2e8f0'}`,
+                            background: isSelected ? 'rgba(99,102,241,0.06)' : '#fafafa',
+                            color: isSelected ? '#6366f1' : '#475569',
+                            fontWeight: 600, fontSize: '0.8125rem',
+                            cursor: 'pointer', transition: 'all 0.15s',
+                            boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none'
+                          }}
+                        >
+                          <span style={{ color: isSelected ? '#6366f1' : '#94a3b8' }}><Icon /></span>
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* EVENT NAME */}
               <div style={{ marginBottom: '1.25rem' }}>
@@ -496,11 +734,11 @@ export default function ManageEvents() {
                 />
               </div>
 
-              {/* DISASTER CLASSIFICATION LEVEL */}
-              {['typhoon', 'earthquake', 'tsunami', 'flood'].includes(form.eventType) && (
+              {/* DISASTER CLASSIFICATION LEVEL (Hidden for GDACS events) */}
+              {['typhoon', 'earthquake', 'tsunami', 'flood'].includes(form.eventType) && !form.gdacsId && (
                 <div style={{ marginBottom: '1.25rem', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', background: '#fafafa' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-                    <AlertTriangle size={14} color="#f59e0b" />
+                    <Warning size={14} color="#f59e0b" />
                     <span style={LABEL_STYLE}>Disaster Classification Level</span>
                   </div>
 
@@ -691,48 +929,50 @@ export default function ManageEvents() {
                 </div>
               )}
 
-              {/* ALERT LEVEL / WARNING SIGNAL */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={LABEL_STYLE}>Alert Level / Warning Signal</label>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {(ALERT_LEVELS[form.eventType] || ALERT_LEVELS.calamity).map(opt => {
-                    const isSelected = form.alertLevel === opt.value
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, alertLevel: opt.value }))}
-                        style={{
-                          padding: '12px 16px',
-                          borderRadius: '10px',
-                          border: `1.5px solid ${isSelected ? '#6366f1' : '#e2e8f0'}`,
-                          background: isSelected ? 'rgba(99,102,241,0.06)' : 'white',
-                          color: isSelected ? '#6366f1' : '#475569',
-                          fontWeight: isSelected ? 700 : 600,
-                          fontSize: '0.8125rem',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s',
-                          textAlign: 'left',
-                          boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.1)' : 'none',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '2px'
-                        }}
-                      >
-                        <span style={{ fontWeight: 800 }}>{opt.label}</span>
-                        {opt.desc && <span style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: 500 }}>{opt.desc}</span>}
-                      </button>
-                    )
-                  })}
-                </div>
+              {/* ALERT LEVEL / WARNING SIGNAL (Hidden for GDACS events and Typhoons) */}
+              {!form.gdacsId && form.eventType !== 'typhoon' && (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={LABEL_STYLE}>Alert Level / Warning Signal</label>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {(ALERT_LEVELS[form.eventType] || ALERT_LEVELS.calamity).map(opt => {
+                      const isSelected = form.alertLevel === opt.value
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, alertLevel: opt.value }))}
+                          style={{
+                            padding: '12px 16px',
+                            borderRadius: '10px',
+                            border: `1.5px solid ${isSelected ? '#6366f1' : '#e2e8f0'}`,
+                            background: isSelected ? 'rgba(99,102,241,0.06)' : 'white',
+                            color: isSelected ? '#6366f1' : '#475569',
+                            fontWeight: isSelected ? 700 : 600,
+                            fontSize: '0.8125rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                            textAlign: 'left',
+                            boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.1)' : 'none',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '2px'
+                          }}
+                        >
+                          <span style={{ fontWeight: 800 }}>{opt.label}</span>
+                          {opt.desc && <span style={{ fontSize: '0.7rem', opacity: 0.8, fontWeight: 500 }}>{opt.desc}</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
 
-                {form.alertLevel && (
-                  <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
-                    Active selection: <strong style={{color: '#6366f1'}}>{form.alertLevel}</strong>. This will be shown on the dashboard meta bar.
-                  </p>
-                )}
-              </div>
+                  {form.alertLevel && (
+                    <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                      Active selection: <strong style={{color: '#6366f1'}}>{form.alertLevel}</strong>. This will be shown on the dashboard meta bar.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* AFFECTED PROVINCES */}
               <div style={{ marginBottom: '1.25rem' }}>
@@ -751,11 +991,27 @@ export default function ManageEvents() {
                 </div>
               </div>
 
-              {/* THEME COLOR */}
+              {/* AFFECTED BARANGAYS (Manual Entry) */}
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={LABEL_STYLE}>Theme Color</label>
-                <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))} style={{ width: '52px', height: '42px', padding: '2px', borderRadius: '8px', border: '1.5px solid #e2e8f0', cursor: 'pointer' }} />
+                <label style={LABEL_STYLE}>Affected Barangays (Community Impact)</label>
+                <textarea
+                  placeholder="List down affected barangays or specific areas (e.g., Brgy. San Juan, Zone 4)..."
+                  value={form.affectedBarangays}
+                  onChange={e => setForm(f => ({ ...f, affectedBarangays: e.target.value }))}
+                  style={{ 
+                    ...INPUT_STYLE, 
+                    height: '80px', 
+                    resize: 'none', 
+                    fontSize: '0.8125rem',
+                    lineHeight: '1.5',
+                    background: '#fafafa'
+                  }}
+                />
+                <p style={{ margin: '6px 0 0', fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 500 }}>
+                  Detail specific communities for localized SITREP tracking.
+                </p>
               </div>
+
 
               {/* EVENT DURATION */}
               <div style={{ marginBottom: '0.5rem' }}>
@@ -777,7 +1033,7 @@ export default function ManageEvents() {
                     onClick={() => { setDeletingId(editingId); setShowDeleteConfirm(true) }}
                     style={{ color: '#ef4444', borderColor: '#fecaca', background: 'rgba(239, 68, 68, 0.05)' }}
                   >
-                    <Trash2 size={16} style={{ marginRight: '6px' }} /> Delete Event
+                    <Trash size={16} style={{ marginRight: '6px' }} /> Delete Event
                   </button>
                 )}
               </div>
@@ -807,7 +1063,7 @@ export default function ManageEvents() {
                   disabled={!form.name.trim()}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
-                  <Send size={16} />
+                  <PaperPlaneRight size={16} />
                   {events.find(e => e.id === editingId)?.isDeployed ? 'Update & Re-deploy' : 'Save & Deploy'}
                 </button>
               </div>
@@ -822,7 +1078,7 @@ export default function ManageEvents() {
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="modal-content glass-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <div className="modal-confirm">
-              <div className="modal-confirm-icon modal-confirm-icon--danger"><AlertTriangle size={28} /></div>
+              <div className="modal-confirm-icon modal-confirm-icon--danger"><Warning size={28} /></div>
               <h2 className="modal-confirm-title">Delete Event?</h2>
               <p className="modal-confirm-text">This action cannot be undone. All associated data will be removed.</p>
               <div className="modal-confirm-footer">

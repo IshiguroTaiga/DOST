@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, X } from 'lucide-react';
+import { MagnifyingGlass, X } from '@phosphor-icons/react';
 
 const SearchInput = ({ placeholder, value, onChange, suggestions = [], onSuggestionClick, className = '' }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -15,7 +15,7 @@ const SearchInput = ({ placeholder, value, onChange, suggestions = [], onSuggest
 
     return (
         <div className={`search-box ${className}`}>
-            <Search size={18} className="search-icon" />
+            <MagnifyingGlass size={18} className="search-icon" />
             <input
                 type="text"
                 placeholder={placeholder}
@@ -56,7 +56,7 @@ const SearchInput = ({ placeholder, value, onChange, suggestions = [], onSuggest
                                 setShowSuggestions(false);
                             }}
                         >
-                            <Search size={14} />
+                            <MagnifyingGlass size={14} />
                             <span>{s}</span>
                         </div>
                     ))}

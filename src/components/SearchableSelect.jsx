@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, X, Search } from 'lucide-react';
+import { CaretDown, X, MagnifyingGlass } from '@phosphor-icons/react';
 
 const SearchableSelect = ({
     options = [],
@@ -133,7 +133,7 @@ const SearchableSelect = ({
             >
                 {isOpen ? (
                     <div className="searchable-select-input-container">
-                        <Search size={14} className="search-icon-inner" />
+                        <MagnifyingGlass size={14} className="search-icon-inner" />
                         <input
                             ref={inputRef}
                             type="text"
@@ -203,7 +203,7 @@ const SearchableSelect = ({
                         )}
                     </div>
                 )}
-                <ChevronDown size={16} className={`chevron ${isOpen ? 'rotated' : ''}`} />
+                <CaretDown size={16} className={`chevron ${isOpen ? 'rotated' : ''}`} />
             </div>
 
             {isOpen && createPortal(dropdownMenu, document.body)}
