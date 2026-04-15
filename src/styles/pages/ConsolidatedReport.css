@@ -22,8 +22,8 @@
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 1.75rem 2rem;
-  background: rgba(255, 255, 255, 0.35);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .consolidated-report-header-stack {
@@ -38,14 +38,14 @@
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-main);
   letter-spacing: -0.05em;
 }
 
 .consolidated-report-subtitle {
   margin: 0.25rem 0 0;
   font-size: 1rem;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -75,14 +75,14 @@
   width: 100%;
   height: 46px;
   padding: 0 1.25rem 0 3rem;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--bg-card);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-main);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
@@ -106,7 +106,7 @@
 .consolidated-report-filter-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -119,12 +119,12 @@
   appearance: none;
   height: 46px;
   padding: 0 2.5rem 0 1.25rem;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 150px;
@@ -152,10 +152,10 @@
 
 .status-filter-group {
   display: flex;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-page);
   padding: 0.25rem;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
   gap: 0.25rem;
 }
 
@@ -195,20 +195,20 @@
 
 .consolidated-report-table thead th {
   padding: 0.875rem 1.75rem;
-  background: #f8fafc;
-  color: #475569;
+  background: var(--bg-page);
+  color: var(--text-main);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .consolidated-report-table tbody td {
   padding: 1.125rem 1.75rem;
-  color: #334155;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
 }
 
@@ -219,12 +219,12 @@
 
 .event-name-cell {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-main);
   font-size: 0.9375rem;
 }
 
 .event-date-cell {
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -288,8 +288,8 @@
   flex-wrap: wrap;
   gap: 1rem;
   padding: 1rem 1.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.25);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
 }
 
 .consolidated-report-pagination-btn {
@@ -326,9 +326,9 @@
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #0f172a;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--text-main);
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -479,7 +479,7 @@
 /* Level 5 Details View Styles (AddReport consistency) */
 .consolidated-details-container {
   padding: 1.5rem;
-  background: #ffffff;
+  background: var(--bg-page);
 }
 
 .details-view-header {
@@ -492,7 +492,7 @@
 .details-view-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-main);
   margin: 0;
 }
 
@@ -500,8 +500,8 @@
   flex: 1;
   overflow: auto;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
@@ -513,14 +513,14 @@
 }
 
 .consolidated-details-container .report-table thead th {
-  background: #f8fafc;
-  color: #334155;
+  background: var(--bg-page);
+  color: var(--text-main);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.75rem;
   text-align: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   white-space: nowrap;
 }
 
@@ -534,7 +534,7 @@
 
 .consolidated-details-container .report-table tbody td {
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   cursor: pointer;
 }
 
@@ -596,10 +596,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  color: #475569;
+  color: var(--text-muted);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -713,9 +713,9 @@
 .consolidated-report-empty {
   padding: 4rem 1.75rem;
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.875rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-sidebar);
 }
 
 .consolidated-report-restricted {
@@ -768,7 +768,7 @@
   max-width: 1400px;
   height: 90vh;
   border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;

@@ -1,0 +1,18 @@
+.mesh-gradient-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--bg-page);
+  transition: background-color 0.3s ease;
+}
+
+/* Ensure the canvas fills the container */
+.mesh-gradient-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

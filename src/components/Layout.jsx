@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { EventProvider } from '../contexts/EventContext'
 import Sidebar from './Sidebar'
+import ForcePasswordChange from '../pages/ForcePasswordChange'
 import '../styles/components/Layout.css'
 
 export default function Layout({ user, onLogout }) {
@@ -12,6 +12,9 @@ export default function Layout({ user, onLogout }) {
       <Sidebar user={user} onLogout={onLogout} />
       <main className={`main-content ${isDashboard ? 'main-content--scrollable' : ''}`}>
         <Outlet context={{ user }} />
+        {user?.must_change_password && (
+          <ForcePasswordChange user={user} onLogout={onLogout} />
+        )}
       </main>
     </div>
   )

@@ -277,13 +277,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 .dashboard-page {
-	--dash-card-bg: rgba(248, 250, 252, 0.65);
-	--dash-glass-border: rgba(255, 255, 255, 0.5);
+	--dash-card-bg: var(--bg-card);
+	--dash-glass-border: var(--border-color);
 	--dash-accent-mint: #bae6fd;
 	--dash-accent-yellow: #fef08a;
 	--dash-accent-purple: #e9d5ff;
-	--dash-text-main: #0f172a;
-	--dash-text-muted: #475569;
+	--dash-text-main: var(--text-main);
+	--dash-text-muted: var(--text-muted);
 
 	/* Reff Styling Tokens */
 	--reff-bg: #05090f;
@@ -333,11 +333,11 @@
 }
 
 .dash-nav-pill {
-	background: rgba(255, 255, 255, 0.28);
+	background: var(--glass-bg);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.3);
-	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-premium);
 	border-radius: 999px;
 	padding: 0.5rem 1rem;
 	display: flex;
@@ -367,7 +367,7 @@
 .dash-header-title {
 	font-size: 1.25rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-main);
 	margin: 0;
 }
 
@@ -378,18 +378,16 @@
 }
 
 .dash-action-btn {
-	background: rgba(255, 255, 255, 0.4);
+	background: var(--glass-bg);
 	backdrop-filter: blur(12px) saturate(180%);
 	-webkit-backdrop-filter: blur(12px) saturate(180%);
-	border: 1px solid rgba(255, 255, 255, 0.5);
-	box-shadow: 
-		0 4px 6px -1px rgba(0, 0, 0, 0.05),
-		0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-premium);
 	border-radius: 12px;
 	padding: 0.7rem 1.4rem;
 	font-size: 0.8125rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-main);
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
@@ -453,11 +451,11 @@
 	top: calc(100% + 10px);
 	right: 0;
 	width: 320px;
-	background: rgba(255, 255, 255, 0.95);
+	background: var(--bg-card);
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.4);
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-elevated);
 	border-radius: 16px;
 	z-index: 1000;
 	overflow: hidden;
@@ -479,18 +477,18 @@
 
 .notification-header {
 	padding: 1rem 1.25rem;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--border-color);
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	background: rgba(248, 250, 252, 0.5);
+	background: var(--bg-page);
 }
 
 .notification-header h3 {
 	margin: 0;
 	font-size: 0.875rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-main);
 }
 
 .notification-count {
@@ -521,13 +519,13 @@
 	padding: 1rem 1.25rem;
 	display: flex;
 	gap: 1rem;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+	border-bottom: 1px solid var(--border-color);
 	transition: background 0.2s;
 	cursor: pointer;
 }
 
 .notification-item:hover {
-	background: rgba(248, 250, 252, 0.8);
+	background: rgba(99, 102, 241, 0.05);
 }
 
 .notification-item:last-child {
@@ -554,7 +552,7 @@
 	margin: 0;
 	font-size: 0.8125rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-main);
 }
 
 .notification-desc {
@@ -636,7 +634,7 @@
 	font-weight: 800;
 	letter-spacing: -0.04em;
 	margin: 0;
-	color: #1e293b;
+	color: var(--text-main);
 	line-height: 1.05;
 	max-width: 600px;
 	word-wrap: break-word;
@@ -731,15 +729,15 @@
 	width: 38px;
 	height: 38px;
 	border-radius: 12px;
-	background: rgba(255, 255, 255, 0.28);
+	background: var(--bg-card);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.3);
+	border: 1px solid var(--border-color);
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: #1e293b;
+	color: var(--text-main);
 	position: relative;
 	overflow: hidden;
 }
@@ -760,17 +758,17 @@
 .meta-value {
 	font-size: 1.1rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-main);
 	white-space: nowrap;
 }
 
 /* Summary Bar */
 .dash-summary-bar {
-	background: rgba(255, 255, 255, 0.28);
+	background: var(--bg-card);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.3);
-	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--border-color);
+	box-shadow: var(--shadow-premium);
 	position: relative;
 	overflow: hidden;
 	border-radius: 16px;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Shield, Palette, Bell, Eye, EyeClosed, ClockCounterClockwise } from '@phosphor-icons/react'
+import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info } from '@phosphor-icons/react'
+import { useTheme } from '../contexts/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { hashPassword, validatePassword } from '../lib/passwordUtils'
 import LoadingSpinner from './LoadingSpinner'
@@ -9,9 +10,8 @@ import SearchableSelect from './SearchableSelect'
 
 export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
     const navigate = useNavigate()
+    const { theme, setTheme } = useTheme()
     const [activeTab, setActiveTab] = useState('security')
-    const [notifications, setNotifications] = useState(true)
-    const [emailAlerts, setEmailAlerts] = useState(true)
 
     // Password Change State
     const [currentPassword, setCurrentPassword] = useState('')
@@ -157,10 +157,10 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             <Shield size={16} /> Security
                         </button>
                         <button
-                            onClick={() => setActiveTab('notifications')}
-                            className={`modal-sidebar-tab ${activeTab === 'notifications' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('appearance')}
+                            className={`modal-sidebar-tab ${activeTab === 'appearance' ? 'active' : ''}`}
                         >
-                            <Bell size={16} /> Notifications
+                            <Palette size={16} /> Appearance
                         </button>
                         <button
                             onClick={() => {
@@ -172,10 +172,13 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             <ClockCounterClockwise size={16} /> Event Logs
                         </button>
                         <button
-                            onClick={() => setActiveTab('appearance')}
-                            className={`modal-sidebar-tab ${activeTab === 'appearance' ? 'active' : ''}`}
+                            onClick={() => {
+                                navigate('/manual')
+                                onClose()
+                            }}
+                            className="modal-sidebar-tab"
                         >
-                            <Palette size={16} /> Appearance
+                            <Info size={16} /> Help & Manual
                         </button>
                     </div>
 
@@ -249,34 +252,6 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             </div>
                         )}
 
-                        {activeTab === 'notifications' && (
-                            <div className="settings-tab-pane">
-                                <h3 className="settings-section-title">Notification Preferences</h3>
-
-                                <div className="settings-toggle-row">
-                                    <div className="settings-toggle-info">
-                                        <div className="settings-toggle-title">Push Notifications</div>
-                                        <div className="settings-toggle-desc">Receive browser notifications for new reports</div>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={notifications} onChange={(e) => setNotifications(e.target.checked)} />
-                                        <span className="toggle-slider"></span>
-                                    </label>
-                                </div>
-
-                                <div className="settings-toggle-row last">
-                                    <div className="settings-toggle-info">
-                                        <div className="settings-toggle-title">Email Alerts</div>
-                                        <div className="settings-toggle-desc">Get email updates for important consolidated reports</div>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={emailAlerts} onChange={(e) => setEmailAlerts(e.target.checked)} />
-                                        <span className="toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        )}
-
                         {activeTab === 'appearance' && (
                             <div className="settings-tab-pane">
                                 <h3 className="settings-section-title">Appearance Settings</h3>
@@ -285,12 +260,12 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                                     <label className="settings-label">Theme Mode</label>
                                     <SearchableSelect
                                         options={[
-                                            { value: 'light', label: 'Light Theme (Default)' },
+                                            { value: 'light', label: 'Light Theme' },
                                             { value: 'dark', label: 'Dark Theme' },
                                             { value: 'system', label: 'System Default' }
                                         ]}
-                                        value="light"
-                                        onChange={(e) => console.log('Theme changed:', e.target.value)}
+                                        value={theme}
+                                        onChange={(e) => setTheme(e.target.value)}
                                         placeholder="Select Theme"
                                     />
                                     <p className="settings-section-desc mt-2">

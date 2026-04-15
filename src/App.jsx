@@ -5,12 +5,14 @@ import Login from './pages/Login'
 import ForcePasswordChange from './pages/ForcePasswordChange'
 import Dashboard from './pages/Dashboard'
 import AddReport from './pages/AddReport'
-
 import Users from './pages/Users'
 import ConsolidatedReport from './pages/ConsolidatedReport'
 import EventLogs from './pages/EventLogs'
 import ManageEvents from './pages/ManageEvents'
+import Manual from './pages/Manual'
 import { EventProvider } from './contexts/EventContext'
+import { ThemeProvider } from './contexts/ThemeContext'
+import MeshBackground from './components/MeshGradient'
 import LoadingSpinner from './components/LoadingSpinner'
 import { supabase } from './lib/supabase'
 import './styles/App.css'
@@ -96,7 +98,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <EventProvider user={user}>
+      <ThemeProvider>
+        <MeshBackground />
+        <EventProvider user={user}>
         <Routes>
           <Route
             path="/login"
@@ -112,29 +116,26 @@ function App() {
             path="/"
             element={
               isAuthenticated ? (
-                <>
-                  <Layout user={user} onLogout={handleLogout} />
-                  {user.must_change_password && (
-                    <ForcePasswordChange user={user} onLogout={handleLogout} />
-                  )}
-                </>
+                <Layout user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
               )
             }
           >
-            <Route index element={<Navigate to="/login" replace />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="add-report" element={<AddReport />} />
             <Route path="users" element={<Users />} />
             <Route path="consolidated-report" element={<ConsolidatedReport />} />
             <Route path="event-logs" element={<EventLogs />} />
             <Route path="manage-events" element={<ManageEvents />} />
+            <Route path="manual" element={<Manual />} />
           </Route>
           <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
         </Routes>
       </EventProvider>
-    </BrowserRouter>
+    </ThemeProvider>
+  </BrowserRouter>
   )
 }
 

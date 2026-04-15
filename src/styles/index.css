@@ -6,14 +6,18 @@
 	line-height: 1.6;
 	font-weight: 400;
 	color-scheme: light;
-	color: #0f172a;
-	background-color: #ffffff;
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 
-	/* Vibrant Glass Tokens */
+	/* Functional Theme Tokens - Light (Default) */
+	--bg-page: #f8fafc;
+	--bg-card: #ffffff;
+	--bg-sidebar: rgba(255, 255, 255, 0.45);
+	--text-main: #0f172a;
+	--text-muted: #64748b;
+	--border-color: rgba(0, 0, 0, 0.05);
 	--glass-bg: rgba(255, 255, 255, 0.45);
 	--glass-border: rgba(255, 255, 255, 0.5);
 	--glass-blur: 24px;
@@ -29,7 +33,7 @@
 	--radius-2xl: 24px;
 	--radius-3xl: 32px;
 	
-	/* Mesh Gradient Palette (Reference Image Inspired) */
+	/* Mesh Gradient Palette */
 	--mesh-blue: #38bdf8;
 	--mesh-cyan: #22d3ee;
 	--mesh-yellow: #fbbf24;
@@ -45,6 +49,20 @@
 	--shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Dark Theme Overrides */
+[data-theme='dark'] {
+	color-scheme: dark;
+	--bg-page: #020617;
+	--bg-card: #0f172a;
+	--bg-sidebar: rgba(15, 23, 42, 0.6);
+	--text-main: #f8fafc;
+	--text-muted: #94a3b8;
+	--border-color: rgba(255, 255, 255, 0.1);
+	--glass-bg: rgba(15, 23, 42, 0.6);
+	--glass-border: rgba(255, 255, 255, 0.1);
+	--shadow-premium: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -53,10 +71,14 @@ body {
 	margin: 0;
 	min-width: 320px;
 	min-height: 100vh;
+	color: var(--text-main);
+	background-color: transparent;
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
 	min-height: 100vh;
+	background: transparent;
 }
 
 /* Global Glassmorphism Utilities */
@@ -80,20 +102,21 @@ body {
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bg-card);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	color: var(--accent);
 	flex-shrink: 0;
+	border: 1px solid var(--border-color);
 }
 
 .glass-modal {
-	background: rgba(255, 255, 255, 0.6);
+	background: var(--glass-bg);
 	backdrop-filter: blur(32px) saturate(200%);
 	-webkit-backdrop-filter: blur(32px) saturate(200%);
-	border: 1px solid rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--glass-border);
 	border-radius: 32px;
 	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
@@ -324,7 +347,7 @@ body {
 .loading-label {
   margin-top: 1.5rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   letter-spacing: 0.02em;
 }
 
