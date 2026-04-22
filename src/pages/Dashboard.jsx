@@ -153,7 +153,7 @@ const CustomizedAxisTick = (props) => {
           y={i * 11}
           dy={12}
           textAnchor="middle"
-          fill="#64748b"
+          fill="var(--text-muted)"
           style={{ fontSize: 9, fontWeight: 500 }}
         >
           {word}
@@ -1616,7 +1616,7 @@ CHRONOLOGY OF EVENTS`;
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '2rem' }}>
-            <div style={{ minHeight: '400px', background: '#f8fafc', borderRadius: '12px', padding: '1.5rem' }}>
+            <div style={{ minHeight: '400px', background: 'var(--bg-page)', borderRadius: '12px', padding: '1.5rem' }}>
               {hasData ? (
                 <ResponsiveContainer width="100%" height={usePie ? 400 : Math.max(400, card.barangayData.length * 35)}>
                   {usePie ? (
@@ -1645,7 +1645,7 @@ CHRONOLOGY OF EVENTS`;
                       <YAxis
                         dataKey="name"
                         type="category"
-                        tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
+                        tick={{ fontSize: 11, fill: 'var(--text-muted)', fontWeight: 500 }}
                         width={100}
                         axisLine={false}
                         tickLine={false}
@@ -1664,7 +1664,7 @@ CHRONOLOGY OF EVENTS`;
                   )}
                 </ResponsiveContainer>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
                   <BarChartIcon size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
                   <p style={{ fontSize: '0.875rem' }}>No geographic data available for this category</p>
                 </div>
@@ -1672,7 +1672,7 @@ CHRONOLOGY OF EVENTS`;
             </div>
 
             <div className="sidebar-rankings">
-              <h4 style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h4 style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <TrendUp size={14} /> Top Breakdown
               </h4>
               <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
@@ -1686,16 +1686,16 @@ CHRONOLOGY OF EVENTS`;
                   <tbody>
                     {card.barangayData.slice(0, 15).map((item, idx) => (
                       <tr key={idx}>
-                        <td style={{ fontSize: '0.75rem', color: '#334155' }}>{item.name}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'DM Mono', fontSize: '0.8125rem', color: '#1e293b' }}>{item.value.toLocaleString()}</td>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--text-main)' }}>{item.name}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'DM Mono', fontSize: '0.8125rem', color: 'var(--text-main)' }}>{item.value.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f1f5f9', borderRadius: '10px' }}>
-                <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Analytic Insight</span>
-                <p style={{ fontSize: '0.75rem', color: '#475569', margin: '4px 0 0', lineHeight: 1.4 }}>
+              <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--bg-page)', borderRadius: '10px' }}>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Analytic Insight</span>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', margin: '4px 0 0', lineHeight: 1.4 }}>
                   {hasData
                     ? `${card.topBarangay} represents ${((card.topCount / (card.totalCount || 1)) * 100).toFixed(1)}% of all ${card.label} reports for this event.`
                     : 'Not enough data points to generate meaningful geographic insights.'
@@ -1816,14 +1816,14 @@ CHRONOLOGY OF EVENTS`;
                 <div className="modular-dashboard">
                   {/* No Approved Data Warning */}
                   {result?.total === 0 && currentEventId !== 'default-good-day' && (
-                    <div style={{
-                      background: 'rgba(245, 158, 11, 0.05)',
-                      border: '1px solid rgba(245, 158, 11, 0.3)',
-                      borderRadius: '12px',
-                      padding: '2rem',
-                      marginBottom: '2rem',
-                      textAlign: 'center'
-                    }}>
+                      <div style={{
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        padding: '2rem',
+                        marginBottom: '2rem',
+                        textAlign: 'center'
+                      }}>
                       <Warning size={32} color="#d97706" style={{ marginBottom: '1rem', opacity: 0.8 }} />
                       <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#92400e', marginBottom: '0.5rem' }}>No Approved Reports Available</h3>
                       <p style={{ fontSize: '0.875rem', color: '#b45309', maxWidth: '500px', margin: '0 auto' }}>
@@ -1838,7 +1838,7 @@ CHRONOLOGY OF EVENTS`;
                       <span style={{ fontSize: 26 }}>??</span>
                       <div>
                         <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 13, color: T.rose, letterSpacing: "2px", textTransform: "uppercase" }}>State of Calamity Declared</div>
-                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
                           Multiple LGUs have officially declared a state of calamity. Expedited procurement and calamity fund access are active.
                         </div>
                       </div>
@@ -1895,15 +1895,15 @@ CHRONOLOGY OF EVENTS`;
                     <div className="premium-card">
                       <div className="premium-card-header">
                         <div className="premium-card-title">Affected Persons</div>
-                        <span style={{ fontSize: '10px', color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>BY CITY</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'var(--bg-page)', padding: '2px 8px', borderRadius: '4px' }}>BY CITY</span>
                       </div>
                       <div style={{ height: '240px' }}>
                         {Object.keys(result?.details?.byCity || {}).length > 0 ? (
                           <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={Object.entries(result.details.byCity).sort((a, b) => b[1].persons - a[1].persons).slice(0, 4).map(([name, data]) => ({ name, persons: data.persons }))} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} interval={0} />
-                              <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                              <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval={0} />
+                              <YAxis tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
                               <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                               <Bar dataKey="persons" radius={[4, 4, 0, 0]}>
                                 {Object.entries(result.details.byCity).slice(0, 4).map((_, i) => (
@@ -1947,13 +1947,13 @@ CHRONOLOGY OF EVENTS`;
                       ].map((item, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px' }}>
                           <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                          <span style={{ color: '#64748b', flex: 1 }}>{item.label}</span>
+                          <span style={{ color: 'var(--text-muted)', flex: 1 }}>{item.label}</span>
                           <span style={{ fontWeight: 700, fontFamily: 'DM Mono' }}>{item.value.toLocaleString()}</span>
                         </div>
                       ))}
-                      <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                      <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '4px' }}>
-                          <span style={{ color: '#64748b' }}>Active ECs</span>
+                          <span style={{ color: 'var(--text-muted)' }}>Active ECs</span>
                           <span style={{ fontWeight: 700, color: T.teal }}>{Object.values(result?.details?.byCity || {}).reduce((s, p) => s + p.ecs, 0)}</span>
                         </div>
                       </div>
@@ -1964,7 +1964,7 @@ CHRONOLOGY OF EVENTS`;
                   <div className="premium-card">
                     <div className="premium-card-header">
                       <div className="premium-card-title">City/Municipality Summary</div>
-                      <span style={{ fontSize: '10px', color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>ALL AREAS</span>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'var(--bg-page)', padding: '2px 8px', borderRadius: '4px' }}>ALL AREAS</span>
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                       <table className="premium-table">
@@ -1987,17 +1987,17 @@ CHRONOLOGY OF EVENTS`;
                             Object.entries(result.details.byCity).map(([city, stats], i) => (
                               <tr key={city} className="trow">
                                 <td>
-                                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '12px' }}>{city.toUpperCase()}</div>
-                                  <div style={{ fontSize: '10px', color: '#64748b' }}>{getProvinceForCity(city)}</div>
+                                  <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '12px' }}>{city.toUpperCase()}</div>
+                                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{getProvinceForCity(city)}</div>
                                 </td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px' }}>{stats.brgys?.size || 0}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px' }}>{stats.families.toLocaleString()}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px', fontWeight: 700, color: stats.persons > 100000 ? T.rose : stats.persons > 10000 ? T.amber : '#1e293b' }}>{stats.persons.toLocaleString()}</td>
+                                <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px', fontWeight: 700, color: stats.persons > 100000 ? T.rose : stats.persons > 10000 ? T.amber : 'var(--text-main)' }}>{stats.persons.toLocaleString()}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px' }}>{stats.inside.toLocaleString()}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px' }}>{stats.outside.toLocaleString()}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px', color: T.teal, fontWeight: 700 }}>{stats.served.toLocaleString()}</td>
                                 <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px' }}>{stats.ecs}</td>
-                                <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px', color: stats.dmg > 0 ? T.amber : '#94a3b8' }}>{stats.dmg > 0 ? stats.dmg.toLocaleString() : '—'}</td>
+                                <td style={{ textAlign: 'right', fontFamily: 'DM Mono', fontSize: '11px', color: stats.dmg > 0 ? T.amber : 'var(--text-muted)' }}>{stats.dmg > 0 ? stats.dmg.toLocaleString() : '—'}</td>
                                 <td style={{ textAlign: 'center' }}>
                                   {details.suspensions.find(s => s.city === city && s.type === 'stateOfCalamity') ? (
                                     <span style={{ fontSize: '9px', fontWeight: 800, background: 'rgba(240,69,69,0.1)', color: T.rose, padding: '2px 6px', borderRadius: '4px' }}>DECLARED</span>

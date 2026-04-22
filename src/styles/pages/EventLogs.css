@@ -130,7 +130,7 @@
 }
 
 .logs-table thead th .logs-sort-icon {
-	color: #94a3b8;
+	color: #475569;
 	flex-shrink: 0;
 }
 
@@ -195,12 +195,12 @@
 
 .logs-badge.logs-badge-viewer {
 	background: #f1f5f9;
-	color: #64748b;
+	color: #334155;
 }
 
 .logs-badge:not([class*="users-badge-"]) {
 	background: #f1f5f9;
-	color: #64748b;
+	color: #334155;
 }
 
 .logs-status {
@@ -220,7 +220,7 @@
 
 .logs-status.logs-status-inactive {
 	background: #f1f5f9;
-	color: #64748b;
+	color: #334155;
 }
 
 .logs-col-action {
@@ -281,7 +281,7 @@
 }
 
 .logs-pagination-btn:disabled {
-	color: #94a3b8;
+	color: #475569;
 	cursor: not-allowed;
 }
 
@@ -321,7 +321,7 @@
 .logs-pagination-ellipsis {
 	padding: 0 0.25rem;
 	font-size: 0.8125rem;
-	color: #94a3b8;
+	color: #475569;
 }
 
 /* Add User modal – minimal & modern */

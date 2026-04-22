@@ -93,7 +93,7 @@
 	top: 50%;
 	transform: translateY(-50%);
 	pointer-events: none;
-	color: #64748b;
+	color: var(--text-muted);
 }
 
 .add-report-btn-toolbar {
@@ -121,7 +121,7 @@
 
 .add-report-btn-toolbar:hover {
 	background: #e2e8f0;
-	color: #334155;
+	color: var(--text-muted);
 }
 
 .add-report-btn-add {
@@ -163,7 +163,7 @@
 }
 
 .add-report-display-table thead th .add-report-sort-icon {
-	color: #94a3b8;
+	color: var(--text-muted);
 	flex-shrink: 0;
 }
 
@@ -191,7 +191,7 @@
 	padding: 0.5rem 0.75rem;
 	font-size: 0.8125rem;
 	font-weight: 500;
-	color: #334155;
+	color: var(--text-muted);
 	background: none;
 	border: none;
 	cursor: pointer;
@@ -203,7 +203,7 @@
 }
 
 .add-report-pagination-btn:disabled {
-	color: #94a3b8;
+	color: var(--text-muted);
 	cursor: not-allowed;
 }
 
@@ -243,7 +243,7 @@
 .add-report-pagination-ellipsis {
 	padding: 0 0.25rem;
 	font-size: 0.8125rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 }
 
 
@@ -311,7 +311,7 @@
 	border: none;
 	border-radius: var(--radius-sm);
 	background: rgba(0, 0, 0, 0.04);
-	color: #64748b;
+	color: var(--text-muted);
 	cursor: pointer;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -412,7 +412,7 @@
 .report-form-group label {
 	font-size: 0.8125rem;
 	font-weight: 700;
-	color: #64748b;
+	color: var(--text-muted);
 }
 
 .report-form-row {
@@ -436,7 +436,7 @@
 .report-form-group-inline label {
 	font-size: 0.8125rem;
 	font-weight: 700;
-	color: #64748b;
+	color: var(--text-muted);
 	white-space: nowrap;
 }
 
@@ -448,7 +448,7 @@
 .ap-form-subheading {
 	font-size: 0.8125rem;
 	font-weight: 700;
-	color: #334155;
+	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	margin: 1.5rem 0 0.75rem 0;
@@ -513,9 +513,9 @@
 }
 
 .modal-btn-cancel:hover {
-	background: #f1f5f9;
-	color: #334155;
-	border-color: #cbd5e1;
+	background: var(--hover-bg-subtle);
+	color: var(--text-main);
+	border-color: var(--text-muted);
 }
 
 .modal-btn-primary {
@@ -554,7 +554,7 @@
 
 .report-table thead th {
 	background: rgba(0, 0, 0, 0.04);
-	color: #334155;
+	color: var(--text-muted);
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
@@ -604,7 +604,7 @@
 	font-size: 0.75rem !important;
 	background: rgba(0, 0, 0, 0.03) !important;
 	font-weight: 700 !important;
-	color: #64748b !important;
+	color: #334155 !important;
 }
 
 .report-table .col-actions {
@@ -670,7 +670,7 @@
 }
 
 .report-table tbody td input::placeholder {
-	color: #94a3b8;
+	color: var(--text-muted);
 }
 
 .report-table tbody td input[type="number"]::-webkit-inner-spin-button,
@@ -706,7 +706,7 @@
 	cursor: pointer;
 	transition: all 0.2s ease;
 	background: transparent;
-	color: #64748b;
+	color: var(--text-muted);
 }
 
 .btn-icon:hover:not(:disabled) {
@@ -797,7 +797,7 @@
 	padding: 1.25rem 1.25rem;
 	font-size: 0.6875rem;
 	font-weight: 700;
-	color: #334155;
+	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
 	text-align: left;
@@ -826,7 +826,7 @@
 	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 	font-size: 0.8125rem;
 	font-weight: 500;
-	color: #334155;
+	color: var(--text-muted);
 	vertical-align: middle;
 	border-left: none;
 	border-right: none;
@@ -841,7 +841,7 @@
 }
 
 .report-table-display tbody tr:hover td {
-	background: rgba(0, 0, 0, 0.02);
+	background: var(--hover-bg-subtle);
 }
 
 .report-table-display tbody tr:last-child td {
@@ -858,7 +858,7 @@
 
 .report-table-display tbody td.col-date {
 	font-size: 0.75rem;
-	color: #64748b;
+	color: var(--text-muted);
 	font-weight: 500;
 }
 
@@ -949,7 +949,7 @@
 
 .category-choice-desc {
 	font-size: 0.75rem;
-	color: #64748b;
+	color: var(--text-muted);
 	margin: 0;
 	line-height: 1.4;
 	display: -webkit-box;
@@ -967,36 +967,46 @@
 /* Status Pills */
 .status-pill {
 	white-space: nowrap;
+	padding: 0.25rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+}
+
+.status-pill:hover {
+	transform: translateY(-1px);
 }
 
 .status-pill.status-not-passable,
 .status-pill.status-red,
 .status-pill.status-critical {
-	background: rgba(239, 68, 68, 0.1);
-	color: #dc2626;
-	border: 1px solid rgba(239, 68, 68, 0.2);
+	background: var(--status-danger-bg);
+	color: var(--status-danger-text);
+	border-color: var(--status-danger-border);
 }
 
 .status-pill.status-passable,
 .status-pill.status-blue,
 .status-pill.status-resolved {
-	background: rgba(59, 130, 246, 0.08);
-	color: #1d4ed8;
-	border: 1px solid rgba(59, 130, 246, 0.15);
+	background: var(--status-info-bg);
+	color: var(--status-info-text);
+	border-color: var(--status-info-border);
 }
 
 .status-pill.status-partially-passable,
 .status-pill.status-orange,
 .status-pill.status-warning {
-	background: rgba(249, 115, 22, 0.1);
-	color: #c2410c;
-	border: 1px solid rgba(249, 115, 22, 0.2);
+	background: var(--status-warning-bg);
+	color: var(--status-warning-text);
+	border-color: var(--status-warning-border);
 }
 
 .status-pill.status-white {
-	background: rgba(255, 255, 255, 0.8);
-	color: #64748b;
-	border: 1px solid rgba(0, 0, 0, 0.08);
+	background: var(--status-neutral-bg);
+	color: var(--status-neutral-text);
+	border-color: var(--status-neutral-border);
 }
 
 /* Modern Datetime Picker Styling */
@@ -1009,7 +1019,7 @@
 	border-radius: 6px !important;
 	font-family: inherit;
 	font-size: 0.775rem !important;
-	color: #334155;
+	color: var(--text-muted);
 	background-color: #f8fafc !important;
 	transition: all 0.2s ease;
 	cursor: pointer;
@@ -1017,7 +1027,7 @@
 
 .modern-datetime-picker:hover {
 	background-color: #ffffff !important;
-	border-color: #cbd5e1 !important;
+	border-color: #334155 !important;
 }
 
 .modern-datetime-picker:focus {
@@ -1074,7 +1084,7 @@
 	border: 1px solid #e2e8f0;
 	border-radius: 6px;
 	font-size: 0.8rem;
-	color: #334155;
+	color: var(--text-muted);
 	display: flex;
 	align-items: center;
 	cursor: pointer;
@@ -1086,7 +1096,7 @@
 
 .remarks-trigger:hover {
 	background: #ffffff;
-	border-color: #cbd5e1;
+	border-color: #334155;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -1109,7 +1119,7 @@
 }
 
 .remarks-trigger .placeholder {
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-style: italic;
 }
 
@@ -1158,7 +1168,7 @@
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -1220,12 +1230,12 @@
 
 .sig-designation {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .sig-office {
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-style: italic;
 }
 

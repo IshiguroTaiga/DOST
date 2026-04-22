@@ -10,9 +10,9 @@ export const MANUAL_SECTIONS = [
   {
     id: 'intro',
     category: 'basics',
-    title: 'Overview of RDRRMC1 System',
+    title: 'Overview of PROACT',
     roles: ['All'],
-    description: 'The RDRRMC1 Reporting System is designed to streamline disaster response data from the local level to regional consolidation.',
+    description: 'PROACT is designed to streamline disaster response data from the local level to regional consolidation.',
     steps: [
       {
         title: 'Understanding the Dashboard',

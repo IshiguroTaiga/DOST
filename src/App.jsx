@@ -11,7 +11,7 @@ import EventLogs from './pages/EventLogs'
 import ManageEvents from './pages/ManageEvents'
 import Manual from './pages/Manual'
 import { EventProvider } from './contexts/EventContext'
-import { ThemeProvider } from './contexts/ThemeContext'
+
 import MeshBackground from './components/MeshGradient'
 import LoadingSpinner from './components/LoadingSpinner'
 import { supabase } from './lib/supabase'
@@ -98,7 +98,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ThemeProvider>
+
         <MeshBackground />
         <EventProvider user={user}>
         <Routes>
@@ -134,7 +134,7 @@ function App() {
           <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
         </Routes>
       </EventProvider>
-    </ThemeProvider>
+
   </BrowserRouter>
   )
 }

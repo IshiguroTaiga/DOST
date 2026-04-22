@@ -37,7 +37,7 @@
   left: 0.875rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: #334155;
   pointer-events: none;
 }
 
@@ -74,7 +74,7 @@
 
 .help-section-desc {
   font-size: 0.9rem;
-  color: #64748b;
+  color: #334155;
   line-height: 1.5;
 }
 
@@ -139,7 +139,7 @@
 .help-empty-state {
   text-align: center;
   padding: 3rem;
-  color: #64748b;
+  color: #334155;
   font-style: italic;
 }
 

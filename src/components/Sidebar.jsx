@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, List } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import '../styles/components/Sidebar.css'
 
-export default function Sidebar({ user, onLogout }) {
+export default function Sidebar({ user, onLogout, isCollapsed, onToggle }) {
   const accountType = user?.account_type || ''
   const isRegional = accountType === 'Regional' || accountType === 'Regional Admin'
   const isProvincial = accountType === 'Provincial' || accountType === 'Provincial Admin'
@@ -73,32 +73,47 @@ export default function Sidebar({ user, onLogout }) {
 
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        <img src="/logo.png" alt="Logo" className="sidebar-logo-image" />
-        <h1 className="sidebar-title">RDRRMC1 <br /> Reporting System </h1>
+        <div className="sidebar-branding">
+          <img src="/logo.png" alt="Logo" className="sidebar-logo-image" />
+          {!isCollapsed && <h1 className="sidebar-title">PROACT</h1>}
+        </div>
+        <button 
+          className="sidebar-toggle-btn" 
+          onClick={onToggle}
+          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        >
+          {<List size={18} weight="bold" />}
+        </button>
       </div>
 
       <nav className="sidebar-nav">
         <NavLink
           to="/dashboard"
           className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          title={isCollapsed ? 'Dashboard' : ''}
         >
           <SquaresFour size={16} weight="bold" />
-          <span>Dashboard</span>
+          {!isCollapsed && <span>Dashboard</span>}
           {getNavCount('/dashboard') > 0 && (
-            <span className="sidebar-nav-badge">{getNavCount('/dashboard')}</span>
+            <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+              {getNavCount('/dashboard')}
+            </span>
           )}
         </NavLink>
         {(isRegional || isSuperAdmin) && (
           <NavLink
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title={isCollapsed ? 'Manage Events' : ''}
           >
             <CalendarCheck size={16} weight="bold" />
-            <span>Manage Events</span>
+            {!isCollapsed && <span>Manage Events</span>}
             {getNavCount('/manage-events') > 0 && (
-              <span className="sidebar-nav-badge">{getNavCount('/manage-events')}</span>
+              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                {getNavCount('/manage-events')}
+              </span>
             )}
           </NavLink>
         )}
@@ -107,11 +122,14 @@ export default function Sidebar({ user, onLogout }) {
             <NavLink
               to="/consolidated-report"
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              title={isCollapsed ? 'Consolidated Report' : ''}
             >
               <ChartBar size={16} weight="bold" />
-              <span>Consolidated Report</span>
+              {!isCollapsed && <span>Consolidated Report</span>}
               {getNavCount('/consolidated-report') > 0 && (
-                <span className="sidebar-nav-badge">{getNavCount('/consolidated-report')}</span>
+                <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                  {getNavCount('/consolidated-report')}
+                </span>
               )}
             </NavLink>
           </div>
@@ -120,11 +138,14 @@ export default function Sidebar({ user, onLogout }) {
           <NavLink
             to="/add-report"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title={isCollapsed ? 'Add Report' : ''}
           >
             <FilePlus size={16} weight="bold" />
-            <span>Add Report</span>
+            {!isCollapsed && <span>Add Report</span>}
             {getNavCount('/add-report') > 0 && (
-              <span className="sidebar-nav-badge">{getNavCount('/add-report')}</span>
+              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                {getNavCount('/add-report')}
+              </span>
             )}
           </NavLink>
         )}
@@ -132,11 +153,14 @@ export default function Sidebar({ user, onLogout }) {
           <NavLink
             to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title={isCollapsed ? 'Users' : ''}
           >
             <Users size={16} weight="bold" />
-            <span>Users</span>
+            {!isCollapsed && <span>Users</span>}
             {getNavCount('/users') > 0 && (
-              <span className="sidebar-nav-badge">{getNavCount('/users')}</span>
+              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                {getNavCount('/users')}
+              </span>
             )}
           </NavLink>
         )}
@@ -144,28 +168,35 @@ export default function Sidebar({ user, onLogout }) {
 
       <div className="sidebar-footer">
         <div className="sidebar-user-profile">
-          <div className="user-avatar-small">
+          <div className="user-avatar-small" title={isCollapsed ? displayName : ''}>
             <User size={16} />
           </div>
-          <div className="user-info-text">
-            <span className="user-greeting">Hello, {displayName}</span>
-            <span className="user-type-label">
-              {user?.account_type || user?.role || 'User'}
-              {user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : ''}
-            </span>
-          </div>
+          {!isCollapsed && (
+            <div className="user-info-text">
+              <span className="user-greeting">Hello, {displayName}</span>
+              <span className="user-type-label">
+                {user?.account_type || user?.role || 'User'}
+                {user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : ''}
+              </span>
+            </div>
+          )}
         </div>
         <button
           className="sidebar-link"
           onClick={() => setShowSettingsModal(true)}
-          style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+          style={{ border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+          title={isCollapsed ? 'Settings' : ''}
         >
           <Gear size={16} weight="bold" />
-          <span>Settings</span>
+          {!isCollapsed && <span>Settings</span>}
         </button>
-        <button className="sidebar-link logout-btn" onClick={openLogoutModal}>
+        <button 
+          className="sidebar-link logout-btn" 
+          onClick={openLogoutModal}
+          title={isCollapsed ? 'Logout' : ''}
+        >
           <SignOut size={16} weight="bold" />
-          <span>Logout</span>
+          {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
 

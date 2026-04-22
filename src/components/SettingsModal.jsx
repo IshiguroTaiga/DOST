@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info } from '@phosphor-icons/react'
-import { useTheme } from '../contexts/ThemeContext'
+
 import { supabase } from '../lib/supabase'
 import { hashPassword, validatePassword } from '../lib/passwordUtils'
 import LoadingSpinner from './LoadingSpinner'
@@ -10,7 +10,7 @@ import SearchableSelect from './SearchableSelect'
 
 export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
     const navigate = useNavigate()
-    const { theme, setTheme } = useTheme()
+
     const [activeTab, setActiveTab] = useState('security')
 
     // Password Change State
@@ -156,12 +156,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                         >
                             <Shield size={16} /> Security
                         </button>
-                        <button
-                            onClick={() => setActiveTab('appearance')}
-                            className={`modal-sidebar-tab ${activeTab === 'appearance' ? 'active' : ''}`}
-                        >
-                            <Palette size={16} /> Appearance
-                        </button>
+
                         <button
                             onClick={() => {
                                 onClose()
@@ -252,28 +247,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             </div>
                         )}
 
-                        {activeTab === 'appearance' && (
-                            <div className="settings-tab-pane">
-                                <h3 className="settings-section-title">Appearance Settings</h3>
 
-                                <div className="form-group">
-                                    <label className="settings-label">Theme Mode</label>
-                                    <SearchableSelect
-                                        options={[
-                                            { value: 'light', label: 'Light Theme' },
-                                            { value: 'dark', label: 'Dark Theme' },
-                                            { value: 'system', label: 'System Default' }
-                                        ]}
-                                        value={theme}
-                                        onChange={(e) => setTheme(e.target.value)}
-                                        placeholder="Select Theme"
-                                    />
-                                    <p className="settings-section-desc mt-2">
-                                        Dark mode helps reduce eye strain in low-light environments.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
 
                     </div>
                 </div>

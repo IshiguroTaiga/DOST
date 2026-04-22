@@ -63,7 +63,7 @@ async function sendBrevoEmail(
   if (!senderEmail || !senderEmail.includes('@')) {
     throw new Error('BREVO_SENDER_EMAIL not set. Add a verified sender email in Edge Function secrets.')
   }
-  const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Report System'
+  const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'PROACT'
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -74,7 +74,7 @@ async function sendBrevoEmail(
   <p>Your account has been created. Use this temporary password to log in:</p>
   <p style="font-size: 1.1rem; font-family: monospace; background: #f3f4f6; padding: 0.5rem 0.75rem; border-radius: 0.5rem; letter-spacing: 0.05em;">${tempPassword}</p>
   <p><strong>Password rules:</strong> at least 8 characters, one uppercase letter, one lowercase letter, one number. Please change your password after first login.</p>
-  <p>— Report System</p>
+  <p>— PROACT</p>
 </body>
 </html>
 `.trim()
@@ -88,7 +88,7 @@ async function sendBrevoEmail(
     body: JSON.stringify({
       sender: { email: senderEmail, name: senderName },
       to: [{ email: toEmail, name: toName }],
-      subject: 'Your temporary password – Report System',
+      subject: 'Your temporary password – PROACT',
       htmlContent,
     }),
   })

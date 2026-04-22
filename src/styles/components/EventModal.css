@@ -168,7 +168,7 @@
 }
 
 .event-modal-input:hover {
-  border-color: #cbd5e1;
+  border-color: #64748b;
 }
 
 .event-modal-input:focus {
@@ -207,7 +207,7 @@
 }
 
 .theme-option-card:hover .theme-preview {
-  border-color: #cbd5e1;
+  border-color: #64748b;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -265,7 +265,7 @@
 
 .footer-left {
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #475569;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.15s ease;
@@ -296,7 +296,7 @@
 
 .btn-cancel:hover {
   background: #f1f5f9;
-  border-color: #cbd5e1;
+  border-color: #64748b;
 }
 
 .btn-save,
@@ -347,11 +347,11 @@
 .event-modal-empty {
   text-align: center;
   padding: 3rem 1rem;
-  color: #64748b;
+  color: #334155;
 }
 
 .event-modal-empty-icon {
-  color: #cbd5e1;
+  color: #64748b;
   margin-bottom: 1rem;
 }
 
@@ -424,7 +424,7 @@
   height: 44px;
   border-radius: 12px;
   background: #f1f5f9;
-  color: #64748b;
+  color: #334155;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -460,7 +460,7 @@
   align-items: center;
   gap: 0.375rem;
   font-size: 0.8125rem;
-  color: #94a3b8;
+  color: #475569;
   font-weight: 500;
 }
 
@@ -497,7 +497,7 @@
 .event-inline-edit-btn {
   background: transparent;
   border: 1px solid transparent;
-  color: #64748b;
+  color: #334155;
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -530,7 +530,7 @@
 }
 
 .gdacs-item-hover:hover {
-  border-color: #cbd5e1 !important;
+  border-color: #64748b !important;
   background: #f1f5f9 !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
