@@ -419,3 +419,18 @@ CREATE TABLE public.notifications (
   CONSTRAINT notifications_pkey PRIMARY KEY (id),
   CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE public.event_signals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  event_id uuid NOT NULL,
+  province text NOT NULL,
+  city text,
+  barangay text,
+  signal text,
+  assigned_by uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT event_signals_pkey PRIMARY KEY (id),
+  CONSTRAINT event_signals_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE,
+  CONSTRAINT event_signals_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.users(id),
+  CONSTRAINT event_signals_event_province_city_barangay_key UNIQUE (event_id, province, city, barangay)
+);

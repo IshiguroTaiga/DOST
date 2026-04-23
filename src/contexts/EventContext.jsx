@@ -29,6 +29,7 @@ export function EventProvider({ children, user }) {
   const [showSelectEventModal, setShowSelectEventModal] = useState(false)
   const [targetPath, setTargetPath] = useState(null)
   const [onSelectCallback, setOnSelectCallback] = useState(null)
+  const [userSignal, setUserSignal] = useState(null)
   const [loading, setLoading] = useState(true)
   const hasShownInitialToast = useRef(false)
   
@@ -124,24 +125,71 @@ export function EventProvider({ children, user }) {
     }
   }, [])
 
+  const fetchUserSignal = useCallback(async (eventId) => {
+    if (!supabase || !user || !eventId) {
+      setUserSignal(null)
+      return
+    }
+    try {
+      let query = supabase.from('event_signals').select('signal').eq('event_id', eventId)
+      
+      if (user.account_type === 'Provincial Admin') {
+        query = query.eq('province', user.province).is('city', null)
+      } else if (user.account_type === 'LGU Admin' || user.account_type === 'LGU') {
+        query = query.eq('city', user.city).is('barangay', null)
+      } else {
+        setUserSignal(null)
+        return
+      }
+
+      const { data, error } = await query.maybeSingle()
+      if (error) throw error
+      setUserSignal(data?.signal || null)
+    } catch (err) {
+      console.error('Error fetching user signal:', err)
+      setUserSignal(null)
+    }
+  }, [user])
+
   const fetchEvents = useCallback(async () => {
     if (!supabase) return
     try {
       let query = supabase.from('events').select('*')
       
-      if (user && user.account_type === 'LGU') {
-        const { data: deployments } = await supabase
-          .from('event_deployments')
-          .select('event_id')
-          .eq('city', user.city)
-        
-        const deployedEventIds = (deployments || []).map(d => d.event_id)
-        if (deployedEventIds.length === 0) {
-          setEvents([])
-          setLoading(false)
-          return
+      if (user) {
+        if (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.role === 'Super Admin') {
+          // Regional/Super Admins see all events
+        } else if (user.account_type === 'Provincial Admin') {
+          // Provincial Admins see events where their province is assigned a signal
+          const { data: signals } = await supabase
+            .from('event_signals')
+            .select('event_id')
+            .eq('province', user.province)
+            .is('city', null)
+          
+          const assignedEventIds = (signals || []).map(s => s.event_id)
+          if (assignedEventIds.length === 0) {
+            setEvents([])
+            setLoading(false)
+            return
+          }
+          query = query.in('id', assignedEventIds)
+        } else if (user.account_type === 'LGU Admin' || user.account_type === 'LGU') {
+          // LGU Admins see events where their city is assigned a signal
+          const { data: signals } = await supabase
+            .from('event_signals')
+            .select('event_id')
+            .eq('city', user.city)
+            .is('barangay', null)
+          
+          const assignedEventIds = (signals || []).map(s => s.event_id)
+          if (assignedEventIds.length === 0) {
+            setEvents([])
+            setLoading(false)
+            return
+          }
+          query = query.in('id', assignedEventIds)
         }
-        query = query.in('id', deployedEventIds)
       }
       // All other user types see all events (no is_deployed filter)
 
@@ -291,6 +339,14 @@ export function EventProvider({ children, user }) {
     }
   }, [user, notifications])
 
+  // 4.5. Data Refresh Effect
+  useEffect(() => {
+    fetchEvents()
+    fetchNotifications()
+    fetchPendingUsersCount()
+    if (currentEventId) fetchUserSignal(currentEventId)
+  }, [fetchEvents, fetchNotifications, fetchPendingUsersCount, currentEventId, fetchUserSignal])
+
   // 5. Computed State
   const defaultEvent = {
     id: 'default-good-day',
@@ -304,12 +360,6 @@ export function EventProvider({ children, user }) {
   const currentEvent = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
 
   // 6. Effects
-  useEffect(() => {
-    // Initial data fetch
-    fetchEvents()
-    fetchNotifications()
-    fetchPendingUsersCount()
-  }, [fetchEvents, fetchNotifications, fetchPendingUsersCount])
 
   // Stable Subscriptions (User-based)
   useEffect(() => {
@@ -695,6 +745,115 @@ export function EventProvider({ children, user }) {
     }
   }, [])
 
+  const fetchEventSignals = useCallback(async (eventId) => {
+    if (!supabase || !eventId) return []
+    try {
+      const { data, error } = await supabase
+        .from('event_signals')
+        .select('*')
+        .eq('event_id', eventId)
+      if (error) throw error
+      return data || []
+    } catch (err) {
+      console.error('Error fetching event signals:', err)
+      return []
+    }
+  }, [])
+
+  const assignSignal = useCallback(async (eventId, province, city, barangay, signal) => {
+    if (!supabase || !eventId || !user) return false
+    try {
+      let locationName = barangay || city || province
+      
+      if (signal === null) {
+        // DELETE signal
+        console.log(`Clearing signal for:`, { province, city, barangay })
+        let query = supabase.from('event_signals').delete().eq('event_id', eventId).eq('province', province)
+        
+        if (city) query = query.eq('city', city)
+        else query = query.is('city', null)
+        
+        if (barangay) query = query.eq('barangay', barangay)
+        else query = query.is('barangay', null)
+
+        const { error } = await query
+        if (error) throw error
+        showToast('Signal Cleared', `Successfully cleared signal for ${locationName}`, 'success')
+        return true
+      }
+
+      console.log(`Assigning Signal ${signal} to:`, { province, city, barangay })
+      
+      const payload = {
+        event_id: eventId,
+        province,
+        city: city || null,
+        barangay: barangay || null,
+        signal,
+        assigned_by: user.id
+      }
+
+      // Upsert the signal
+      const { data, error } = await supabase
+        .from('event_signals')
+        .upsert(payload, { onConflict: 'event_id, province, city, barangay' })
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Supabase Error in assignSignal:', error)
+        throw error
+      }
+
+      // Notification Logic
+      let targetUserType = ''
+      let targetFilter = {}
+
+      if (!city && !barangay) {
+        // Region -> Province
+        targetUserType = 'Provincial Admin'
+        targetFilter = { province }
+        locationName = province
+      } else if (city && !barangay) {
+        // Province -> LGU
+        targetUserType = 'LGU Admin'
+        targetFilter = { city }
+        locationName = city
+      } else if (barangay) {
+        // LGU -> Barangay
+        targetUserType = 'LGU' 
+        targetFilter = { city }
+        locationName = barangay
+      }
+
+      // Fetch users to notify
+      let userQuery = supabase.from('users').select('id').eq('account_type', targetUserType)
+      if (targetFilter.province) userQuery = userQuery.eq('province', targetFilter.province)
+      if (targetFilter.city) userQuery = userQuery.eq('city', targetFilter.city)
+
+      const { data: usersToNotify } = await userQuery
+      
+      if (usersToNotify && usersToNotify.length > 0) {
+        const event = events.find(e => e.id === eventId)
+        const notifications = usersToNotify.map(u => ({
+          user_id: u.id,
+          type: 'event_signal',
+          title: `Signal ${signal} Assigned`,
+          message: `Event "${event?.name}": Signal ${signal} has been assigned to ${locationName}.`,
+          data: { event_id: eventId, signal, province, city, barangay }
+        }))
+        await supabase.from('notifications').insert(notifications)
+      }
+
+      showToast('Signal Assigned', `Successfully assigned Signal ${signal} to ${locationName}`, 'success')
+      return true
+    } catch (err) {
+      console.error('Caught Error in assignSignal:', err)
+      showToast('Error', 'Failed to assign signal.', 'danger')
+      return false
+    }
+  }, [user, events, showToast])
+
   const deployEvent = useCallback(async (eventId) => {
     if (!supabase || !user) return false
     try {
@@ -1013,12 +1172,13 @@ export function EventProvider({ children, user }) {
     unreadCount,
     markNotificationAsRead,
     markSitRepNotificationsAsRead,
-    deployEvent,
-    deployToLgu,
     fetchEvents,
     fetchNotifications,
     pendingUsersCount,
     fetchPendingUsersCount,
+    fetchEventSignals,
+    assignSignal,
+    userSignal,
     toast,
     showToast,
     closeToast

@@ -102,7 +102,7 @@ export default function Sidebar({ user, onLogout, isCollapsed, onToggle }) {
             </span>
           )}
         </NavLink>
-        {(isRegional || isSuperAdmin) && (
+        {(isAdmin || isRegional || isProvincial) && (
           <NavLink
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}

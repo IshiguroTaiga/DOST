@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
-import {
-  Plus, Calendar, Pencil, Trash, PaperPlaneRight, Warning, CheckCircle, X, Info, CaretDown, CaretUp, ArrowsClockwise, Globe, ArrowRight, Hurricane, Waves, Waveform, CloudWarning, Drop, WarningCircle } from '@phosphor-icons/react'
+import { Plus, Calendar, Pencil, Trash, PaperPlaneRight, Warning, CheckCircle, X, Info, CaretDown, CaretUp, ArrowsClockwise, Globe, ArrowRight, Hurricane, Waves, Waveform, CloudWarning, Drop, WarningCircle, Broadcast } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import { fetchGDACSEvents, fetchGDACSEventDetails, gdacsTypeLabel } from '../services/gdacsService'
 import LoadingSpinner from '../components/LoadingSpinner'
-import { PROVINCE_NAMES } from '../data/provinces'
+import { PROVINCE_NAMES, PROVINCES_WITH_CITIES, getCitiesForProvince } from '../data/provinces'
+import regionData from '../data/region1_complete.json'
 import SearchInput from '../components/SearchInput'
 import ModernDateTimePicker from '../components/ModernDateTimePicker'
 import '../styles/pages/PageStyles.css'
@@ -77,7 +77,7 @@ const ALERT_LEVELS = {
 
 export default function ManageEvents() {
   const { user } = useOutletContext()
-  const { events, addEvent, updateEvent, deleteEvent, deployEvent, loading } = useEvents()
+  const { events, addEvent, updateEvent, deleteEvent, fetchEventSignals, assignSignal, loading } = useEvents()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [pageSize, setPageSize] = useState(10)
@@ -115,6 +115,11 @@ export default function ManageEvents() {
     depth: '',
     affectedBarangays: '',
   })
+
+  // Hierarchical Signals State
+  const [eventSignals, setEventSignals] = useState([])
+  const [loadingSignals, setLoadingSignals] = useState(false)
+  const [activeSignalTab, setActiveSignalTab] = useState('provinces') // provinces, lgus, barangays
 
   // GDACS Integration State
   const [gdacsEvents, setGdacsEvents] = useState([])
@@ -216,6 +221,7 @@ export default function ManageEvents() {
     waveHeight: '', tsunamiAlert: '',
     floodLevel: '', rainfall: '',
     gdacsId: '', windspeed: '', depth: '', affectedBarangays: '',
+    pendingSignals: {},
   })
 
   const openAddModal = () => {
@@ -225,9 +231,21 @@ export default function ManageEvents() {
     setShowModal(true)
   }
 
-  const openEditModal = (event) => {
+  const openEditModal = async (event) => {
     setEditingId(event.id)
-    setGdacsDetails(null) // Edit doesn't show the GDACS preview for now as it's not stored in the DB
+    setGdacsDetails(null)
+    setLoadingSignals(true)
+    
+    // Fetch signals for this event
+    const signals = await fetchEventSignals(event.id)
+    setEventSignals(signals)
+    setLoadingSignals(false)
+
+    // Determine initial signal tab based on role
+    if (user.account_type === 'Provincial Admin') setActiveSignalTab('lgus')
+    else if (user.account_type === 'LGU Admin') setActiveSignalTab('barangays')
+    else setActiveSignalTab('provinces')
+
     setForm({
       name: event.name,
       color: event.color,
@@ -289,6 +307,13 @@ export default function ManageEvents() {
     } else {
       const newEvent = await addEvent(payload)
       result = newEvent?.id
+      
+      // Batch assign pending signals
+      if (result && form.pendingSignals) {
+        for (const [prov, sig] of Object.entries(form.pendingSignals)) {
+          await assignSignal(result, prov, '', '', sig)
+        }
+      }
     }
     
     if (shouldClose) setShowModal(false)
@@ -296,12 +321,55 @@ export default function ManageEvents() {
   }
 
   const handleToggleProvince = (prov) => {
+    if (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') return
     setForm(prev => ({
       ...prev,
       affectedProvinces: prev.affectedProvinces.includes(prov)
         ? prev.affectedProvinces.filter(p => p !== prov)
         : [...prev.affectedProvinces, prov]
     }))
+  }
+
+  const handleAssignSignal = async (location, signal) => {
+    let province = ''
+    let city = ''
+    let barangay = ''
+
+    if (activeSignalTab === 'provinces') {
+      province = location
+    } else if (activeSignalTab === 'lgus') {
+      province = user.province
+      city = location
+    } else if (activeSignalTab === 'barangays') {
+      province = user.province
+      city = user.city
+      barangay = location
+    }
+
+    if (editingId) {
+      const success = await assignSignal(editingId, province, city, barangay, signal)
+      if (success) {
+        // Refresh local signals
+        const updatedSignals = await fetchEventSignals(editingId)
+        setEventSignals(updatedSignals)
+      }
+    } else {
+      // Creation mode (Regional/Super only)
+      setForm(f => {
+        const newSignals = { ...(f.pendingSignals || {}) }
+        if (signal === null) delete newSignals[location]
+        else newSignals[location] = signal
+        return { ...f, pendingSignals: newSignals }
+      })
+    }
+  }
+
+  const SIGNAL_COLORS = {
+    '1': { bg: '#fef9c3', text: '#854d0e', border: '#fde047' }, // Yellow
+    '2': { bg: '#ffedd5', text: '#9a3412', border: '#fdba74' }, // Orange
+    '3': { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' }, // Red
+    '4': { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' }, // Pink
+    '5': { bg: '#f3e8ff', text: '#6b21a8', border: '#d8b4fe' }, // Purple
   }
 
   const confirmDelete = async () => {
@@ -474,15 +542,15 @@ export default function ManageEvents() {
               </div>
               <div style={{ marginLeft: '12px', flex: 1 }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>
-                  {editingId ? 'Edit Event' : 'Add Event'}
+                  {editingId ? (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' ? 'Edit Event' : 'Event Details') : 'Add Event'}
                 </h2>
                 <p style={{ fontSize: '0.875rem', color: '#64748b', margin: '2px 0 0' }}>
-                  Define the details and timing for this event context.
+                  {editingId ? 'Manage hierarchy and signals for this event.' : 'Define the details and timing for this event context.'}
                 </p>
               </div>
 
               {/* GDACS IMPORT BUTTON */}
-              {!editingId && (
+              {!editingId && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
                 <button
                   type="button"
                   onClick={handleFetchGdacs}
@@ -678,8 +746,8 @@ export default function ManageEvents() {
                 </div>
               )}
 
-              {/* EVENT CATEGORY (Hidden for GDACS events) */}
-              {!form.gdacsId && (
+              {/* EVENT CATEGORY (Hidden for GDACS events or Non-Regional Admins when editing) */}
+              {(!editingId || user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && !form.gdacsId && (
                 <div style={{ marginBottom: '1.25rem' }}>
                   <label style={LABEL_STYLE}>Event Category</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
@@ -689,6 +757,7 @@ export default function ManageEvents() {
                         <button
                           key={value}
                           type="button"
+                          disabled={editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin')}
                           onClick={() => setForm(f => ({ ...f, eventType: value }))}
                           style={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -723,6 +792,7 @@ export default function ManageEvents() {
                 </label>
                 <input
                   type="text"
+                  readOnly={editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin')}
                   placeholder={
                     form.eventType === 'typhoon' ? 'Select or type typhoon name.' :
                     form.eventType === 'weather' ? 'e.g. Northeast Monsoon' :
@@ -730,7 +800,7 @@ export default function ManageEvents() {
                   }
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  style={{ ...INPUT_STYLE, background: '#fafafa', fontSize: '0.9375rem', padding: '12px 14px' }}
+                  style={{ ...INPUT_STYLE, background: editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') ? '#f1f5f9' : '#fafafa', fontSize: '0.9375rem', padding: '12px 14px' }}
                 />
               </div>
 
@@ -797,16 +867,17 @@ export default function ManageEvents() {
                               <button
                                 key={i}
                                 type="button"
+                                disabled={editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin')}
                                 onClick={() => setForm(f => ({ ...f, intensity: i }))}
                                 style={{
                                   padding: '8px',
                                   borderRadius: '8px',
                                   border: `1.5px solid ${isSelected ? '#6366f1' : '#e2e8f0'}`,
-                                  background: isSelected ? 'rgba(99,102,241,0.06)' : 'white',
+                                  background: isSelected ? 'rgba(99,102,241,0.06)' : (editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') ? '#f8fafc' : 'white'),
                                   color: isSelected ? '#6366f1' : '#475569',
                                   fontWeight: isSelected ? 700 : 600,
                                   fontSize: '0.75rem',
-                                  cursor: 'pointer',
+                                  cursor: editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') ? 'default' : 'pointer',
                                   transition: 'all 0.15s'
                                 }}
                               >
@@ -974,53 +1045,295 @@ export default function ManageEvents() {
                 </div>
               )}
 
-              {/* AFFECTED PROVINCES */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <label style={LABEL_STYLE}>Affected Provinces</label>
-                  <button type="button" onClick={() => setForm(f => ({ ...f, affectedProvinces: f.affectedProvinces.length === PROVINCE_NAMES.length ? [] : [...PROVINCE_NAMES] }))} style={{ fontSize: '0.75rem', color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>
-                    {form.affectedProvinces.length === PROVINCE_NAMES.length ? 'Deselect All' : 'Select All'}
-                  </button>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {PROVINCE_NAMES.map(p => (
-                    <button key={p} type="button" onClick={() => handleToggleProvince(p)} style={{ padding: '6px 14px', borderRadius: '20px', border: '1.5px solid', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', background: form.affectedProvinces.includes(p) ? '#6366f1' : 'white', color: form.affectedProvinces.includes(p) ? 'white' : '#64748b', borderColor: form.affectedProvinces.includes(p) ? '#6366f1' : '#e2e8f0', transition: 'all 0.15s' }}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* ══════════════ PROVINCE SIGNAL ASSIGNMENTS (Replacement for chips) ══════════════ */}
+              {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || !editingId) && (
+                <div style={{ marginBottom: '1.5rem', borderTop: '2px solid #f1f5f9', paddingTop: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Broadcast size={18} weight="duotone" />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Province Signal Assignments</h3>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0' }}>Assign initial warning signals to affected provinces.</p>
+                    </div>
+                  </div>
 
-              {/* AFFECTED BARANGAYS (Manual Entry) */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={LABEL_STYLE}>Affected Barangays (Community Impact)</label>
-                <textarea
-                  placeholder="List down affected barangays or specific areas (e.g., Brgy. San Juan, Zone 4)..."
-                  value={form.affectedBarangays}
-                  onChange={e => setForm(f => ({ ...f, affectedBarangays: e.target.value }))}
-                  style={{ 
-                    ...INPUT_STYLE, 
-                    height: '80px', 
-                    resize: 'none', 
-                    fontSize: '0.8125rem',
-                    lineHeight: '1.5',
-                    background: '#fafafa'
-                  }}
-                />
-                <p style={{ margin: '6px 0 0', fontSize: '0.6875rem', color: '#94a3b8', fontWeight: 500 }}>
-                  Detail specific communities for localized SITREP tracking.
-                </p>
-              </div>
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
+                    <div style={{ padding: '12px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Province Level</span>
+                    </div>
+                    
+                    <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                      {PROVINCE_NAMES.map((prov, idx) => {
+                        // For editing, use eventSignals. For creation, use local state in form.
+                        const currentSignal = editingId 
+                          ? eventSignals.find(s => s.province === prov && !s.city)?.signal 
+                          : form.pendingSignals?.[prov];
 
+                        return (
+                          <div key={prov} style={{ 
+                            padding: '12px 16px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between', 
+                            background: 'white',
+                            margin: '6px 10px',
+                            borderRadius: '10px',
+                            border: '1px solid #f1f5f9',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{ 
+                                width: '36px', height: '36px', borderRadius: '10px', 
+                                background: currentSignal ? SIGNAL_COLORS[currentSignal].bg : '#f8fafc',
+                                color: currentSignal ? SIGNAL_COLORS[currentSignal].text : '#cbd5e1',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '1.1rem', fontWeight: 900, 
+                                border: currentSignal ? `2px solid ${SIGNAL_COLORS[currentSignal].border}` : '2px dashed #e2e8f0'
+                              }}>
+                                {currentSignal || '?'}
+                              </div>
+                              <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#475569' }}>{prov}</span>
+                            </div>
 
-              {/* EVENT DURATION */}
-              <div style={{ marginBottom: '0.5rem' }}>
-                <label style={LABEL_STYLE}>Event Duration</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <ModernDateTimePicker label="Event Start" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
-                  <ModernDateTimePicker label="Event End (Optional)" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              {[1, 2, 3, 4, 5].map(s => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={async () => {
+                                    if (editingId) {
+                                      await handleAssignSignal(prov, String(s))
+                                    } else {
+                                      setForm(f => ({
+                                        ...f,
+                                        pendingSignals: { ...f.pendingSignals, [prov]: String(s) }
+                                      }))
+                                    }
+                                  }}
+                                  style={{
+                                    width: '30px', height: '30px', borderRadius: '6px',
+                                    background: String(s) === currentSignal ? SIGNAL_COLORS[s].bg : 'white',
+                                    color: String(s) === currentSignal ? SIGNAL_COLORS[s].text : '#94a3b8',
+                                    border: `1.5px solid ${String(s) === currentSignal ? SIGNAL_COLORS[s].border : '#f1f5f9'}`,
+                                    fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                  }}
+                                >
+                                  {s}
+                                </button>
+                              ))}
+                              <button 
+                                type="button"
+                                onClick={async () => {
+                                  if (editingId) {
+                                    await handleAssignSignal(prov, null)
+                                  } else {
+                                    setForm(f => {
+                                      const newSignals = { ...f.pendingSignals }
+                                      delete newSignals[prov]
+                                      return { ...f, pendingSignals: newSignals }
+                                    })
+                                  }
+                                }}
+                                style={{ 
+                                  width: '30px', height: '30px', borderRadius: '6px', background: 'white', border: '1.5px solid #fee2e2', color: '#ef4444', fontSize: '0.875rem', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  opacity: currentSignal ? 1 : 0.3,
+                                  pointerEvents: currentSignal ? 'auto' : 'none'
+                                }}
+                              >
+                                <X size={16} weight="bold" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* HIERARCHICAL SIGNALS MANAGEMENT (Tabs for LGU/Barangay - Only in Edit Mode or for Sub-Admins) */}
+              {editingId && activeSignalTab !== 'provinces' && (
+                <div style={{ borderTop: '2px solid #e2e8f0', paddingTop: '1.5rem', marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Broadcast size={20} weight="duotone" />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Public Warning Signals</h3>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0' }}>Assign signals to lower-level areas.</p>
+                    </div>
+                  </div>
+
+                  {/* Tabs for Levels */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem' }}>
+                    {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
+                      <button 
+                        onClick={() => setActiveSignalTab('provinces')}
+                        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer', border: 'none', background: activeSignalTab === 'provinces' ? '#6366f1' : '#f1f5f9', color: activeSignalTab === 'provinces' ? 'white' : '#64748b', transition: 'all 0.2s' }}
+                      >Provinces</button>
+                    )}
+                    {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.account_type === 'Provincial Admin') && (
+                      <button 
+                        onClick={() => setActiveSignalTab('lgus')}
+                        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer', border: 'none', background: activeSignalTab === 'lgus' ? '#6366f1' : '#f1f5f9', color: activeSignalTab === 'lgus' ? 'white' : '#64748b', transition: 'all 0.2s' }}
+                      >LGUs</button>
+                    )}
+                    <button 
+                      onClick={() => setActiveSignalTab('barangays')}
+                      style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer', border: 'none', background: activeSignalTab === 'barangays' ? '#6366f1' : '#f1f5f9', color: activeSignalTab === 'barangays' ? 'white' : '#64748b', transition: 'all 0.2s' }}
+                    >Barangays</button>
+                  </div>
+
+                  {/* Signal List for LGUs/Barangays */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
+                    <div style={{ padding: '12px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>
+                        {activeSignalTab === 'provinces' ? 'Province Level' : activeSignalTab === 'lgus' ? `LGU Assignments (${user.province || 'All'})` : `Barangay Assignments (${user.city || 'All'})`}
+                      </span>
+                      
+                      {/* Bulk Assignment Tool */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Assign to All:</span>
+                        <div style={{ display: 'flex', gap: '3px', background: 'white', padding: '3px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <button
+                              key={`bulk-${s}`}
+                              type="button"
+                              onClick={async () => {
+                                const locations = activeSignalTab === 'provinces' ? PROVINCE_NAMES :
+                                                 activeSignalTab === 'lgus' ? (user.province ? getCitiesForProvince(user.province) : []) :
+                                                 (user.province && user.city ? (regionData.provinces.find(p => p.name === user.province)?.cities?.find(c => c.name === user.city)?.barangays || regionData.provinces.find(p => p.name === user.province)?.municipalities?.find(c => c.name === user.city)?.barangays || []) : []);
+                                
+                                for (const loc of locations) {
+                                  await handleAssignSignal(loc, String(s))
+                                }
+                              }}
+                              style={{
+                                width: '24px', height: '24px', borderRadius: '5px',
+                                background: 'white', color: SIGNAL_COLORS[s].text, border: `1px solid ${SIGNAL_COLORS[s].border}`,
+                                fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.background = SIGNAL_COLORS[s].bg}
+                              onMouseOut={e => e.currentTarget.style.background = 'white'}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                          <button 
+                            type="button"
+                            onClick={async () => {
+                              const locations = activeSignalTab === 'provinces' ? PROVINCE_NAMES :
+                                               activeSignalTab === 'lgus' ? (user.province ? getCitiesForProvince(user.province) : []) :
+                                               (user.province && user.city ? (regionData.provinces.find(p => p.name === user.province)?.cities?.find(c => c.name === user.city)?.barangays || regionData.provinces.find(p => p.name === user.province)?.municipalities?.find(c => c.name === user.city)?.barangays || []) : []);
+                              
+                              for (const loc of locations) {
+                                await handleAssignSignal(loc, null)
+                              }
+                            }}
+                            style={{ 
+                              width: '24px', height: '24px', borderRadius: '5px', background: 'white', border: '1px solid #fee2e2', color: '#ef4444', 
+                              fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                          ><X size={12} weight="bold" /></button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                      {loadingSignals ? (
+                        <div style={{ padding: '40px', textAlign: 'center' }}><LoadingSpinner size={24} /></div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          {(
+                            activeSignalTab === 'lgus' ? (user.province ? getCitiesForProvince(user.province) : []) :
+                            (user.province && user.city ? (regionData.provinces.find(p => p.name === user.province)?.cities?.find(c => c.name === user.city)?.barangays || regionData.provinces.find(p => p.name === user.province)?.municipalities?.find(c => c.name === user.city)?.barangays || []) : [])
+                          ).map((loc, idx) => {
+                            const signalData = eventSignals.find(s => {
+                              if (activeSignalTab === 'lgus') return s.city === loc && !s.barangay
+                              if (activeSignalTab === 'barangays') return s.barangay === loc
+                              return false
+                            })
+                            const currentSignal = signalData?.signal
+
+                            return (
+                              <div key={loc} style={{ 
+                                padding: '16px 20px', 
+                                borderBottom: '1px solid #f1f5f9', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                background: 'white',
+                                margin: '8px 12px',
+                                borderRadius: '12px',
+                                border: '1px solid #f1f5f9',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                  <div style={{ 
+                                    width: '42px', height: '42px', borderRadius: '12px', 
+                                    background: currentSignal ? SIGNAL_COLORS[currentSignal].bg : '#f8fafc',
+                                    color: currentSignal ? SIGNAL_COLORS[currentSignal].text : '#cbd5e1',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '1.25rem', fontWeight: 900, 
+                                    border: currentSignal ? `2px solid ${SIGNAL_COLORS[currentSignal].border}` : '2px dashed #e2e8f0',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                  }}>
+                                    {currentSignal || '?'}
+                                  </div>
+                                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#334155', letterSpacing: '-0.01em' }}>{loc}</span>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  {[1, 2, 3, 4, 5].map(s => (
+                                    <button
+                                      key={s}
+                                      type="button"
+                                      onClick={() => handleAssignSignal(loc, String(s))}
+                                      style={{
+                                        width: '34px', height: '34px', borderRadius: '8px',
+                                        background: String(s) === currentSignal ? SIGNAL_COLORS[s].bg : 'white',
+                                        color: String(s) === currentSignal ? SIGNAL_COLORS[s].text : '#94a3b8',
+                                        border: `1.5px solid ${String(s) === currentSignal ? SIGNAL_COLORS[s].border : '#f1f5f9'}`,
+                                        fontSize: '0.875rem', fontWeight: 800, cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                      }}
+                                    >
+                                      {s}
+                                    </button>
+                                  ))}
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleAssignSignal(loc, null)}
+                                    style={{ 
+                                      width: '34px', height: '34px', borderRadius: '8px', 
+                                      background: 'white', 
+                                      border: '1.5px solid #fee2e2', 
+                                      color: '#ef4444', 
+                                      fontSize: '0.875rem', 
+                                      cursor: 'pointer',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      transition: 'all 0.2s ease',
+                                      opacity: currentSignal ? 1 : 0.4,
+                                      pointerEvents: currentSignal ? 'auto' : 'none'
+                                    }}
+                                  >
+                                    <X size={18} weight="bold" />
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>{/* end scrollable body */}
 
@@ -1040,32 +1353,24 @@ export default function ManageEvents() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="modal-btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
                 
-                {/* Save Changes Button (Always updates the DB draft) */}
-                <button 
-                  className="modal-btn-primary" 
-                  onClick={handleSubmit} 
-                  disabled={!form.name.trim()}
-                  style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', boxShadow: 'none' }}
-                >
-                  {editingId ? 'Save Draft' : 'Create Draft'}
-                </button>
-
-                {/* Deploy Button (Updates DB AND saves snapshot to Dashboard) */}
-                <button 
-                  className="modal-btn-primary" 
-                  onClick={async () => {
-                    // First save the current form data without closing modal yet
-                    const targetId = await handleSubmit(false);
-                    // Then deploy it using the returned ID
-                    if (targetId) await deployEvent(targetId);
-                    setShowModal(false);
-                  }} 
-                  disabled={!form.name.trim()}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <PaperPlaneRight size={16} />
-                  {events.find(e => e.id === editingId)?.isDeployed ? 'Update & Re-deploy' : 'Save & Deploy'}
-                </button>
+                {/* Create/Save Button (Enabled for Regional/Super Admin) */}
+                {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || !editingId) && (
+                  <button 
+                    className="modal-btn-primary" 
+                    onClick={handleSubmit} 
+                    disabled={!form.name.trim()}
+                    style={{ background: '#6366f1', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}
+                  >
+                    {editingId ? 'Save Changes' : 'Create Event'}
+                  </button>
+                )}
+                
+                {/* Close Button for Non-Admins */}
+                {editingId && (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') && (
+                  <button className="modal-btn-primary" onClick={() => setShowModal(false)}>
+                    Done
+                  </button>
+                )}
               </div>
             </div>
           </div>

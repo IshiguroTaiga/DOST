@@ -165,7 +165,15 @@ const CustomizedAxisTick = (props) => {
 
 export default function Dashboard() {
   const { user } = useOutletContext() ?? {}
-  const { currentEvent: rawCurrentEvent, currentEventId, events, loading: eventsLoading, addEvent, updateEvent, deleteEvent, setCurrentEventId, switchEvent } = useEvents()
+  const { currentEvent: rawCurrentEvent, currentEventId, events, loading: eventsLoading, addEvent, updateEvent, deleteEvent, setCurrentEventId, switchEvent, userSignal } = useEvents()
+
+  const SIGNAL_COLORS = {
+    '1': { bg: '#fef9c3', text: '#854d0e', border: '#fde047' }, // Yellow
+    '2': { bg: '#ffedd5', text: '#9a3412', border: '#fdba74' }, // Orange
+    '3': { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' }, // Red
+    '4': { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' }, // Pink
+    '5': { bg: '#f3e8ff', text: '#6b21a8', border: '#d8b4fe' }, // Purple
+  }
 
   const currentEvent = useMemo(() => {
     if (rawCurrentEvent?.isDeployed && rawCurrentEvent?.deployedSnapshot) {
@@ -1722,16 +1730,25 @@ CHRONOLOGY OF EVENTS`;
         </header>
 
         {/* Hero Section */}
-        {console.log('Current Event for Meta Bar:', currentEvent)}
         <section className="dash-hero">
-          <div className={`dash-hero-icon alert-status-${currentEvent?.alertStatus || 'white'}`}>
-            <Bell size={32} weight="bold" />
+          <div className={`dash-hero-icon alert-status-${currentEvent?.alertStatus || 'white'}`} style={{
+            background: userSignal === '1' ? '#fde047' : 
+                        userSignal === '2' ? '#fdba74' : 
+                        userSignal === '3' ? '#fca5a5' : 
+                        userSignal === '4' ? '#f9a8d4' : 
+                        userSignal === '5' ? '#d8b4fe' : undefined
+          }}>
+            {userSignal ? <span style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>{userSignal}</span> : <Bell size={32} weight="bold" />}
           </div>
           <div className="dash-hero-title-wrap">
             <h2 className="dash-hero-amount">
               {currentEvent ? currentEvent.name : 'Clear Skies (No Active Event)'}
             </h2>
-
+            {userSignal && (
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
+                Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> assigned to your area
+              </p>
+            )}
           </div>
 
           <div className={`dash-hero-meta alert-status-${currentEvent?.alertStatus || 'white'}`}>
@@ -1739,20 +1756,20 @@ CHRONOLOGY OF EVENTS`;
               <div className="meta-icon"><Warning size={18} /></div>
               <div className="meta-content">
                 <span className="meta-label">Type</span>
-                <span className="meta-value">{currentEvent?.eventType || 'Operational'}</span>
+                <span className="meta-value" style={{ textTransform: 'capitalize' }}>{currentEvent?.eventType || 'Operational'}</span>
               </div>
             </div>
-            {currentEvent?.id !== 'default-good-day' && (
-              <div className="meta-item">
-                <div className="meta-icon"><Info size={18} /></div>
-                <div className="meta-content">
-                  <span className="meta-label">Alert / Signal</span>
-                  <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
-                    {currentEvent?.alertLevel || 'Not Set'}
-                  </span>
-                </div>
+            
+            <div className="meta-item">
+              <div className="meta-icon"><Info size={18} /></div>
+              <div className="meta-content">
+                <span className="meta-label">{userSignal ? 'My Signal' : 'Alert Level'}</span>
+                <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
+                  {userSignal ? `Public Warning Signal ${userSignal}` : (currentEvent?.alertLevel || 'No Alert')}
+                </span>
               </div>
-            )}
+            </div>
+
             <div className="meta-item">
               <div className="meta-icon"><Calendar size={18} /></div>
               <div className="meta-content">
@@ -1766,7 +1783,7 @@ CHRONOLOGY OF EVENTS`;
               <div className="meta-icon"><Check size={18} /></div>
               <div className="meta-content">
                 <span className="meta-label">Status</span>
-                <span className="meta-value">Active</span>
+                <span className="meta-value">Active Monitoring</span>
               </div>
             </div>
           </div>
