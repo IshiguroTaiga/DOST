@@ -94,7 +94,12 @@ export default function ForApproval() {
     try {
       const { error } = await supabase
         .from('situational_reports')
-        .update({ status: 'Approved', rejection_remarks: null })
+        .update({ 
+          status: 'Approved', 
+          rejection_remarks: null,
+          approved_pdf_url: reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url,
+          pending_pdf_url: null
+        })
         .eq('id', reviewSitRep.id)
       
       if (error) throw error
@@ -145,7 +150,11 @@ export default function ForApproval() {
     try {
       const { error } = await supabase
         .from('situational_reports')
-        .update({ status: 'Draft', rejection_remarks: rejectRemarks.trim() })
+        .update({ 
+          status: 'Draft', 
+          rejection_remarks: rejectRemarks.trim(),
+          pending_pdf_url: null 
+        })
         .eq('id', reviewSitRep.id)
       
       if (error) throw error
@@ -346,10 +355,10 @@ export default function ForApproval() {
               </div>
             </div>
 
-            {reviewSitRep.approved_pdf_url ? (
+            {reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url ? (
               <div style={{ flex: 1, background: '#e2e8f0', overflow: 'hidden', minHeight: 0, borderRadius: '8px', border: '1px solid #cbd5e1' }}>
                 <iframe
-                  src={`${reviewSitRep.approved_pdf_url}#toolbar=0`}
+                  src={`${reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url}#toolbar=0`}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   title="PDF Review"
                 />

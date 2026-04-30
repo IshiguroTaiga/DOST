@@ -1092,7 +1092,7 @@ export default function AddReport() {
 
       const { error: updateError } = await supabase
         .from('situational_reports')
-        .update({ status: 'Pending Approval', approved_pdf_url: pdfUrl })
+        .update({ status: 'Pending Approval', pending_pdf_url: pdfUrl })
         .eq('id', currentSituationalReport.id)
       if (updateError) throw updateError
 
@@ -1178,7 +1178,12 @@ export default function AddReport() {
       // Try updating with rejection_remarks reset
       const { error } = await supabase
         .from('situational_reports')
-        .update({ status: 'Approved', rejection_remarks: null })
+        .update({ 
+          status: 'Approved', 
+          rejection_remarks: null,
+          approved_pdf_url: reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url,
+          pending_pdf_url: null
+        })
         .eq('id', reviewSitRep.id)
       
       if (error) {
@@ -1186,7 +1191,11 @@ export default function AddReport() {
         if (error.message?.includes('rejection_remarks') || error.code === '42703' || error.message?.includes('schema cache')) {
           const { error: retryError } = await supabase
             .from('situational_reports')
-            .update({ status: 'Approved' })
+            .update({ 
+              status: 'Approved',
+              approved_pdf_url: reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url,
+              pending_pdf_url: null
+            })
             .eq('id', reviewSitRep.id)
           if (retryError) throw retryError
         } else {

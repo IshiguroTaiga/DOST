@@ -1492,7 +1492,9 @@ export default function ConsolidatedReport() {
     if (!selectedEvent) return []
     let list = sitRepVersions || []
     
-    if (isRegional || isProvincialApprover || (!isSuperAdmin && !isProvincial)) {
+    if (isProvincialApprover) {
+      list = list.filter(r => ['approved', 'pending approval'].includes((r.status || 'Draft').toLowerCase()))
+    } else if (isRegional || (!isSuperAdmin && !isProvincial)) {
       list = list.filter(r => (r.status || 'Draft').toLowerCase() === 'approved')
     }
 
@@ -2108,34 +2110,36 @@ export default function ConsolidatedReport() {
                           {(event.alertStatus || 'white').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', width: '250px' }}>
-                        <Button
-                          variant="solid"
-                          color="primary"
-                          size="sm"
-                          onClick={async () => {
-                            setVersionsLoading(true)
-                            const sitreps = await fetchSituationalReports(event.id)
-                            setSitRepVersions(sitreps || [])
-                            setVersionsLoading(false)
-                            navigateTo('sitreps', { event })
-                          }}
-                          title="View Situation Reports"
-                          leftIcon={<FileText size={14} />}
-                        >
-                          Sit Rep
-                        </Button>
-                        <Button
-                          variant="subtle"
-                          color="success"
-                          size="sm"
-                          onClick={() => handleDownloadCsv(null, event)}
-                          isLoading={processingId === `csv-${event.id}`}
-                          title="Download Consolidated CSV (ZIP)"
-                          leftIcon={<Download size={14} />}
-                        >
-                          CSV
-                        </Button>
+                      <td className="col-action" style={{ width: '250px' }}>
+                        <div className="consolidated-actions">
+                          <Button
+                            variant="solid"
+                            color="primary"
+                            size="sm"
+                            onClick={async () => {
+                              setVersionsLoading(true)
+                              const sitreps = await fetchSituationalReports(event.id)
+                              setSitRepVersions(sitreps || [])
+                              setVersionsLoading(false)
+                              navigateTo('sitreps', { event })
+                            }}
+                            title="View Situation Reports"
+                            leftIcon={<FileText size={14} />}
+                          >
+                            Sit Rep
+                          </Button>
+                          <Button
+                            variant="subtle"
+                            color="success"
+                            size="sm"
+                            onClick={() => handleDownloadCsv(null, event)}
+                            isLoading={processingId === `csv-${event.id}`}
+                            title="Download Consolidated CSV (ZIP)"
+                            leftIcon={<Download size={14} />}
+                          >
+                            CSV
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -2150,7 +2154,7 @@ export default function ConsolidatedReport() {
                   <th style={{ width: '45%' }}>Title</th>
                   <th style={{ width: '25%' }}>Created At</th>
                   <th style={{ width: '10%', textAlign: 'center' }}>Status</th>
-                  <th className="col-action" style={{ width: '200px', textAlign: 'center' }}>Actions</th>
+                  <th className="col-action" style={{ width: '250px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2183,36 +2187,38 @@ export default function ConsolidatedReport() {
                           {(v.status || 'Draft').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center', width: '200px' }}>
-                        {v.approved_pdf_url ? (
+                      <td className="col-action" style={{ width: '250px' }}>
+                        <div className="consolidated-actions">
+                          {v.approved_pdf_url ? (
+                            <Button
+                              variant="solid"
+                              color="info"
+                              size="sm"
+                              onClick={() => {
+                                setPreviewUrl(v.approved_pdf_url)
+                                setShowPreviewModal(true)
+                              }}
+                              leftIcon={<Eye size={14} />}
+                            >
+                              View Details
+                            </Button>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                              PDF Not Available
+                            </span>
+                          )}
                           <Button
                             variant="solid"
-                            color="info"
+                            color="success"
                             size="sm"
-                            onClick={() => {
-                              setPreviewUrl(v.approved_pdf_url)
-                              setShowPreviewModal(true)
-                            }}
-                            leftIcon={<Eye size={14} />}
+                            onClick={() => handleDownloadCsv(v, selectedEvent)}
+                            isLoading={processingId === v.id}
+                            title="Download CSV (ZIP)"
+                            leftIcon={<Download size={14} />}
                           >
-                            View Details
+                            CSV
                           </Button>
-                        ) : (
-                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                            PDF Not Available
-                          </span>
-                        )}
-                        <Button
-                          variant="solid"
-                          color="success"
-                          size="sm"
-                          onClick={() => handleDownloadCsv(v, selectedEvent)}
-                          isLoading={processingId === v.id}
-                          title="Download CSV (ZIP)"
-                          leftIcon={<Download size={14} />}
-                        >
-                          CSV
-                        </Button>
+                        </div>
                       </td>
                     </tr>
                   ))

@@ -233,6 +233,15 @@
 
 .col-action {
   text-align: center !important;
+  padding: 0.75rem 1rem !important; /* Reduced padding for action column */
+}
+
+.consolidated-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 /* Toolbar controls */
