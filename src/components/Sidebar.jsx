@@ -8,7 +8,7 @@ import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
 import '../styles/components/Sidebar.css'
 
-export default function Sidebar({ user, onLogout, isCollapsed, onToggle }) {
+export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onToggle }) {
   const accountType = user?.account_type || ''
   const isRegional = accountType === 'Regional' || accountType === 'Regional Admin'
   const isProvincial = accountType === 'Provincial' || accountType === 'Provincial Admin'
@@ -236,6 +236,7 @@ export default function Sidebar({ user, onLogout, isCollapsed, onToggle }) {
           onClose={() => setShowSettingsModal(false)}
           user={user}
           onLogout={onLogout}
+          onUserUpdate={onUserUpdate}
         />
       )}
     </aside>

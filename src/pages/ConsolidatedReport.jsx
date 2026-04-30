@@ -438,6 +438,18 @@ export default function ConsolidatedReport() {
 
   const handleConfirmDownload = () => {
     if (!generatedSummaryData) return
+    
+    // If there's an approved PDF, just download it (though the modal might be skipped)
+    if (selectedSitRep?.approved_pdf_url && selectedSitRep?.status === 'Approved') {
+      const a = document.createElement('a')
+      a.href = selectedSitRep.approved_pdf_url
+      a.target = '_blank'
+      a.download = `${(generatedSummaryData.pdfParams.reportTitle || 'Report').replace(/\s+/g, '-')}.pdf`
+      a.click()
+      setShowSignatoriesModal(false)
+      return
+    }
+
     const finalDoc = generateRelatedIncidentsPdf({
       ...generatedSummaryData.pdfParams,
       summaryText: aiGeneratedSummaryText,
@@ -445,272 +457,10 @@ export default function ConsolidatedReport() {
     })
     const fileName = `${(generatedSummaryData.pdfParams.reportTitle || 'Report').replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`
     finalDoc.save(fileName)
-    setShowPdfEditModal(false)
+    setShowSignatoriesModal(false)
+    if (setShowPdfEditModal) setShowPdfEditModal(false)
   }
 
-  const handleConsolidatedDownloadClick = async (prov = null, lgu = null, mode = 'both') => {
-    // If we're looking at a specific provincial SITREP and it has an approved PDF,
-    // and we're not explicitly asking for CSV, use the uploaded PDF directly.
-    if (selectedSitRep?.approved_pdf_url && mode !== 'csv') {
-      handleSitRepDownloadClick(selectedSitRep)
-      return
-    }
-
-    // mode: 'pdf', 'csv', or 'both' (default)
-    const targetProvince = prov || selectedProvince
-    const targetLgu = lgu || selectedLgu
-    
-    setDrillDownLoading(true)
-    try {
-      const data = await fetchEventConsolidatedData(selectedEvent, null)
-      if (!data) return
-
-      let scopedByCityCategory = { ...data.byCityCategory }
-      let scopedDetails = { ...data.details }
-      let reportTitle = `Consolidated Report - ${selectedEvent.name}`
-
-      // 1. Filter by Province
-      if (targetProvince && !targetLgu) {
-        const provinceCities = getCitiesForProvince(targetProvince)
-        const citySet = new Set(provinceCities.map(c => c.toLowerCase()))
-        
-        scopedByCityCategory = {}
-        Object.entries(data.byCityCategory).forEach(([city, cats]) => {
-          if (citySet.has(city.toLowerCase())) {
-            scopedByCityCategory[city] = cats
-          }
-        })
-
-        // Filter details
-        Object.keys(scopedDetails).forEach(key => {
-          if (Array.isArray(scopedDetails[key])) {
-            scopedDetails[key] = scopedDetails[key].filter(row => {
-              const city = row.city || getCityForBarangay(row.barangay)
-              return city && citySet.has(city.toLowerCase())
-            })
-          }
-        })
-        reportTitle = `Consolidated Report - ${targetProvince}`
-      }
-
-      // 2. Filter by LGU
-      if (targetLgu) {
-        scopedByCityCategory = { [targetLgu]: data.byCityCategory[targetLgu] || {} }
-        Object.keys(scopedDetails).forEach(key => {
-          if (Array.isArray(scopedDetails[key])) {
-            scopedDetails[key] = scopedDetails[key].filter(row => {
-              const city = row.city || getCityForBarangay(row.barangay)
-              return city && city.toLowerCase() === targetLgu.toLowerCase()
-            })
-          }
-        })
-        reportTitle = `Consolidated Report - ${targetLgu}`
-      }
-
-      // 3. Re-calculate Category Totals for the scope
-      const scopedCategoryTotals = {}
-      Object.values(scopedByCityCategory).forEach(cityCats => {
-        Object.entries(cityCats).forEach(([cat, val]) => {
-          if (typeof val === 'number') {
-            scopedCategoryTotals[cat] = (scopedCategoryTotals[cat] || 0) + val
-          } else if (typeof val === 'object' && val !== null) {
-            if (!scopedCategoryTotals[cat]) scopedCategoryTotals[cat] = { families: 0, persons: 0, total: 0 }
-            scopedCategoryTotals[cat].families += (val.families || 0)
-            scopedCategoryTotals[cat].persons += (val.persons || 0)
-            scopedCategoryTotals[cat].total += (val.total || 0)
-          }
-        })
-      })
-
-      const pdfParams = {
-        province: targetProvince || (targetLgu ? getProvinceForCity(targetLgu) : province) || 'Region 1',
-        eventName: selectedEvent.name,
-        reportTitle: reportTitle,
-        cities: Object.keys(scopedByCityCategory).sort(),
-        categoryTotals: scopedCategoryTotals,
-        byCityCategory: scopedByCityCategory,
-        affectedPopulationDetails: scopedDetails.affectedPopulation,
-        relatedIncidentsDetails: scopedDetails.relatedIncidents,
-        roadsAndBridgesDetails: scopedDetails.roadsAndBridges,
-        powerDetails: scopedDetails.power,
-        waterSupplyDetails: scopedDetails.waterSupply,
-        communicationLinesDetails: scopedDetails.communicationLines,
-        damagedHousesDetails: scopedDetails.damagedHouses,
-        classSuspensionDetails: scopedDetails.classSuspension,
-        workSuspensionDetails: scopedDetails.workSuspension,
-        stateOfCalamityDetails: scopedDetails.stateOfCalamity,
-        preEmptiveEvacuationDetails: scopedDetails.preEmptiveEvacuation,
-        assistanceProvidedDetails: scopedDetails.assistanceProvided,
-        assistanceLgusDetails: scopedDetails.assistanceLgus,
-        agricultureDamageDetails: scopedDetails.agricultureDamage,
-        infrastructureDamageDetails: scopedDetails.infrastructureDamage,
-      }
-
-      setGeneratedSummaryData({ pdfParams })
-      setAiGeneratedSummaryText('Generating summary...')
-      
-      // Update preview immediately with placeholder
-      const initialUrl = generatePdfBlobUrl(pdfParams, 'Generating AI Summary...', { preparedBy: [], notedBy: null, approvedBy: null })
-      setPdfPreviewBlobUrl(initialUrl)
-
-      // Background AI generation
-      generateAISummary({ categoryTotals: scopedCategoryTotals, byCityCategory: scopedByCityCategory, details: scopedDetails }, selectedEvent, [])
-        .then(text => {
-          if (text) {
-            setAiGeneratedSummaryText(text)
-            const newUrl = generatePdfBlobUrl(pdfParams, text, { preparedBy: [], notedBy: null, approvedBy: null })
-            setPdfPreviewBlobUrl(newUrl)
-          }
-        })
-        .catch(err => {
-          console.error('Consolidated AI Summary Error:', err)
-          setAiGeneratedSummaryText('AI Summary Unavailable.')
-        })
-
-      fetchSignatories()
-      
-      if (mode === 'pdf') {
-        setShowPdfEditModal(true)
-      } else if (mode === 'csv') {
-        generateConsolidatedCsv({
-          ...pdfParams,
-          summaryText: 'Summary generated for CSV export',
-          signatories: { preparedBy: [], notedBy: null, approvedBy: null }
-        })
-      } else {
-        setShowDownloadTypeModal(true)
-      }
-    } catch (err) {
-      console.error('Consolidated Download Error:', err)
-    } finally {
-      setDrillDownLoading(false)
-    }
-  }
-
-  const handleSitRepDownloadClick = async (sitrep) => {
-    // If a signed PDF is already uploaded and approved, download it directly
-    if (sitrep.approved_pdf_url) {
-      setProcessingId(sitrep.id)
-      try {
-        const link = document.createElement('a')
-        link.href = sitrep.approved_pdf_url
-        // Use the title as filename, replace spaces with hyphens
-        const fileName = `${sitrep.title.replace(/\s+/g, '-')}_Signed.pdf`
-        link.setAttribute('download', fileName)
-        link.setAttribute('target', '_blank')
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        return
-      } catch (err) {
-        console.error('Direct download failed:', err)
-      } finally {
-        setProcessingId(null)
-      }
-    }
-
-    setProcessingId(sitrep.id)
-    try {
-      const data = await fetchEventConsolidatedData(selectedEvent, sitrep.id)
-      if (!data) return
-      
-      const pdfParams = {
-        province: province || 'Region 1',
-        eventName: selectedEvent.name,
-        reportTitle: sitrep.title,
-        cities: Object.keys(data.byCityCategory || {}).sort(),
-        categoryTotals: data.categoryTotals,
-        byCityCategory: data.byCityCategory,
-        affectedPopulationDetails: data.details.affectedPopulation,
-        relatedIncidentsDetails: data.details.relatedIncidents,
-        roadsAndBridgesDetails: data.details.details_roads_and_bridges || data.details.roadsAndBridges,
-        powerDetails: data.details.power,
-        waterSupplyDetails: data.details.waterSupply,
-        communicationLinesDetails: data.details.communicationLines,
-        damagedHousesDetails: data.details.damagedHouses,
-        classSuspensionDetails: data.details.classSuspension,
-        workSuspensionDetails: data.details.workSuspension,
-        stateOfCalamityDetails: data.details.stateOfCalamity,
-        preEmptiveEvacuationDetails: data.details.preEmptiveEvacuation,
-        assistanceProvidedDetails: data.details.assistanceProvided,
-        assistanceLgusDetails: data.details.assistanceLgus,
-        agricultureDamageDetails: data.details.agricultureDamage,
-        infrastructureDamageDetails: data.details.infrastructureDamage,
-      }
-
-      const summaryPlaceholder = sitrep.summary || 'Generating AI Summary... Please wait.'
-      setAiGeneratedSummaryText(summaryPlaceholder)
-      setGeneratedSummaryData({ pdfParams })
-      
-      // Update preview immediately
-      const initialUrl = generatePdfBlobUrl(pdfParams, summaryPlaceholder, { preparedBy: [], notedBy: null, approvedBy: null })
-      setPdfPreviewBlobUrl(initialUrl)
-      
-      // Background AI generation
-      if (!sitrep.summary) {
-        generateAISummary(data, selectedEvent, [])
-          .then(text => {
-            if (text) {
-              setAiGeneratedSummaryText(text)
-              const newUrl = generatePdfBlobUrl(pdfParams, text, { preparedBy: [], notedBy: null, approvedBy: null })
-              setPdfPreviewBlobUrl(newUrl)
-            }
-          })
-          .catch(err => {
-            console.error('Background AI summary failed:', err)
-            setAiGeneratedSummaryText('AI summary unavailable.')
-          })
-      }
-
-      fetchSignatories()
-      setShowPdfEditModal(true)
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const fetchLguCategoryDetails = async (eventId, sitRepId, category, city) => {
-    if (!supabase) return []
-    setDeletedRowIds([]) // Reset deletions when picking a new LGU
-    const tableName = CATEGORY_TO_TABLE[category]
-    if (!tableName) return []
-
-    try {
-      if (category === 'affectedPopulation') {
-        const { data: reports } = await supabase
-          .from('reports')
-          .select('id')
-          .eq('event_id', eventId)
-          .eq('situational_report_id', sitRepId)
-        
-        if (!reports?.length) return []
-        
-        const { data: rows } = await supabase
-          .from('report_rows')
-          .select('*')
-          .in('report_id', reports.map(r => r.id))
-        
-        return (rows || []).map(r => ({
-          ...r,
-          city: city // Ensure city is attached
-        })).filter(r => getCityForBarangay(r.barangay) === city)
-      } else {
-        const { data } = await supabase
-          .from(tableName)
-          .select('*')
-          .eq('event_id', eventId)
-          .eq('situational_report_id', sitRepId)
-        
-        return (data || []).map(r => ({
-          ...r,
-          city: r.city || getCityForBarangay(r.barangay) || (category === 'waterSupply' ? 'N/A' : null)
-        })).filter(r => r.city === city)
-      }
-    } catch (err) {
-      console.error('Fetch LGU details error:', err)
-      return []
-    }
-  }
 
   const renderDetailsHeader = (category) => {
     switch (category) {
@@ -1800,9 +1550,8 @@ export default function ConsolidatedReport() {
         .from('situational_reports')
         .select('id')
         .eq('event_id', event.id)
-        .eq('status', 'Approved')
       
-      // Scoping: Provincial users only see their own approved SitReps in consolidation
+      // Scoping: Provincial users only see their own SitReps in consolidation
       if (!isRegional && user?.province) {
         q = q.eq('province', user.province)
       }
@@ -1870,10 +1619,26 @@ export default function ConsolidatedReport() {
           if (!byCityCategory[city]) byCityCategory[city] = {}
 
           if (!byCityCategory[city].affectedPopulation) {
-            byCityCategory[city].affectedPopulation = { families: 0, persons: 0 }
+            byCityCategory[city].affectedPopulation = { 
+              families: 0, persons: 0, 
+              brgy_count: 0, ecs_cum: 0, ecs_now: 0,
+              in_fam_cum: 0, in_fam_now: 0, in_per_cum: 0, in_per_now: 0,
+              out_fam_cum: 0, out_fam_now: 0, out_per_cum: 0, out_per_now: 0
+            }
           }
           byCityCategory[city].affectedPopulation.families += families
           byCityCategory[city].affectedPopulation.persons += persons
+          byCityCategory[city].affectedPopulation.brgy_count += 1
+          byCityCategory[city].affectedPopulation.ecs_cum += Number(row?.ecs_cum ?? 0)
+          byCityCategory[city].affectedPopulation.ecs_now += Number(row?.ecs_now ?? 0)
+          byCityCategory[city].affectedPopulation.in_fam_cum += Number(row?.inside_families_cum ?? 0)
+          byCityCategory[city].affectedPopulation.in_fam_now += Number(row?.inside_families_now ?? 0)
+          byCityCategory[city].affectedPopulation.in_per_cum += Number(row?.inside_persons_cum ?? 0)
+          byCityCategory[city].affectedPopulation.in_per_now += Number(row?.inside_persons_now ?? 0)
+          byCityCategory[city].affectedPopulation.out_fam_cum += Number(row?.outside_families_cum ?? 0)
+          byCityCategory[city].affectedPopulation.out_fam_now += Number(row?.outside_families_now ?? 0)
+          byCityCategory[city].affectedPopulation.out_per_cum += Number(row?.outside_persons_cum ?? 0)
+          byCityCategory[city].affectedPopulation.out_per_now += Number(row?.outside_persons_now ?? 0)
         })
     }
 
@@ -1937,16 +1702,42 @@ export default function ConsolidatedReport() {
         if (!byCityCategory[city]) byCityCategory[city] = {}
 
         if (category === 'relatedIncidents') {
-          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, ongoing: 0, resolved: 0 }
+          if (!byCityCategory[city][category]) byCityCategory[city][category] = { 
+            total: 0, ongoing: 0, resolved: 0, 
+            flooded: 0, subsided: 0, receding: 0, 
+            fallenDebris: 0, stormSurge: 0, other: 0 
+          }
           byCityCategory[city][category].total++
+          
+          const type = (row.type_of_incident || '').toLowerCase()
+          const status = (row.status || '').toLowerCase()
+          
+          if (type.includes('flood')) {
+            if (status.includes('subsided')) byCityCategory[city][category].subsided++
+            else if (status.includes('receding')) byCityCategory[city][category].receding++
+            else byCityCategory[city][category].flooded++
+          } else if (type.includes('debris') || type.includes('tree')) {
+            byCityCategory[city][category].fallenDebris++
+          } else if (type.includes('surge')) {
+            byCityCategory[city][category].stormSurge++
+          } else {
+            byCityCategory[city][category].other++
+          }
+
           if (row.status === 'Resolved') byCityCategory[city][category].resolved++
           else byCityCategory[city][category].ongoing++
         }
         else if (category === 'roadsAndBridges') {
-          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, roads: 0, bridges: 0 }
+          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, roads: 0, bridges: 0, passable: 0, notPassable: 0 }
           byCityCategory[city][category].total++
           if (row.classification === 'Bridge') byCityCategory[city][category].bridges++
           else byCityCategory[city][category].roads++
+          
+          if (row.status === 'Passable' || row.status === 'Open' || row.status?.toLowerCase().includes('passable')) {
+            byCityCategory[city][category].passable++
+          } else {
+            byCityCategory[city][category].notPassable++
+          }
         }
         else if (['power', 'communicationLines'].includes(category)) {
           if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, interrupted: 0, restored: 0 }
@@ -1958,12 +1749,13 @@ export default function ConsolidatedReport() {
           }
         }
         else if (category === 'damagedHouses') {
-          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, totally: 0, partially: 0 }
+          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, totally: 0, partially: 0, amount: 0 }
           const tot = Number(row.totally_damaged || 0)
           const part = Number(row.partially_damaged || 0)
           byCityCategory[city][category].total += (tot + part)
           byCityCategory[city][category].totally += tot
           byCityCategory[city][category].partially += part
+          byCityCategory[city][category].amount += Number(row.amount_php || row.amount || 0)
         }
         else if (category === 'assistanceProvided') {
           if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, cost: 0 }
@@ -1986,42 +1778,19 @@ export default function ConsolidatedReport() {
           byCityCategory[city][category].total++
           byCityCategory[city][category].cost += Number(row.cost || row.estimated_cost || 0)
         }
+        else if (category === 'preEmptiveEvacuation') {
+          if (!byCityCategory[city][category]) byCityCategory[city][category] = { total: 0, families: 0, persons: 0 }
+          byCityCategory[city][category].total++
+          byCityCategory[city][category].families += Number(row.families || 0)
+          byCityCategory[city][category].persons += Number(row.persons || row.total || (Number(row.families || 0) * 5))
+        }
         else {
           byCityCategory[city][category] = (byCityCategory[city][category] || 0) + 1
         }
       }
     }
 
-    // 3. Totals and Categorization Filtering
-    let wq = supabase
-      .from('water_supply_reports')
-      .select('*')
-      .eq('event_id', event.id)
-    
-    if (reportsToConsolidate.length > 0) {
-      wq = wq.in('situational_report_id', reportsToConsolidate)
-    } else if (!isRegional) {
-      // Skip if not regional and no sitreps
-      return {
-        byCityCategory: filteredByCityCategory,
-        categoryTotals,
-        details
-      }
-    }
-    const { data: waterRows } = await wq
-    const waterTotal = (waterRows || []).length
-    if (waterTotal > 0) {
-      details.waterSupply = (waterRows || []).map(w => ({ ...w, city: toCity(w, 'barangay') }))
-      totalByCity['N/A'] = (totalByCity['N/A'] || 0) + waterTotal
-      if (!byCityCategory['N/A']) byCityCategory['N/A'] = {}
-
-      let restored = 0
-      for (const w of waterRows) {
-        if (w.date_restored || w.status === 'Resolved' || w.status === 'Restored') restored++
-      }
-      byCityCategory['N/A']['waterSupply'] = { total: waterTotal, interrupted: waterTotal, restored }
-    }
-
+    // 3. Filtering and Totals
     const citySet = new Set(provinceCities.map((c) => c.toLowerCase()))
     const filteredCities = Object.keys(totalByCity).filter(
       (c) => isSuperAdmin || c === 'N/A' || citySet.has(c.toLowerCase())
@@ -2037,9 +1806,24 @@ export default function ConsolidatedReport() {
         categoryTotals[cat] = Object.values(filteredByCityCategory).reduce(
           (s, cityCats) => ({
             families: s.families + (cityCats[cat]?.families || 0),
-            persons: s.persons + (cityCats[cat]?.persons || 0)
+            persons: s.persons + (cityCats[cat]?.persons || 0),
+            brgy_count: s.brgy_count + (cityCats[cat]?.brgy_count || 0),
+            ecs_cum: s.ecs_cum + (cityCats[cat]?.ecs_cum || 0),
+            ecs_now: s.ecs_now + (cityCats[cat]?.ecs_now || 0),
+            in_fam_cum: s.in_fam_cum + (cityCats[cat]?.in_fam_cum || 0),
+            in_fam_now: s.in_fam_now + (cityCats[cat]?.in_fam_now || 0),
+            in_per_cum: s.in_per_cum + (cityCats[cat]?.in_per_cum || 0),
+            in_per_now: s.in_per_now + (cityCats[cat]?.in_per_now || 0),
+            out_fam_cum: s.out_fam_cum + (cityCats[cat]?.out_fam_cum || 0),
+            out_fam_now: s.out_fam_now + (cityCats[cat]?.out_fam_now || 0),
+            out_per_cum: s.out_per_cum + (cityCats[cat]?.out_per_cum || 0),
+            out_per_now: s.out_per_now + (cityCats[cat]?.out_per_now || 0)
           }),
-          { families: 0, persons: 0 }
+          { 
+            families: 0, persons: 0, brgy_count: 0, ecs_cum: 0, ecs_now: 0,
+            in_fam_cum: 0, in_fam_now: 0, in_per_cum: 0, in_per_now: 0,
+            out_fam_cum: 0, out_fam_now: 0, out_per_cum: 0, out_per_now: 0
+          }
         )
       }
       else if (cat === 'relatedIncidents') {
@@ -2048,8 +1832,14 @@ export default function ConsolidatedReport() {
             total: s.total + (cityCats[cat]?.total || 0),
             ongoing: s.ongoing + (cityCats[cat]?.ongoing || 0),
             resolved: s.resolved + (cityCats[cat]?.resolved || 0),
+            flooded: s.flooded + (cityCats[cat]?.flooded || 0),
+            subsided: s.subsided + (cityCats[cat]?.subsided || 0),
+            receding: s.receding + (cityCats[cat]?.receding || 0),
+            fallenDebris: s.fallenDebris + (cityCats[cat]?.fallenDebris || 0),
+            stormSurge: s.stormSurge + (cityCats[cat]?.stormSurge || 0),
+            other: s.other + (cityCats[cat]?.other || 0),
           }),
-          { total: 0, ongoing: 0, resolved: 0 }
+          { total: 0, ongoing: 0, resolved: 0, flooded: 0, subsided: 0, receding: 0, fallenDebris: 0, stormSurge: 0, other: 0 }
         )
       }
       else if (cat === 'roadsAndBridges') {
@@ -2058,8 +1848,10 @@ export default function ConsolidatedReport() {
             total: s.total + (cityCats[cat]?.total || 0),
             roads: s.roads + (cityCats[cat]?.roads || 0),
             bridges: s.bridges + (cityCats[cat]?.bridges || 0),
+            passable: s.passable + (cityCats[cat]?.passable || 0),
+            notPassable: s.notPassable + (cityCats[cat]?.notPassable || 0),
           }),
-          { total: 0, roads: 0, bridges: 0 }
+          { total: 0, roads: 0, bridges: 0, passable: 0, notPassable: 0 }
         )
       }
       else if (['power', 'waterSupply', 'communicationLines'].includes(cat)) {
@@ -2078,8 +1870,9 @@ export default function ConsolidatedReport() {
             total: s.total + (cityCats[cat]?.total || 0),
             totally: s.totally + (cityCats[cat]?.totally || 0),
             partially: s.partially + (cityCats[cat]?.partially || 0),
+            amount: s.amount + (cityCats[cat]?.amount || 0),
           }),
-          { total: 0, totally: 0, partially: 0 }
+          { total: 0, totally: 0, partially: 0, amount: 0 }
         )
       }
       else if (cat === 'assistanceProvided') {
@@ -2119,6 +1912,15 @@ export default function ConsolidatedReport() {
           { total: 0, cost: 0 }
         )
       }
+      else if (cat === 'preEmptiveEvacuation') {
+        categoryTotals[cat] = Object.values(filteredByCityCategory).reduce(
+          (s, cityCats) => ({
+            families: s.families + (cityCats[cat]?.families || 0),
+            persons: s.persons + (cityCats[cat]?.persons || 0),
+          }),
+          { families: 0, persons: 0 }
+        )
+      }
       else {
         categoryTotals[cat] = Object.values(filteredByCityCategory).reduce(
           (s, cityCats) => s + (cityCats[cat] || 0),
@@ -2134,7 +1936,45 @@ export default function ConsolidatedReport() {
     }
   }
 
-
+  const handleDownloadCsv = async (sitrep, event = selectedEvent) => {
+    const sitRepId = sitrep?.id || null
+    // If we're doing a specific sitrep, use its ID for processing state, else use a string
+    setProcessingId(sitRepId || `csv-${event.id}`)
+    try {
+      const data = await fetchEventConsolidatedData(event, sitRepId)
+      if (!data) return
+      
+      generateConsolidatedCsv({
+        eventName: event.name,
+        province: province || 'Region 1',
+        cities: Object.keys(data.byCityCategory || {}).sort(),
+        categoryTotals: data.categoryTotals,
+        byCityCategory: data.byCityCategory,
+        affectedPopulationDetails: data.details.affectedPopulation,
+        relatedIncidentsDetails: data.details.relatedIncidents,
+        roadsAndBridgesDetails: data.details.roadsAndBridges,
+        powerDetails: data.details.power,
+        waterSupplyDetails: data.details.waterSupply,
+        communicationLinesDetails: data.details.communicationLines,
+        damagedHousesDetails: data.details.damagedHouses,
+        classSuspensionDetails: data.details.classSuspension,
+        workSuspensionDetails: data.details.workSuspension,
+        stateOfCalamityDetails: data.details.stateOfCalamity,
+        preEmptiveEvacuationDetails: data.details.preEmptiveEvacuation,
+        assistanceProvidedDetails: data.details.assistanceProvided,
+        assistanceLgusDetails: data.details.assistanceLgus,
+        agricultureDamageDetails: data.details.agricultureDamage,
+        infrastructureDamageDetails: data.details.infrastructureDamage,
+        summaryText: sitrep?.summary || `Consolidated Report for ${event.name}`,
+        signatories: { preparedBy: [], notedBy: null, approvedBy: null }
+      })
+    } catch (err) {
+      console.error('CSV Generation Error:', err)
+      showSuccess('Error', 'Failed to generate CSV.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
   // Sit Rep Version Handlers
 
@@ -2162,7 +2002,9 @@ export default function ConsolidatedReport() {
                 icon={<ArrowLeft size={20} />}
               />
             )}
-            <h1 className="consolidated-report-title">Consolidated Reports</h1>
+            <h1 className="consolidated-report-title">
+              {view === 'events' ? 'Consolidated Reports' : 'Consolidated Reports'}
+            </h1>
           </div>
 
           <div className="consolidated-report-toolbar-controls">
@@ -2187,20 +2029,7 @@ export default function ConsolidatedReport() {
                 Export CSV
               </Button>
             )}
-            {/* NEW: Scope-aware Download Button */}
-            {(view === 'sitreps' || view === 'provinces' || view === 'lgus' || view === 'categories') && (
-              <div className="consolidated-download-group" style={{ marginLeft: '1rem' }}>
-                <Button
-                  className="btn-primary consolidated-download-main"
-                  isLoading={drillDownLoading}
-                  onClick={handleConsolidatedDownloadClick}
-                  title={`Download for ${selectedLgu || selectedProvince || (isRegional ? "Whole Region" : province)}`}
-                >
-                  <Download size={18} />
-                  Download {selectedLgu || selectedProvince ? 'Report' : (isRegional ? 'Consolidated Report' : 'Provincial Report')}
-                </Button>
-              </div>
-            )}
+            {/* Consolidated download button removed from toolbar */}
           </div>
 
         </div>
@@ -2221,53 +2050,6 @@ export default function ConsolidatedReport() {
                 onClick={() => navigateTo('sitreps', { event: selectedEvent })}
               >
                 {selectedEvent.name}
-              </button>
-            </>
-          )}
-          {selectedSitRep && (
-            <>
-              <span className="breadcrumb-separator">/</span>
-              <button
-                className={`breadcrumb-item ${view === 'provinces' || view === 'categories' ? 'active' : ''}`}
-                onClick={() => navigateTo(isRegional ? 'provinces' : 'categories', { sitrep: selectedSitRep })}
-              >
-                {selectedSitRep.title}
-              </button>
-            </>
-          )}
-          {selectedProvince && (
-            <>
-              <span className="breadcrumb-separator">/</span>
-              <button
-                className={`breadcrumb-item ${view === 'lgus' ? 'active' : ''}`}
-                onClick={() => navigateTo('lgus', { province: selectedProvince })}
-              >
-                {selectedProvince}
-              </button>
-            </>
-          )}
-          {selectedLgu && (
-            <>
-              <span className="breadcrumb-separator">/</span>
-              <button
-                className={`breadcrumb-item ${view === 'categories' ? 'active' : ''}`}
-                onClick={() => navigateTo('categories', { lgu: selectedLgu })}
-              >
-                {selectedLgu}
-              </button>
-            </>
-          )}
-          {selectedCategory && (
-            <>
-              <span className="breadcrumb-separator">/</span>
-              <button
-                className={`breadcrumb-item ${view === 'details' ? 'active' : ''}`}
-                onClick={() => {
-                  if (view === 'details') return
-                  navigateTo(selectedLgu ? 'details' : 'lgus', { category: selectedCategory })
-                }}
-              >
-                {CATEGORY_LABELS[selectedCategory]}
               </button>
             </>
           )}
@@ -2295,7 +2077,7 @@ export default function ConsolidatedReport() {
                     </Button>
                   </th>
                   <th style={{ textAlign: 'center', width: '20%' }}>Alert Lvl</th>
-                  <th className="col-action" style={{ width: '15%' }}>Actions</th>
+                  <th className="col-action" style={{ width: '250px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2326,7 +2108,7 @@ export default function ConsolidatedReport() {
                           {(event.alertStatus || 'white').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
+                      <td className="col-action" style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', width: '250px' }}>
                         <Button
                           variant="solid"
                           color="primary"
@@ -2339,9 +2121,20 @@ export default function ConsolidatedReport() {
                             navigateTo('sitreps', { event })
                           }}
                           title="View Situation Reports"
-                          icon={<FileText size={14} />}
+                          leftIcon={<FileText size={14} />}
                         >
                           Sit Rep
+                        </Button>
+                        <Button
+                          variant="subtle"
+                          color="success"
+                          size="sm"
+                          onClick={() => handleDownloadCsv(null, event)}
+                          isLoading={processingId === `csv-${event.id}`}
+                          title="Download Consolidated CSV (ZIP)"
+                          leftIcon={<Download size={14} />}
+                        >
+                          CSV
                         </Button>
                       </td>
                     </tr>
@@ -2350,31 +2143,28 @@ export default function ConsolidatedReport() {
               </tbody>
             </table>
           )}
-
           {view === 'sitreps' && (
             <table className="consolidated-report-table">
               <thead>
                 <tr>
-                  <th style={{ width: '10%' }}>No.</th>
-                  <th style={{ width: '35%' }}>Title</th>
+                  <th style={{ width: '45%' }}>Title</th>
                   <th style={{ width: '25%' }}>Created At</th>
                   <th style={{ width: '10%', textAlign: 'center' }}>Status</th>
-                  <th className="col-action" style={{ width: '20%' }}>Actions</th>
+                  <th className="col-action" style={{ width: '200px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {versionsLoading ? (
                   <tr>
-                    <td colSpan="5" className="consolidated-report-loading">
+                    <td colSpan="4" className="consolidated-report-loading">
                       <LoadingSpinner small label="Loading versions..." />
                     </td>
                   </tr>
                 ) : filteredSitReps.length === 0 ? (
-                  <tr><td colSpan="5" className="consolidated-report-empty">No situation reports found.</td></tr>
+                  <tr><td colSpan="4" className="consolidated-report-empty">No situation reports found.</td></tr>
                 ) : (
                   filteredSitReps.map((v) => (
                     <tr key={v.id}>
-                      <td style={{ fontWeight: 600 }}>{v.report_number}</td>
                       <td className="event-name-cell">
                         {hasUnread(selectedEvent?.id, v.id) && <span className="table-ping" title="New Notification"></span>}
                         {v.title}
@@ -2393,340 +2183,42 @@ export default function ConsolidatedReport() {
                           {(v.status || 'Draft').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
-
-                        {/* View uploaded PDF (available to all roles) */}
-                        {v.approved_pdf_url && (
+                      <td className="col-action" style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center', width: '200px' }}>
+                        {v.approved_pdf_url ? (
                           <Button
                             variant="solid"
-                            color="danger"
+                            color="info"
                             size="sm"
                             onClick={() => {
                               setPreviewUrl(v.approved_pdf_url)
                               setShowPreviewModal(true)
                             }}
-                            leftIcon={<FileText size={14} />}
+                            leftIcon={<Eye size={14} />}
                           >
-                            PDF
+                            View Details
                           </Button>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                            PDF Not Available
+                          </span>
                         )}
-                          <Button
-                            variant="solid"
-                            color="success"
-                            size="sm"
-                            isLoading={processingId === v.id}
-                            onClick={() => handleSitRepDownloadClick(v)}
-                            leftIcon={processingId === v.id ? null : <FileArrowDown size={14} />}
-                          >
-                            Download
-                          </Button>
-                          <Button
-                            variant="solid"
-                            color="warning"
-                            size="sm"
-                            isLoading={drillDownLoading}
-                            onClick={async () => {
-                              setDrillDownLoading(true)
-                              const data = await fetchEventConsolidatedData(selectedEvent, v.id)
-                              setCategoryData(data)
-                              setDrillDownLoading(false)
-                              if (isRegional) {
-                                setView('provinces')
-                                setSelectedSitRep(v)
-                              } else {
-                                navigateTo('categories', { sitrep: v })
-                              }
-                            }}
-                          >
-                            Details
-                          </Button>
+                        <Button
+                          variant="solid"
+                          color="success"
+                          size="sm"
+                          onClick={() => handleDownloadCsv(v, selectedEvent)}
+                          isLoading={processingId === v.id}
+                          title="Download CSV (ZIP)"
+                          leftIcon={<Download size={14} />}
+                        >
+                          CSV
+                        </Button>
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
-          )}
-
-          {view === 'provinces' && (
-            <table className="consolidated-report-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '80%' }}>Province Name</th>
-                  <th className="col-action" style={{ width: '20%' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PROVINCE_NAMES.map(prov => (
-                  <tr key={prov}>
-                    <td className="event-name-cell" style={{ fontWeight: 600 }}>{prov}</td>
-                    <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', border: 'none' }}>
-                      <Button
-                        variant="solid"
-                        color="danger"
-                        size="sm"
-                        onClick={() => handleConsolidatedDownloadClick(prov, null, 'pdf')}
-                        icon={<FileText size={14} />}
-                      >
-                        PDF
-                      </Button>
-                      <Button
-                        variant="solid"
-                        color="success"
-                        size="sm"
-                        onClick={() => handleConsolidatedDownloadClick(prov, null, 'both')}
-                        icon={<FileArrowDown size={14} />}
-                      >
-                        Download
-                      </Button>
-                      <Button
-                        variant="solid"
-                        color="warning"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedProvince(prov)
-                          setView('lgus')
-                        }}
-                      >
-                        Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {view === 'categories' && (
-            <table className="consolidated-report-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '50%' }}>Category</th>
-                  <th style={{ width: '30%', textAlign: 'center' }}>{selectedLgu ? 'Submissions' : 'Total Submissions'}</th>
-                  <th className="col-action" style={{ width: '20%' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {drillDownLoading ? (
-                  <tr>
-                    <td colSpan="3" className="consolidated-report-loading">
-                      <LoadingSpinner small label="Loading categories..." />
-                    </td>
-                  </tr>
-                ) : filteredCategories.map((catKey) => {
-                  const label = CATEGORY_LABELS[catKey]
-                  const totals = selectedLgu 
-                    ? categoryData?.byCityCategory?.[selectedLgu]?.[catKey]
-                    : categoryData?.categoryTotals?.[catKey]
-                  
-                  const count = typeof totals === 'object' ? (totals.total || totals.families || 0) : (totals || 0)
-                  
-                  if (count === 0) return null
-
-                  return (
-                    <tr key={catKey}>
-                      <td className="event-name-cell">{label}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 600 }}>{count}</td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', border: 'none' }}>
-                        <Button
-                          variant="solid"
-                          color="danger"
-                          size="sm"
-                          onClick={() => handleConsolidatedDownloadClick(null, null, 'pdf')}
-                          icon={<FileText size={14} />}
-                        >
-                          PDF
-                        </Button>
-                        <Button
-                          variant="solid"
-                          color="success"
-                          size="sm"
-                          onClick={() => handleConsolidatedDownloadClick(null, null, 'both')}
-                          icon={<FileArrowDown size={14} />}
-                        >
-                          Download
-                        </Button>
-                        <Button
-                          variant="solid"
-                          color="warning"
-                          size="sm"
-                          onClick={async () => {
-                            setSelectedCategory(catKey)
-                            if (selectedLgu) {
-                              setDrillDownLoading(true)
-                              try {
-                                const rows = await fetchLguCategoryDetails(selectedEvent.id, selectedSitRep.id, catKey, selectedLgu)
-                                setLguDetailRows(rows)
-                                setView('details')
-                              } finally {
-                                setDrillDownLoading(false)
-                              }
-                            } else {
-                              setView('lgus')
-                            }
-                          }}
-                        >
-                          {selectedLgu ? 'Details' : 'LGUs'}
-                        </Button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-
-          {view === 'lgus' && (
-            <table className="consolidated-report-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '80%' }}>LGU Name</th>
-                  <th className="col-action" style={{ width: '20%' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  let citiesList = []
-                  if (selectedProvince) {
-                    citiesList = getCitiesForProvince(selectedProvince)
-                  } else {
-                    citiesList = Object.keys(categoryData?.byCityCategory || {})
-                  }
-
-                  let citiesWithData = citiesList.filter(city => {
-                    const cityCats = categoryData?.byCityCategory?.[city]
-                    if (!cityCats) return false
-                    if (selectedCategory) {
-                      const catData = cityCats[selectedCategory]
-                      if (!catData) return false
-                      const count = typeof catData === 'object' ? (catData.total || catData.families || 0) : (catData || 0)
-                      return count > 0
-                    }
-                    return Object.values(cityCats).some(catData => {
-                      const count = typeof catData === 'object' ? (catData.total || catData.families || 0) : (catData || 0)
-                      return count > 0
-                    })
-                  }).sort()
-
-                  if (searchTerm) {
-                    const low = searchTerm.toLowerCase()
-                    citiesWithData = citiesWithData.filter(city => city.toLowerCase().includes(low))
-                  }
-
-                  if (citiesWithData.length === 0) {
-                    return <tr><td colSpan="2" className="consolidated-report-empty">No LGU submissions found for this selection.</td></tr>
-                  }
-
-                  return citiesWithData.map(city => (
-                    <tr key={city}>
-                      <td className="event-name-cell" style={{ fontWeight: 600 }}>{city}</td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', border: 'none' }}>
-                        <Button
-                          variant="solid"
-                          color="danger"
-                          size="sm"
-                          onClick={() => handleConsolidatedDownloadClick(null, city, 'pdf')}
-                          icon={<FileText size={14} />}
-                        >
-                          PDF
-                        </Button>
-                        <Button
-                          variant="solid"
-                          color="success"
-                          size="sm"
-                          onClick={() => handleConsolidatedDownloadClick(null, city, 'both')}
-                          icon={<FileArrowDown size={14} />}
-                        >
-                          Download
-                        </Button>
-                        <Button
-                          variant="solid"
-                          color="warning"
-                          size="sm"
-                          onClick={async () => {
-                            setSelectedLgu(city)
-                            if (selectedCategory) {
-                              setDrillDownLoading(true)
-                              try {
-                                const rows = await fetchLguCategoryDetails(selectedEvent.id, selectedSitRep.id, selectedCategory, city)
-                                setLguDetailRows(rows)
-                                navigateTo('details', { lgu: city })
-                              } finally {
-                                setDrillDownLoading(false)
-                              }
-                            } else {
-                              setView('categories')
-                            }
-                          }}
-                        >
-                          {selectedCategory ? 'Details' : 'Categories'}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                })()}
-              </tbody>
-            </table>
-          )}
-
-          {view === 'details' && (
-            <div className="consolidated-details-container">
-              <div className="details-view-header">
-                <h3 className="details-view-title">Edit {CATEGORY_LABELS[selectedCategory]} Report Data</h3>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <Button
-                    variant="solid"
-                    color="primary"
-                    size="sm"
-                    onClick={handleAddRow}
-                    leftIcon={<Plus size={16} />}
-                  >
-                    Add Row
-                  </Button>
-                </div>
-              </div>
-              <div className="report-table-wrapper">
-                <table className="report-table">
-                  {/* Dynamically render headers based on category */}
-                  <thead>
-                    {renderDetailsHeader(selectedCategory)}
-                  </thead>
-                  <tbody>
-                    {drillDownLoading ? (
-                      <tr>
-                        <td colSpan="15" className="consolidated-report-loading">
-                          <LoadingSpinner small label="Loading details..." />
-                        </td>
-                      </tr>
-                    ) : filteredDetails.length === 0 ? (
-                      <tr><td colSpan="15" className="consolidated-report-empty">No detailed entries found.</td></tr>
-                    ) : (
-                      filteredDetails.map((row, idx) => (
-                        <tr key={row.id || idx}>
-                          {renderDetailsRow(selectedCategory, row, idx)}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="details-view-footer">
-                <Button
-                  variant="subtle"
-                  onClick={handleBack}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="solid"
-                  color="primary"
-                  onClick={handleSubmitDetails}
-                  isLoading={submittingDetails}
-                >
-                  Submit Report
-                </Button>
-              </div>
-            </div>
           )}
         </div>
 
@@ -2739,21 +2231,9 @@ export default function ConsolidatedReport() {
             &lt; Previous
           </Button>
           <div className="consolidated-report-pagination-numbers">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2))
-              .map((p, i, arr) => (
-                <span key={p}>
-                  {i > 0 && arr[i - 1] !== p - 1 && <span className="consolidated-report-pagination-ellipsis">...</span>}
-                  <Button
-                    variant={currentPage === p ? 'solid' : 'ghost'}
-                    size="sm"
-                    style={{ minWidth: '36px', height: '36px', padding: 0 }}
-                    onClick={() => setCurrentPage(p)}
-                  >
-                    {String(p).padStart(2, '0')}
-                  </Button>
-                </span>
-              ))}
+            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              Page {currentPage} of {totalPages}
+            </span>
           </div>
           <Button
             variant="subtle"
@@ -2765,599 +2245,8 @@ export default function ConsolidatedReport() {
         </div>
       </div>
 
-      {/* ── PDF Preview + Edit Modal ── */}
-      <HeaderFooterModal
-        isOpen={showPdfEditModal && !!generatedSummaryData}
-        onClose={() => setShowPdfEditModal(false)}
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-            <FileArrowDown size={20} style={{ color: '#2563eb' }} />
-            <div>
-              <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a' }}>Download PDF Report</div>
-              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400 }}>{generatedSummaryData?.pdfParams?.reportTitle}</div>
-            </div>
-          </div>
-        }
-        maxWidth="1400px"
-        width="95vw"
-        height="95vh"
-        footer={
-          <>
-            <Button variant="subtle" onClick={() => setShowPdfEditModal(false)}>Cancel</Button>
-            <Button variant="solid" onClick={handleConfirmDownload} leftIcon={<FileArrowDown size={16} />}>
-              Download PDF
-            </Button>
-          </>
-        }
-      >
-        <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-          {/* LEFT: PDF Preview */}
-          <div style={{ flex: 1.4, display: 'flex', flexDirection: 'column', borderRight: '1px solid #e2e8f0' }}>
-            <div style={{ padding: '0.875rem 1.25rem', background: '#f8fafc', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#334155' }}>PDF Preview</span>
-              <Button
-                variant="solid"
-                size="sm"
-                onClick={() => {
-                  if (pdfPreviewBlobUrl) URL.revokeObjectURL(pdfPreviewBlobUrl)
-                  const newUrl = generatePdfBlobUrl(generatedSummaryData.pdfParams, aiGeneratedSummaryText, { preparedBy, notedBy, approvedBy })
-                  setPdfPreviewBlobUrl(newUrl)
-                }}
-                leftIcon={<ArrowsClockwise size={13} />}
-              >
-                Refresh Preview
-              </Button>
-            </div>
-            <div style={{ flex: 1, background: '#e2e8f0', overflow: 'hidden' }}>
-              {pdfPreviewBlobUrl ? (
-                <iframe
-                  src={pdfPreviewBlobUrl}
-                  title="PDF Preview"
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                />
-              ) : (
-                <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <LoadingSpinner label="Generating preview..." />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* RIGHT: Summary Editor + Signatories */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Summary editor */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
-                <Sparkle size={15} style={{ color: '#7c3aed' }} />
-                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>AI-Generated Summary</span>
-                <span style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '0.1rem 0.5rem', background: '#f1f5f9', borderRadius: '9999px' }}>editable</span>
-              </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.75rem' }}>Edit the summary below. Click "Refresh Preview" to see your changes reflected in the PDF.</p>
-              <textarea
-                value={aiGeneratedSummaryText}
-                onChange={e => setAiGeneratedSummaryText(e.target.value)}
-                style={{
-                  flex: 1, minHeight: 0, padding: '0.875rem', border: '1.5px solid #e2e8f0', borderRadius: '0.75rem',
-                  fontSize: '0.8125rem', lineHeight: 1.7, color: '#0f172a', background: '#f8fafc', resize: 'none',
-                  fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s', overflow: 'auto'
-                }}
-              />
-            </div>
-
-            {/* Signatories mini section */}
-            <div style={{ padding: '1rem 1.5rem', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Users size={15} style={{ color: '#2563eb' }} />
-                <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>Signatories</span>
-                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>(auto-populated)</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Prepared by</span>
-                  <span style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: 600 }}>
-                    {preparedBy.length > 0 ? preparedBy.map(p => p.name).join(', ') : <em style={{ color: '#94a3b8', fontWeight: 400 }}>None</em>}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Noted by</span>
-                  <span style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: 600 }}>
-                    {notedBy ? notedBy.name : <em style={{ color: '#94a3b8', fontWeight: 400 }}>None</em>}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.025em' }}>Approved by</span>
-                  <span style={{ fontSize: '0.75rem', color: '#0f172a', fontWeight: 600 }}>
-                    {approvedBy ? approvedBy.name : <em style={{ color: '#94a3b8', fontWeight: 400 }}>None</em>}
-                  </span>
-                </div>
-                <div style={{ gridColumn: 'span 3', borderTop: '1px dashed #e2e8f0', marginTop: '0.25rem', paddingTop: '0.5rem' }}>
-                  <Button
-                    variant="subtle"
-                    size="sm"
-                    onClick={() => { setShowPdfEditModal(false); setShowSignatoriesModal(true) }}
-                  >
-                    Change Signatories
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </HeaderFooterModal>
-
-      {/* ── Signatories Modal ── */}
-      <HeaderFooterModal
-        isOpen={showSignatoriesModal}
-        onClose={() => setShowSignatoriesModal(false)}
-        title="Report Signatories"
-        subtitle={`Assign who prepared, noted, and approved this report. Only active users from ${province || 'this region'} are shown.`}
-        maxWidth="560px"
-        footer={
-          <>
-            <Button variant="subtle" onClick={() => setShowSignatoriesModal(false)}>Cancel</Button>
-            <Button variant="solid" onClick={handleConfirmDownload} leftIcon={<FileArrowDown size={16} />}>
-              Download PDF
-            </Button>
-          </>
-        }
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={signatorySearch}
-            onChange={(e) => setSignatorySearch(e.target.value)}
-            style={{ width: '100%', boxSizing: 'border-box', padding: '0.625rem 1rem', border: '1px solid #e2e8f0', borderRadius: '0.75rem', fontSize: '0.8125rem', color: '#1e293b', background: '#f8fafc', outline: 'none', transition: 'all 0.2s' }}
-          />
-
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid #f1f5f9' }}>
-            {[
-              { key: 'preparedBy', label: 'Prepared by', count: preparedBy.length },
-              { key: 'notedBy', label: 'Noted by', count: notedBy ? 1 : 0 },
-              { key: 'approvedBy', label: 'Approved by', count: approvedBy ? 1 : 0 },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setSignatoryRole(tab.key)}
-                style={{
-                  flex: 1, padding: '0.75rem 0.25rem', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer',
-                  border: 'none', borderBottom: signatoryRole === tab.key ? '2px solid #2563eb' : '2px solid transparent',
-                  background: 'transparent', color: signatoryRole === tab.key ? '#2563eb' : '#64748b',
-                  transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem'
-                }}
-              >
-                {tab.label}
-                {tab.count > 0 && (
-                  <span style={{ background: '#2563eb', color: '#fff', borderRadius: '9999px', padding: '0.05rem 0.45rem', fontSize: '0.7rem', fontWeight: 700 }}>{tab.count}</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {availableSignatories
-              .filter(s => s.name.toLowerCase().includes(signatorySearch.toLowerCase()))
-              .map(s => {
-                let isSelected = false
-                if (signatoryRole === 'preparedBy') isSelected = preparedBy.some(p => p.id === s.id)
-                else if (signatoryRole === 'notedBy') isSelected = notedBy?.id === s.id
-                else if (signatoryRole === 'approvedBy') isSelected = approvedBy?.id === s.id
-
-                const handleSelect = () => {
-                  if (signatoryRole === 'preparedBy') {
-                    setPreparedBy(prev => isSelected ? prev.filter(p => p.id !== s.id) : [...prev, s])
-                  } else if (signatoryRole === 'notedBy') {
-                    setNotedBy(isSelected ? null : s)
-                  } else if (signatoryRole === 'approvedBy') {
-                    setApprovedBy(isSelected ? null : s)
-                  }
-                }
-
-                return (
-                  <div key={s.id} onClick={handleSelect} style={{
-                    display: 'flex', alignItems: 'center', gap: '0.875rem',
-                    padding: '0.75rem 1rem', borderRadius: '0.875rem', cursor: 'pointer',
-                    background: isSelected ? 'rgba(37,99,235,0.06)' : '#f8fafc',
-                    border: isSelected ? '1px solid rgba(37,99,235,0.2)' : '1px solid transparent',
-                    transition: 'all 0.15s ease'
-                  }}>
-                    <div style={{
-                      width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                      background: isSelected ? 'rgba(37,99,235,0.12)' : 'rgba(0,0,0,0.06)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, fontSize: '0.875rem', color: isSelected ? '#2563eb' : '#64748b'
-                    }}>
-                      {s.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: '#0f172a' }}>{s.name}</div>
-                    </div>
-                    <div style={{
-                      width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
-                      background: isSelected ? '#2563eb' : 'transparent',
-                      border: isSelected ? 'none' : '1.5px solid #cbd5e1',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', transition: 'all 0.15s ease'
-                    }}>
-                      {isSelected && <Check size={12} weight="bold" />}
-                    </div>
-                  </div>
-                )
-              })}
-            {availableSignatories.length === 0 && (
-              <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.875rem' }}>
-                No active users found in {province || 'this region'}.
-              </div>
-            )}
-          </div>
-
-          {(preparedBy.length > 0 || notedBy || approvedBy) && (
-            <div style={{ padding: '0.875rem 1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '0.8125rem', color: '#475569', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-              {preparedBy.length > 0 && <span><strong>Prepared:</strong> {preparedBy.map(p => p.name).join(', ')}</span>}
-              {notedBy && <span><strong>Noted:</strong> {notedBy.name}</span>}
-              {approvedBy && <span><strong>Approved:</strong> {approvedBy.name}</span>}
-            </div>
-          )}
-        </div>
-      </HeaderFooterModal>
-
-      {/* Upload PDF Modal — Provincial User */}
-      <HeaderFooterModal
-        isOpen={showApprovalUploadModal}
-        onClose={() => setShowApprovalUploadModal(false)}
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-            <span className="sitrep-badge" style={{ background: '#2563eb' }}>UPLOAD</span>
-            <span>Upload Signed PDF</span>
-          </div>
-        }
-        subtitle="Upload the signed situational report PDF. It will be sent to the Provincial Approver for review."
-        maxWidth="480px"
-        footer={
-          <>
-            <Button variant="subtle" onClick={() => setShowApprovalUploadModal(false)}>Cancel</Button>
-            <Button
-              variant="solid"
-              color="primary"
-              onClick={handleUploadPdfSubmit}
-              isLoading={uploadingApproval}
-              disabled={!approvalFile}
-              leftIcon={<Upload size={15} />}
-            >
-              Submit for Approval
-            </Button>
-          </>
-        }
-      >
-        <div
-          className={`approval-file-upload ${isDragActive ? 'drag-active' : ''}`}
-          onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
-          onDragLeave={(e) => { e.preventDefault(); setIsDragActive(false); }}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragActive(false);
-            const file = e.dataTransfer.files?.[0];
-            if (file && file.type === 'application/pdf') {
-              setApprovalFile(file);
-            } else if (file) {
-              showSuccess('Validation Error', 'Only PDF files are allowed.');
-            }
-          }}
-        >
-          <input
-            id="approval-pdf-input"
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={(e) => setApprovalFile(e.target.files?.[0] ?? null)}
-            className="approval-file-input-hidden"
-            style={{ display: 'none' }}
-          />
-          {!approvalFile ? (
-            <label htmlFor="approval-pdf-input" className="approval-file-upload-label modern-upload-label">
-              <div className="modern-upload-icon-wrapper">
-                <Upload size={32} className="approval-upload-icon modern-icon" />
-              </div>
-              <span className="approval-upload-text"><strong>Click to upload</strong> or drag and drop</span>
-              <span className="approval-upload-hint">PDF files only (Max. 10MB)</span>
-            </label>
-          ) : (
-            <div className="approval-file-selected modern-file-selected">
-              <div className="modern-file-info">
-                <div className="modern-file-icon-wrapper">
-                  <FileArrowDown size={24} className="approval-file-icon modern-file-icon" />
-                </div>
-                <div className="modern-file-details">
-                  <span className="approval-file-name" title={approvalFile.name}>{approvalFile.name}</span>
-                  <span className="approval-file-size">{(approvalFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                color="danger"
-                size="sm"
-                onClick={() => {
-                  setApprovalFile(null)
-                  const input = document.getElementById('approval-pdf-input')
-                  if (input) input.value = ''
-                }}
-                title="Remove file"
-              >
-                <X size={18} />
-              </Button>
-            </div>
-          )}
-        </div>
-      </HeaderFooterModal>
 
 
-
-      {/* Action Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showApprovalConfirmation}
-        onClose={() => setShowApprovalConfirmation(false)}
-        type="success"
-        title="Success"
-        message={approvalConfirmMessage}
-        confirmLabel="Done"
-        onConfirm={() => setShowApprovalConfirmation(false)}
-      />
-
-      {/* Approved View Modal */}
-      <HeaderFooterModal
-        isOpen={showApprovedView && !!approvedViewEvent}
-        onClose={() => { setShowApprovedView(false); setApprovedViewEvent(null) }}
-        title={approvedViewEvent?.name || 'Report Details'}
-        maxWidth="480px"
-        footer={
-          <>
-            {(() => {
-              const pdfUrl = getApprovedPdfUrl(approvedViewEvent) || approvedViewEvent?.approvedPdfUrl
-              return pdfUrl ? (
-                <Button
-                  as="a"
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="solid"
-                  color="primary"
-                  style={{ flex: 1 }}
-                  leftIcon={<Download size={16} />}
-                >
-                  Download PDF
-                </Button>
-              ) : (
-                <span className="approved-view-no-pdf">No PDF available</span>
-              )
-            })()}
-            <Button
-              variant="subtle"
-              onClick={() => handleEditApprovedReport(approvedViewEvent)}
-              style={{ flex: 1 }}
-              leftIcon={<PencilSimple size={16} />}
-            >
-              Edit Report
-            </Button>
-          </>
-        }
-      >
-        <div className="approved-view-details">
-          <div className="approved-view-detail-row">
-            <span className="approved-view-label">Event</span>
-            <span className="approved-view-value">{approvedViewEvent?.name}</span>
-          </div>
-          <div className="approved-view-detail-row">
-            <span className="approved-view-label">Date</span>
-            <span className="approved-view-value">
-              {approvedViewEvent?.startDate
-                ? new Date(approvedViewEvent.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                : '-'}
-            </span>
-          </div>
-          <div className="approved-view-detail-row">
-            <span className="approved-view-label">Alert Level</span>
-            <span className="approved-view-value">
-              <span className={`alert-pill alert-${(approvedViewEvent?.alertStatus || 'white').toLowerCase()}`}>
-                {(approvedViewEvent?.alertStatus || 'white').toUpperCase()}
-              </span>
-            </span>
-          </div>
-        </div>
-      </HeaderFooterModal>
-      }
-
-      {/* ── Sit Rep Versions Modal ── */}
-      {
-      <HeaderFooterModal
-        isOpen={showVersionsModal && !!versionsEvent}
-        onClose={() => setShowVersionsModal(false)}
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-            <span className="sitrep-badge">VERSIONS</span>
-            <span>{versionsEvent?.name}</span>
-          </div>
-        }
-        subtitle="Select a situation report to generate its consolidated summary."
-        maxWidth="640px"
-        footer={<Button variant="subtle" onClick={() => setShowVersionsModal(false)}>Close</Button>}
-      >
-        <div style={{ position: 'relative' }}>
-          {processingId && (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 10,
-              background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
-              borderRadius: 'inherit'
-            }}>
-              <ArrowsClockwise size={28} className="animate-spin" weight="bold" style={{ color: '#2563eb' }} />
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Generating Report...</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Fetching data and building PDF preview</span>
-            </div>
-          )}
-          {versionsLoading ? (
-            <div className="versions-loading">
-              <ArrowsClockwise size={24} className="animate-spin" weight="bold" />
-              <span>Loading versions...</span>
-            </div>
-          ) : sitRepVersions.length === 0 ? (
-            <div className="versions-empty">
-              <div className="versions-empty-icon"><FileText size={40} /></div>
-              <h3>No Sit Reps Found</h3>
-              <p>Add situation reports in the "Add Report" section first to generate consolidated versions here.</p>
-            </div>
-          ) : (
-            <div className="versions-list">
-              {sitRepVersions.map((v) => (
-                <div key={v.id} className="version-card">
-                  <div className="version-card-main">
-                    <div className="version-card-icon"><FileText size={18} /></div>
-                    <div className="version-card-info">
-                      <span className="version-card-title">{v.title}</span>
-                      <span className="version-card-date">
-                        Created: {new Date(v.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="version-card-actions">
-                    <Button
-                      variant="subtle"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleOpenLguStatus(versionsEvent, v); }}
-                      title="View LGU Submission Status"
-                      leftIcon={<ChartBar size={14} />}
-                    >
-                      LGUs
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </HeaderFooterModal>
-      }
-
-      {/* ── LGU Submission Status Modal ── */}
-      <HeaderFooterModal
-        isOpen={showLguStatusModal && !!lguStatusEvent}
-        onClose={() => setShowLguStatusModal(false)}
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-            <span className="sitrep-badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.2)' }}>LGU STATUS</span>
-            <span>{lguStatusEvent?.name}</span>
-          </div>
-        }
-        subtitle={`${lguStatusVersion?.title} — Tracking submission progress`}
-        maxWidth="800px"
-        footer={<Button variant="subtle" onClick={() => setShowLguStatusModal(false)}>Close</Button>}
-      >
-        <div className="lgu-status-body">
-          {lguStatusLoading ? (
-            <div className="versions-loading">
-              <div className="loading-spinner-small"></div>
-              <span>Loading LGU submissions...</span>
-            </div>
-          ) : (
-            <div className="lgu-status-container">
-              <div className="lgu-status-column submitted-col">
-                <div className="lgu-status-col-header">
-                  <h3>Submitted</h3>
-                  <span className="lgu-count-badge success">{lguStatusData.submitted.length}</span>
-                </div>
-                <ul className="lgu-list">
-                  {lguStatusData.submitted.length > 0 ? (
-                    lguStatusData.submitted.map(lgu => (
-                      <li key={lgu} className="lgu-item submitted">
-                        <CheckCircle size={16} className="lgu-icon" />
-                        {lgu}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="lgu-item empty">No LGUs have submitted yet.</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="lgu-status-column pending-col">
-                <div className="lgu-status-col-header">
-                  <h3>Not Submitted</h3>
-                  <span className="lgu-count-badge warning">{lguStatusData.pending.length}</span>
-                </div>
-                <ul className="lgu-list">
-                  {lguStatusData.pending.length > 0 ? (
-                    lguStatusData.pending.map(lgu => (
-                      <li key={lgu} className="lgu-item pending">
-                        <ArrowsClockwise size={16} className="lgu-icon" />
-                        {lgu}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="lgu-item empty success-empty">All LGUs have submitted!</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          )}
-        </div>
-      </HeaderFooterModal>
-
-      <HeaderFooterModal
-        isOpen={showTextEditorModal}
-        onClose={() => setShowTextEditorModal(false)}
-        title={textEditorModalData?.title || 'Edit Text'}
-        maxWidth="600px"
-        footer={
-          <>
-            <Button variant="subtle" onClick={() => setShowTextEditorModal(false)}>Cancel</Button>
-            <Button variant="solid" onClick={saveTextUpdate}>Save Changes</Button>
-          </>
-        }
-      >
-        <textarea
-          className="remarks-textarea"
-          value={textEditorModalData?.tempValue || ''}
-          onChange={(e) => setTextEditorModalData({ ...textEditorModalData, tempValue: e.target.value })}
-          placeholder={`Enter ${textEditorModalData?.title?.toLowerCase().replace('edit ', '') || 'text'} here...`}
-          autoFocus
-          style={{ width: '100%', minHeight: '150px', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.875rem', resize: 'vertical' }}
-        />
-      </HeaderFooterModal>
-
-      <HeaderFooterModal
-        isOpen={showDownloadTypeModal}
-        onClose={() => setShowDownloadTypeModal(false)}
-        title="Select Download Format"
-        subtitle="How would you like to download this consolidated report?"
-        maxWidth="500px"
-        footer={<Button variant="subtle" onClick={() => setShowDownloadTypeModal(false)}>Cancel</Button>}
-      >
-        <div className="download-options-grid">
-          <div className="download-option-card" onClick={() => {
-            setShowDownloadTypeModal(false)
-            setShowSignatoriesModal(true)
-          }}>
-            <div className="download-option-icon"><FileText size={28} /></div>
-            <div>
-              <div className="download-option-title">PDF Document</div>
-              <div className="download-option-desc">Includes official signatures & formatting</div>
-            </div>
-          </div>
-
-          <div className="download-option-card csv" onClick={() => {
-            setShowDownloadTypeModal(false)
-            generateConsolidatedCsv({
-              ...generatedSummaryData.pdfParams,
-              summaryText: aiGeneratedSummaryText,
-              signatories: { preparedBy: [], notedBy: null, approvedBy: null }
-            })
-          }}>
-            <div className="download-option-icon"><ChartBar size={28} /></div>
-            <div>
-              <div className="download-option-title">CSV Datasets</div>
-              <div className="download-option-desc">Clean data in ZIP format (Excel compatible)</div>
-            </div>
-          </div>
-        </div>
-      </HeaderFooterModal>
 
 
       <HeaderFooterModal

@@ -26,6 +26,9 @@ ALTER TABLE public.roads_and_bridges                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.roads_and_bridges_sections       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.water_supply_reports             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.work_suspension_reports          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.event_deployments                ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.event_signals                    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications                    ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- IMPORTANT: Because this app uses a custom auth model
@@ -117,3 +120,23 @@ CREATE POLICY "Deny anon on water_supply_reports"
 
 CREATE POLICY "Deny anon on work_suspension_reports"
   ON public.work_suspension_reports FOR ALL TO anon USING (false);
+
+-- ============================================================
+-- PATH A: ALLOW ANONYMOUS ACCESS (FOR CUSTOM AUTH MODEL)
+-- The following policies allow the anon role to perform 
+-- operations required by the browser-side code.
+-- ============================================================
+
+CREATE POLICY "Allow anon all on event_deployments"
+  ON public.event_deployments FOR ALL TO anon USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anon all on event_signals"
+  ON public.event_signals FOR ALL TO anon USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anon all on notifications"
+  ON public.notifications FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Also allow activity logs insert for anon so login logging works
+DROP POLICY IF EXISTS "Deny anon on activity_logs" ON public.activity_logs;
+CREATE POLICY "Allow anon insert on activity_logs"
+  ON public.activity_logs FOR INSERT TO anon WITH CHECK (true);

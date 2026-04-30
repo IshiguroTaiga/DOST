@@ -853,7 +853,7 @@ export default function AddReport() {
         })
       })
 
-      const summaryData = { categoryTotals, byCityCategory }
+      const summaryData = { categoryTotals, byCityCategory, details: allDetailLists }
       const cities = Object.keys(byCityCategory).sort()
 
       return {
@@ -960,27 +960,43 @@ export default function AddReport() {
   }
 
   const handleDownloadClick = async (sr) => {
-    // If a signed PDF is already uploaded and approved, download it directly
-    if (sr.approved_pdf_url) {
-      setProcessingExportId(sr.id)
-      try {
-        const link = document.createElement('a')
-        link.href = sr.approved_pdf_url
-        // Use the title as filename, replace spaces with hyphens
-        const fileName = `${sr.title.replace(/\s+/g, '-')}_Signed.pdf`
-        link.setAttribute('download', fileName)
-        link.setAttribute('target', '_blank')
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        return
-      } catch (err) {
-        console.error('Direct download failed:', err)
-      } finally {
-        setProcessingExportId(null)
-      }
+    // If a signed PDF is already uploaded and approved, ask if they want that or a new one
+    if (sr.approved_pdf_url && sr.status === 'Approved') {
+      showConfirm({
+        title: 'Download Report',
+        message: 'An approved signed PDF is already available for this report. Would you like to download the official signed PDF or generate a new one based on the current data?',
+        confirmText: 'Download Official PDF',
+        cancelText: 'Generate New PDF',
+        type: 'info',
+        onConfirm: () => {
+          setProcessingExportId(sr.id)
+          try {
+            const link = document.createElement('a')
+            link.href = sr.approved_pdf_url
+            const fileName = `${sr.title.replace(/\s+/g, '-')}_Signed.pdf`
+            link.setAttribute('download', fileName)
+            link.setAttribute('target', '_blank')
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+          } catch (err) {
+            console.error('Direct download failed:', err)
+          } finally {
+            setProcessingExportId(null)
+          }
+        },
+        onCancel: () => {
+          // If they click cancel (Generate New PDF), we proceed with the normal generation flow
+          startReportGeneration(sr)
+        }
+      })
+      return
     }
 
+    startReportGeneration(sr)
+  }
+
+  const startReportGeneration = async (sr) => {
     setProcessingExportId(sr.id)
     const data = await fetchFullSitRepData(sr)
     if (data) {
@@ -1010,7 +1026,7 @@ export default function AddReport() {
       }
 
       fetchSignatories()
-      setShowDownloadTypeModal(true)
+      setShowPdfEditModal(true)
     }
     setProcessingExportId(null)
   }
@@ -1024,6 +1040,7 @@ export default function AddReport() {
     })
     finalDoc.save(`${generatedSummaryData.pdfParams.reportTitle.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`)
     setShowPdfEditModal(false)
+    setShowSignatoriesModal(false)
   }
 
   const handleConfirmCsvDownload = () => {
@@ -1627,6 +1644,7 @@ export default function AddReport() {
           let payload = {
             event_id: selectedEvent?.id,
             situational_report_id: currentSituationalReport.id,
+            city: row.city,
             barangay: row.barangay,
             remarks: row.remarks || ''
           }
@@ -2586,9 +2604,9 @@ export default function AddReport() {
     <div className="page consolidated-report-page">
       <div className="consolidated-report-card">
         <div className="consolidated-report-toolbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="consolidated-report-header-stack">
             <h1 className="consolidated-report-title">
-              {view === 'events' ? 'Select Event for Reporting' :
+              {view === 'events' ? 'Situational Reports' :
                 view === 'versions' ? (selectedEvent?.name || 'Report Versions') :
                   (currentSituationalReport?.title || 'Report Entries')}
             </h1>
@@ -2603,7 +2621,7 @@ export default function AddReport() {
                 setCurrentPage(1)
               }}
               suggestions={view === 'events' ? events.map(e => e.name) : submittedReports.map((r) => r.location)}
-              className="add-report-search-box"
+              className="consolidated-report-search-box"
             />
             {(view === 'versions' || view === 'entries') && (
               <>
@@ -2699,10 +2717,10 @@ export default function AddReport() {
               <table className="consolidated-report-table report-table-display add-report-display-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'center' }}>Event Name</th>
-                    <th style={{ textAlign: 'center' }}>Event Type</th>
-                    <th style={{ textAlign: 'center' }}>Alert Status</th>
-                    <th style={{ textAlign: 'center' }}>Reference Date</th>
+                    <th style={{ textAlign: 'left' }}>Event Name</th>
+                    <th style={{ textAlign: 'left' }}>Event Type</th>
+                    <th style={{ textAlign: 'left' }}>Alert Status</th>
+                    <th style={{ textAlign: 'left' }}>Reference Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2754,21 +2772,9 @@ export default function AddReport() {
                 &lt; Previous
               </Button>
               <div className="consolidated-report-pagination-numbers">
-                {Array.from({ length: totalEventPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalEventPages || (p >= currentPage - 2 && p <= currentPage + 2))
-                  .map((p, i, arr) => (
-                    <span key={p}>
-                      {i > 0 && arr[i - 1] !== p - 1 && <span className="consolidated-report-pagination-ellipsis">...</span>}
-                      <Button
-                        variant={currentPage === p ? 'solid' : 'ghost'}
-                        size="sm"
-                        style={{ minWidth: '36px', height: '36px', padding: 0 }}
-                        onClick={() => setCurrentPage(p)}
-                      >
-                        {String(p).padStart(2, '0')}
-                      </Button>
-                    </span>
-                  ))}
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Page {currentPage} of {totalEventPages}
+                </span>
               </div>
               <Button
                 variant="subtle"
@@ -2785,11 +2791,11 @@ export default function AddReport() {
               <table className="consolidated-report-table report-table-display add-report-display-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'center' }}>Report Number</th>
-                    <th style={{ textAlign: 'center' }}>Report Title</th>
-                    <th style={{ textAlign: 'center' }}>Date Created</th>
-                    <th style={{ textAlign: 'center' }}>Status</th>
-                    <th className="col-action">ACTIONS</th>
+                    <th style={{ width: '150px', textAlign: 'left' }}>Report Number</th>
+                    <th style={{ textAlign: 'left' }}>Report Title</th>
+                    <th style={{ width: '180px', textAlign: 'left' }}>Date Created</th>
+                    <th style={{ width: '150px', textAlign: 'left' }}>Status</th>
+                    <th className="col-action" style={{ width: '280px', textAlign: 'center' }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2823,10 +2829,11 @@ export default function AddReport() {
                             {sr.status || 'Draft'}
                           </span>
                         </td>
-                          <td className="col-action" onClick={(e) => e.stopPropagation()} style={{ width: '220px' }}>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
+                          <td className="col-action" onClick={(e) => e.stopPropagation()} style={{ width: '280px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center' }}>
                               <Button
-                                variant="outline"
+                                variant="solid"
+                                color="primary"
                                 size="sm"
                                 onClick={() => {
                                   setCurrentSituationalReport(sr)
@@ -2841,6 +2848,7 @@ export default function AddReport() {
                               {(user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') && (!sr.status || ['draft', 'sent'].includes(sr.status.toLowerCase())) && (
                                 <Button
                                   variant="solid"
+                                  color="success"
                                   size="sm"
                                   onClick={() => handleUploadPdfClick(sr)}
                                   title="Send Report"
@@ -2851,7 +2859,8 @@ export default function AddReport() {
                               )}
                               {(user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin') && sr.status?.toLowerCase() === 'pending approval' && (
                                 <Button
-                                  variant="outline"
+                                  variant="solid"
+                                  color="info"
                                   size="sm"
                                   onClick={() => handleUploadPdfClick(sr)}
                                   title="Re-upload Signed PDF"
@@ -2862,7 +2871,8 @@ export default function AddReport() {
                               )}
                               {(user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.account_type === 'Super Admin') && (
                                 <Button
-                                  variant="outline"
+                                  variant="solid"
+                                  color="success"
                                   size="sm"
                                   onClick={() => handleDownloadClick(sr)}
                                   title="Download Report"
@@ -2895,12 +2905,12 @@ export default function AddReport() {
               <table className="consolidated-report-table report-table-display add-report-display-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '180px' }}>LOCATION</th>
-                    <th style={{ width: '140px' }}>CLASSIFICATION</th>
-                    <th style={{ textAlign: 'center' }}>SUMMARY / DETAILS</th>
-                    <th style={{ width: '120px' }}>STATUS</th>
-                    <th style={{ width: '180px' }}>REMARKS</th>
-                    <th className="col-action">ACTIONS</th>
+                    <th style={{ width: '180px', textAlign: 'left' }}>LOCATION</th>
+                    <th style={{ width: '140px', textAlign: 'left' }}>CLASSIFICATION</th>
+                    <th style={{ textAlign: 'left' }}>SUMMARY / DETAILS</th>
+                    <th style={{ width: '120px', textAlign: 'left' }}>STATUS</th>
+                    <th style={{ width: '180px', textAlign: 'left' }}>REMARKS</th>
+                    <th className="col-action" style={{ width: '250px', textAlign: 'center' }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2937,11 +2947,11 @@ export default function AddReport() {
                         <td style={{ fontSize: '11px', color: '#64748b', maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {item.remarks || '-'}
                         </td>
-                        <td className="col-action">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                        <td className="col-action" style={{ width: '250px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center' }}>
                             <Button
                               variant="solid"
-                              color="primary"
+                              color="info"
                               size="sm"
                               onClick={() => handleEditReport(item)}
                               icon={<FilePlus size={14} />}
@@ -2949,13 +2959,14 @@ export default function AddReport() {
                               Edit Entry
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="solid"
                               size="sm"
                               color="danger"
                               onClick={() => handleConfirmDelete(item)}
                               title="Delete Report"
+                              icon={<Trash size={14} />}
                             >
-                              <Trash size={14} />
+                              Delete
                             </Button>
                           </div>
                         </td>
@@ -2981,21 +2992,9 @@ export default function AddReport() {
                 &lt; Previous
               </Button>
               <div className="consolidated-report-pagination-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2))
-                  .map((p, i, arr) => (
-                    <span key={p}>
-                      {i > 0 && arr[i - 1] !== p - 1 && <span className="consolidated-report-pagination-ellipsis">...</span>}
-                      <Button
-                        variant={currentPage === p ? 'solid' : 'ghost'}
-                        size="sm"
-                        style={{ minWidth: '36px', height: '36px', padding: 0 }}
-                        onClick={() => setCurrentPage(p)}
-                      >
-                        {String(p).padStart(2, '0')}
-                      </Button>
-                    </span>
-                  ))}
+                <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
               <Button
                 variant="subtle"
@@ -3730,24 +3729,13 @@ export default function AddReport() {
         maxWidth="750px"
         footer={<Button variant="subtle" onClick={() => setShowDownloadTypeModal(false)}>Cancel</Button>}
       >
-        <div className="download-options-grid">
+        <div className="download-options-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>
           <div className="download-option-card" onClick={() => {
             setShowDownloadTypeModal(false)
             setShowPdfEditModal(true)
           }}>
             <div className="download-option-icon"><FileText size={32} /></div>
             <div className="download-option-title">PDF Document</div>
-          </div>
-
-          <div className="download-option-card csv" onClick={() => {
-            setShowDownloadTypeModal(false)
-            generateConsolidatedCsv({
-              ...generatedSummaryData.pdfParams,
-              signatories: { preparedBy: [], notedBy: null, approvedBy: null }
-            })
-          }}>
-            <div className="download-option-icon"><ChartBar size={32} /></div>
-            <div className="download-option-title">CSV Dataset</div>
           </div>
         </div>
       </HeaderFooterModal>

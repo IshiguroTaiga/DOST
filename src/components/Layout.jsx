@@ -4,7 +4,7 @@ import Sidebar from './Sidebar'
 import ForcePasswordChange from '../pages/ForcePasswordChange'
 import '../styles/components/Layout.css'
 
-export default function Layout({ user, onLogout }) {
+export default function Layout({ user, onLogout, onUserUpdate }) {
   const { pathname } = useLocation()
   const isDashboard = pathname === '/dashboard' || pathname === '/' || pathname === ''
 
@@ -17,6 +17,12 @@ export default function Layout({ user, onLogout }) {
     localStorage.setItem('sidebar_collapsed', isCollapsed)
   }, [isCollapsed])
 
+  useEffect(() => {
+    const savedTheme = user?.theme || localStorage.getItem('theme') || 'classic'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [user?.theme])
+
+
   const toggleSidebar = () => setIsCollapsed(prev => !prev)
 
   return (
@@ -24,9 +30,11 @@ export default function Layout({ user, onLogout }) {
       <Sidebar 
         user={user} 
         onLogout={onLogout} 
+        onUserUpdate={onUserUpdate}
         isCollapsed={isCollapsed} 
         onToggle={toggleSidebar} 
       />
+
       <main className={`main-content ${isDashboard ? 'main-content--scrollable' : ''}`}>
         <Outlet context={{ user }} />
         {user?.must_change_password && (

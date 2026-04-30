@@ -51,7 +51,7 @@ function App() {
       if (supabase && parsed?.id) {
         const { data: fresh, error } = await supabase
           .from('users')
-          .select('id, email, first_name, last_name, role, status, account_type, province, city, must_change_password, created_at')
+          .select('id, email, first_name, last_name, role, status, account_type, province, city, must_change_password, created_at, theme')
           .eq('id', parsed.id)
           .maybeSingle()
 
@@ -93,6 +93,13 @@ function App() {
     setUser(null)
   }
 
+  const handleUserUpdate = (updatedUser) => {
+    const sanitized = sanitizeUser(updatedUser)
+    sessionStorage.setItem('report_system_user', JSON.stringify(sanitized))
+    setUser(sanitized)
+  }
+
+
   if (isLoading) {
     return <LoadingSpinner label="Authenticating session..." />
   }
@@ -117,8 +124,9 @@ function App() {
             path="/"
             element={
               isAuthenticated ? (
-                <Layout user={user} onLogout={handleLogout} />
+                <Layout user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
               ) : (
+
                 <Navigate to="/login" replace />
               )
             }

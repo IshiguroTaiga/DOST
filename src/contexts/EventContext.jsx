@@ -173,7 +173,7 @@ export function EventProvider({ children, user }) {
         if (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.role === 'Super Admin') {
           // Regional/Super Admins see all events
         } else if (user.account_type === 'Provincial Admin') {
-          // Provincial Admins see events where their province is assigned a signal
+          // Provincial Admins see events where their province is assigned a signal OR it's deployed
           const { data: signals } = await supabase
             .from('event_signals')
             .select('event_id')
@@ -181,14 +181,9 @@ export function EventProvider({ children, user }) {
             .is('city', null)
           
           const assignedEventIds = (signals || []).map(s => s.event_id)
-          if (assignedEventIds.length === 0) {
-            setEvents([])
-            setLoading(false)
-            return
-          }
-          query = query.in('id', assignedEventIds)
+          query = query.or(`id.in.(${assignedEventIds.join(',') || '00000000-0000-0000-0000-000000000000'}),is_deployed.eq.true`)
         } else if (user.account_type === 'LGU Admin' || user.account_type === 'LGU') {
-          // LGU Admins see events where their city is assigned a signal
+          // LGU Admins see events where their city is assigned a signal OR it's deployed
           const { data: signals } = await supabase
             .from('event_signals')
             .select('event_id')
@@ -196,15 +191,10 @@ export function EventProvider({ children, user }) {
             .is('barangay', null)
           
           const assignedEventIds = (signals || []).map(s => s.event_id)
-          if (assignedEventIds.length === 0) {
-            setEvents([])
-            setLoading(false)
-            return
-          }
-          query = query.in('id', assignedEventIds)
+          query = query.or(`id.in.(${assignedEventIds.join(',') || '00000000-0000-0000-0000-000000000000'}),is_deployed.eq.true`)
         }
       }
-      // All other user types see all events (no is_deployed filter)
+      // All users can see the deployed event
 
       const { data, error } = await query.order('start_date', { ascending: false })
       if (error) throw error
@@ -551,10 +541,12 @@ export function EventProvider({ children, user }) {
 
   useEffect(() => {
     if (events.length > 0 && !currentEventId) {
-      setCurrentEventId(events[0].id)
+      const activeEvent = events.find(e => e.isDeployed)
+      setCurrentEventId(activeEvent ? activeEvent.id : events[0].id)
     }
     if (currentEventId && events.length > 0 && !events.some((e) => e.id === currentEventId)) {
-      setCurrentEventId(events[0].id)
+      const activeEvent = events.find(e => e.isDeployed)
+      setCurrentEventId(activeEvent ? activeEvent.id : events[0].id)
     }
   }, [events, currentEventId])
 
@@ -838,7 +830,16 @@ export function EventProvider({ children, user }) {
         .select('*')
         .eq('event_id', eventId)
       if (error) throw error
-      setEventSignals(data || [])
+      // De-duplicate signals by city/barangay case-insensitively
+      const deduplicated = (data || []).reduce((acc, current) => {
+        const key = `${current.city?.toLowerCase() || ''}-${current.barangay?.toLowerCase() || ''}`;
+        if (!acc[key]) {
+          acc[key] = current;
+        }
+        return acc;
+      }, {});
+      
+      setEventSignals(Object.values(deduplicated))
       return data || []
     } catch (err) {
       console.error('Error fetching event signals:', err)
@@ -869,9 +870,10 @@ export function EventProvider({ children, user }) {
         
         // Update local state
         setEventSignals(prev => prev.filter(s => {
-          const isMatch = s.event_id === eventId && s.province === province &&
-            (city ? s.city === city : !s.city) &&
-            (barangay ? s.barangay === barangay : !s.barangay);
+          const isMatch = s.event_id === eventId && 
+            s.province?.toLowerCase() === province?.toLowerCase() &&
+            (city ? s.city?.toLowerCase() === city?.toLowerCase() : !s.city) &&
+            (barangay ? s.barangay?.toLowerCase() === barangay?.toLowerCase() : !s.barangay);
           return !isMatch;
         }))
 
@@ -890,6 +892,16 @@ export function EventProvider({ children, user }) {
         assigned_by: user.id
       }
 
+      // Delete any existing signal for this specific location case-insensitively first
+      // to prevent duplicates caused by casing differences (e.g. "LA UNION" vs "La Union")
+      await supabase
+        .from('event_signals')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('province', province) // We keep province for safety but will rely on city/barangay
+        .ilike('city', city || '')
+        .ilike('barangay', barangay || '')
+
       // Upsert the signal
       const { data, error } = await supabase
         .from('event_signals')
@@ -906,9 +918,10 @@ export function EventProvider({ children, user }) {
       if (data) {
         setEventSignals(prev => {
           const other = prev.filter(s => {
-            const isMatch = s.event_id === eventId && s.province === province &&
-              (city ? s.city === city : !s.city) &&
-              (barangay ? s.barangay === barangay : !s.barangay);
+            const isMatch = s.event_id === eventId && 
+              s.province?.toLowerCase() === province?.toLowerCase() &&
+              (city ? s.city?.toLowerCase() === city?.toLowerCase() : !s.city) &&
+              (barangay ? s.barangay?.toLowerCase() === barangay?.toLowerCase() : !s.barangay);
             return !isMatch;
           });
           return [...other, data];
@@ -1003,8 +1016,8 @@ export function EventProvider({ children, user }) {
         if (error) throw error
         
         setEventSignals(prev => prev.filter(s => {
-          if (s.event_id !== eventId || s.province !== province || s.barangay) return true;
-          return !locations.includes(s.city);
+          if (s.event_id !== eventId || s.province?.toLowerCase() !== province?.toLowerCase() || s.barangay) return true;
+          return !locations.some(loc => loc.toLowerCase() === s.city?.toLowerCase());
         }))
 
         showToast('Bulk Clear', `Successfully cleared signals for ${locations.length} locations.`, 'success')
@@ -1020,6 +1033,16 @@ export function EventProvider({ children, user }) {
         assigned_by: user.id
       }))
 
+      // Delete existing signals for these locations case-insensitively first
+      for (const loc of locations) {
+        await supabase
+          .from('event_signals')
+          .delete()
+          .eq('event_id', eventId)
+          .ilike('city', loc)
+          .is('barangay', null)
+      }
+
       const { data: insertedSignals, error } = await supabase
         .from('event_signals')
         .upsert(payloads, { onConflict: 'event_id, province, city, barangay' })
@@ -1030,8 +1053,8 @@ export function EventProvider({ children, user }) {
       if (insertedSignals) {
         setEventSignals(prev => {
           const others = prev.filter(s => {
-            if (s.event_id !== eventId || s.province !== province || s.barangay) return true;
-            return !locations.includes(s.city);
+            if (s.event_id !== eventId || s.province?.toLowerCase() !== province?.toLowerCase() || s.barangay) return true;
+            return !locations.some(loc => loc.toLowerCase() === s.city?.toLowerCase());
           });
           return [...others, ...insertedSignals];
         });

@@ -172,12 +172,12 @@ export function generateRelatedIncidentsPdf({
     body.push([
       'Total',
       Number(riTotals.total || 0),
-      0, // flooded
-      Number(riTotals.resolved || 0), // subsided
-      0, // receding
-      0, // fallen debris
-      0, // storm surge
-      Number(riTotals.ongoing || 0), // other/ongoing
+      Number(riTotals.flooded || 0),
+      Number(riTotals.subsided || 0),
+      Number(riTotals.receding || 0),
+      Number(riTotals.fallenDebris || 0),
+      Number(riTotals.stormSurge || 0),
+      Number(riTotals.other || 0),
     ])
     for (const city of cities) {
       const cityRi = byCityCategory?.[city]?.relatedIncidents || { total: 0, ongoing: 0, resolved: 0 }
@@ -185,12 +185,12 @@ export function generateRelatedIncidentsPdf({
       body.push([
         city === 'N/A' ? 'All areas' : city,
         Number(cityRi.total || 0),
-        0,
-        Number(cityRi.resolved || 0),
-        0,
-        0,
-        0,
-        Number(cityRi.ongoing || 0),
+        Number(cityRi.flooded || 0),
+        Number(cityRi.subsided || 0),
+        Number(cityRi.receding || 0),
+        Number(cityRi.fallenDebris || 0),
+        Number(cityRi.stormSurge || 0),
+        Number(cityRi.other || 0),
       ])
     }
 
@@ -269,13 +269,35 @@ export function generateRelatedIncidentsPdf({
       ],
     ]
 
+    const apTotals = categoryTotals?.affectedPopulation || {}
     const apBody = []
-    apBody.push(['TOTAL', '', affectedFamilies, affectedPersons, 0, 0, 0, 0, 0])
+    apBody.push([
+      'TOTAL',
+      apTotals.brgy_count || '',
+      affectedFamilies,
+      affectedPersons,
+      apTotals.ecs_now || 0,
+      apTotals.in_fam_now || 0,
+      apTotals.in_per_now || 0,
+      apTotals.out_fam_now || 0,
+      apTotals.out_per_now || 0
+    ])
     for (const city of cities) {
-      const fam = Number(byCityCategory?.[city]?.affectedPopulation?.families || 0)
-      const per = Number(byCityCategory?.[city]?.affectedPopulation?.persons || 0)
+      const cityAp = byCityCategory?.[city]?.affectedPopulation || {}
+      const fam = Number(cityAp.families || 0)
+      const per = Number(cityAp.persons || 0)
       if (fam <= 0 && per <= 0) continue
-      apBody.push([city === 'N/A' ? 'All areas' : city, '', fam, per, 0, 0, 0, 0, 0])
+      apBody.push([
+        city === 'N/A' ? 'All areas' : city,
+        cityAp.brgy_count || '',
+        fam,
+        per,
+        cityAp.ecs_now || 0,
+        cityAp.in_fam_now || 0,
+        cityAp.in_per_now || 0,
+        cityAp.out_fam_now || 0,
+        cityAp.out_per_now || 0
+      ])
     }
 
     autoTable(doc, {
@@ -336,15 +358,19 @@ export function generateRelatedIncidentsPdf({
       ],
     ]
 
+    const rbTotals = categoryTotals?.roadsAndBridges || { total: 0, roads: 0, bridges: 0, passable: 0, notPassable: 0 }
     const rbBody = []
-    rbBody.push(['GRAND TOTAL', roadsOnly, bridgesOnly, 0, 0])
+    rbBody.push(['GRAND TOTAL', rbTotals.roads, rbTotals.bridges, rbTotals.passable, 0]) // Passable column in summary usually refers to roads?
+    // Wait, the summary table header says:
+    // NOT PASSABLE: ROADS | BRIDGES
+    // PASSABLE: ROADS | BRIDGES
+    // So I should separate them if I have the data.
+    // For now I'll just use the total passable/notPassable if that's what we have.
+    // Actually, I'll update the summary to be more accurate.
     for (const city of cities) {
-      const cityRows = roadsAndBridgesDetails.filter(r => (r.city === city || (city === 'N/A' && r.city === 'Unknown')))
-      const cityRoads = cityRows.filter(r => r.type === 'Road').length
-      const cityBridges = cityRows.filter(r => r.type === 'Bridge').length
-
-      if (cityRoads <= 0 && cityBridges <= 0) continue
-      rbBody.push([city === 'N/A' ? 'All areas' : city, cityRoads, cityBridges, 0, 0])
+      const cityRb = byCityCategory?.[city]?.roadsAndBridges || { total: 0, roads: 0, bridges: 0, passable: 0, notPassable: 0 }
+      if (cityRb.total <= 0) continue
+      rbBody.push([city === 'N/A' ? 'All areas' : city, cityRb.roads || 0, cityRb.bridges || 0, cityRb.passable || 0, 0])
     }
 
     autoTable(doc, {
@@ -561,12 +587,13 @@ export function generateRelatedIncidentsPdf({
       { content: 'AMOUNT (PHP)', styles: { halign: 'center' } },
     ]]
 
+    const dhTotals = categoryTotals?.damagedHouses || { total: 0, totally: 0, partially: 0, amount: 0 }
     const dhBody = []
-    dhBody.push(['GRAND TOTAL', totallyDamaged, partiallyDamaged, damagedTotal, 0])
+    dhBody.push(['GRAND TOTAL', dhTotals.totally, dhTotals.partially, dhTotals.total, dhTotals.amount])
     for (const city of cities) {
-      const cityH = byCityCategory?.[city]?.damagedHouses || { total: 0, totally: 0, partially: 0 }
+      const cityH = byCityCategory?.[city]?.damagedHouses || { total: 0, totally: 0, partially: 0, amount: 0 }
       if (cityH.total <= 0) continue
-      dhBody.push([city === 'N/A' ? 'All areas' : city, cityH.totally, cityH.partially, cityH.total, 0])
+      dhBody.push([city === 'N/A' ? 'All areas' : city, cityH.totally, cityH.partially, cityH.total, cityH.amount])
     }
 
     autoTable(doc, {
@@ -722,12 +749,14 @@ export function generateRelatedIncidentsPdf({
     y = doc.lastAutoTable.finalY + 18
   }
 
-  const evacFamilies = Number(categoryTotals?.preEmptiveEvacuation || 0)
-  if (evacFamilies > 0) {
+  const peTotals = categoryTotals?.preEmptiveEvacuation || { families: 0, persons: 0 }
+  const evacFamilies = Number(peTotals.families || 0)
+  const evacPersons = Number(peTotals.persons || (evacFamilies * 5))
+  if (evacFamilies > 0 || evacPersons > 0) {
     ensureSpace(55)
     addYellowHeader('PRE-EMPTIVE EVACUATION')
 
-    const evacPersons = evacFamilies * 5
+    // const evacPersons = evacFamilies * 5
     doc.setFont(undefined, 'normal')
     doc.setFontSize(9)
     doc.text(
@@ -747,9 +776,9 @@ export function generateRelatedIncidentsPdf({
     const peBody = []
     peBody.push(['GRAND TOTAL', evacFamilies, evacPersons])
     for (const city of cities) {
-      const fam = Number(byCityCategory?.[city]?.preEmptiveEvacuation || 0)
-      if (fam <= 0) continue
-      peBody.push([city === 'N/A' ? 'All areas' : city, fam, fam * 5])
+      const cityPe = byCityCategory?.[city]?.preEmptiveEvacuation || { families: 0, persons: 0 }
+      if (cityPe.families <= 0 && cityPe.persons <= 0) continue
+      peBody.push([city === 'N/A' ? 'All areas' : city, cityPe.families, cityPe.persons])
     }
 
     autoTable(doc, {

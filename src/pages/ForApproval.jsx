@@ -218,7 +218,7 @@ export default function ForApproval() {
                 <th style={{ width: '30%' }}>Report Title</th>
                 <th style={{ width: '15%' }}>Province</th>
                 <th style={{ width: '15%' }}>Submitted At</th>
-                <th className="col-action" style={{ width: '15%' }}>Actions</th>
+                <th className="col-action" style={{ width: '15%', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>

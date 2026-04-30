@@ -5,7 +5,7 @@ import '../styles/components/Button.css'
  * Standardized Button component with variants and loading state
  * @param {Object} props
  * @param {'solid'|'outline'|'subtle'|'ghost'} [props.variant] - Button variant (default: 'solid')
- * @param {'primary'|'success'|'danger'|'warning'|'neutral'|'secondary'} [props.color] - Button color theme (default: 'primary')
+ * @param {'primary'|'success'|'danger'|'warning'|'neutral'|'secondary'|'info'} [props.color] - Button color theme (default: 'primary')
  * @param {'sm'|'md'|'lg'} [props.size] - Button size (default: 'md')
  * @param {boolean} [props.isLoading] - If true, shows loading animation and disables the button
  * @param {React.ReactNode} [props.leftIcon] - Icon to show on the left

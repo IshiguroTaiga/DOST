@@ -387,11 +387,10 @@ export default function Users() {
   }
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Number', 'City', 'Status']
+    const headers = ['Name', 'Email', 'City', 'Status']
     const rows = sortedUsers.map((u) => [
       displayName(u),
       u.email,
-      u.phone || '',
       u.city || '',
       u.status || 'Active',
     ])
@@ -426,7 +425,9 @@ export default function Users() {
     <div className="page consolidated-report-page">
       <div className="consolidated-report-card">
         <div className="consolidated-report-toolbar">
-          <h1 className="consolidated-report-title">Users</h1>
+          <div className="consolidated-report-header-stack">
+            <h1 className="consolidated-report-title">Users</h1>
+          </div>
           <div className="consolidated-report-toolbar-controls">
             <SearchInput
               placeholder="Search users..."
@@ -439,7 +440,8 @@ export default function Users() {
               className="consolidated-report-search-box"
             />
             <Button 
-              variant="outline" 
+              variant="solid" 
+              color="success"
               onClick={exportCSV}
               leftIcon={<Upload size={16} />}
             >
@@ -482,7 +484,6 @@ export default function Users() {
                         <SortIcon columnKey="email" />
                       </Button>
                     </th>
-                    <th>Number</th>
                     {(isSuperAdmin || isRegionalAdmin) && (
                       <>
                         <th>Account type</th>
@@ -496,7 +497,7 @@ export default function Users() {
                       </Button>
                     </th>
                     <th>Status</th>
-                    <th className="col-action">Actions</th>
+                    <th className="col-action" style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -513,7 +514,6 @@ export default function Users() {
                             </div>
                           </td>
                           <td>{user.email}</td>
-                          <td>{user.phone || '-'}</td>
                           {(isSuperAdmin || isRegionalAdmin) && (
                             <>
                               <td>{user.account_type || '-'}</td>
@@ -526,10 +526,10 @@ export default function Users() {
                               {user.status || 'Active'}
                             </span>
                           </td>
-                          <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <td className="col-action" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                             <Button
                               variant="solid"
-                              color="warning"
+                              color="info"
                               size="sm"
                               onClick={() => openViewDetailsModal(user)}
                               icon={<Eye size={16} />}
@@ -552,23 +552,6 @@ export default function Users() {
               >
                 &lt; Previous
               </Button>
-              <div className="consolidated-report-pagination-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2))
-                  .map((p, i, arr) => (
-                    <span key={p}>
-                      {i > 0 && arr[i - 1] !== p - 1 && <span className="consolidated-report-pagination-ellipsis">...</span>}
-                      <Button
-                        variant={currentPage === p ? 'solid' : 'ghost'}
-                        size="sm"
-                        style={{ minWidth: '36px', height: '36px', padding: 0 }}
-                        onClick={() => setCurrentPage(p)}
-                      >
-                        {String(p).padStart(2, '0')}
-                      </Button>
-                    </span>
-                  ))}
-              </div>
               <Button
                 variant="subtle"
                 disabled={currentPage >= totalPages}

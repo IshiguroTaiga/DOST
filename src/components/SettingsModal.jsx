@@ -9,7 +9,7 @@ import Button from './Button'
 import SearchableSelect from './SearchableSelect'
 import HeaderFooterModal from './HeaderFooterModal'
 
-export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
+export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserUpdate }) {
     const navigate = useNavigate()
 
     const [activeTab, setActiveTab] = useState('security')
@@ -24,6 +24,8 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
     const [pwdSuccess, setPwdSuccess] = useState('')
     const [submittingPwd, setSubmittingPwd] = useState(false)
 
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'classic')
+
     // Reset state when modal opens
     useEffect(() => {
         if (isOpen) {
@@ -33,8 +35,38 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
             setPwdError('')
             setPwdSuccess('')
             setActiveTab('security')
+            setTheme(localStorage.getItem('theme') || 'classic')
         }
     }, [isOpen])
+
+    const handleThemeChange = async (newTheme) => {
+        setTheme(newTheme)
+        
+        // Apply immediately for smooth UX
+        document.documentElement.setAttribute('data-theme', newTheme)
+        
+        if (supabase && user?.id) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .update({ theme: newTheme })
+                    .eq('id', user.id)
+
+                if (error) throw error
+
+                // Update global state and session
+                onUserUpdate?.({ ...user, theme: newTheme })
+            } catch (err) {
+                console.error('[Settings] Failed to save theme:', err)
+                // Optionally fallback or notify
+            }
+        } else {
+            // Guest or non-DB fallback
+            localStorage.setItem('theme', newTheme)
+        }
+    }
+
+
 
     if (!isOpen) return null
 
@@ -145,6 +177,14 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                     </button>
 
                     <button
+                        onClick={() => setActiveTab('appearance')}
+                        className={`modal-sidebar-tab ${activeTab === 'appearance' ? 'active' : ''}`}
+                    >
+                        <Palette size={16} /> Appearance
+                    </button>
+
+
+                    <button
                         onClick={() => {
                             onClose()
                             navigate('/event-logs')
@@ -233,7 +273,51 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout }) {
                             </form>
                         </div>
                     )}
+
+                    {activeTab === 'appearance' && (
+                        <div className="settings-tab-pane">
+                            <h3 className="settings-section-title">UI Theme</h3>
+                            <p className="settings-section-desc">Choose between the classic interface or the modern style guide palette.</p>
+                            
+                            <div className="theme-selector-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
+                                <div 
+                                    className={`theme-option-card ${theme === 'classic' ? 'active' : ''}`}
+                                    onClick={() => handleThemeChange('classic')}
+                                    style={{
+                                        padding: '1rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '2px solid',
+                                        borderColor: theme === 'classic' ? 'var(--accent)' : 'var(--border-color)',
+                                        cursor: 'pointer',
+                                        background: theme === 'classic' ? 'var(--accent-glow)' : 'transparent',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Classic</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Standard PROACT interface colors</div>
+                                </div>
+
+                                <div 
+                                    className={`theme-option-card ${theme === 'modern' ? 'active' : ''}`}
+                                    onClick={() => handleThemeChange('modern')}
+                                    style={{
+                                        padding: '1rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '2px solid',
+                                        borderColor: theme === 'modern' ? 'var(--accent)' : 'var(--border-color)',
+                                        cursor: 'pointer',
+                                        background: theme === 'modern' ? 'var(--accent-glow)' : 'transparent',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Modern</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Vibrant blue & style guide palette</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
             </div>
         </HeaderFooterModal>
     )

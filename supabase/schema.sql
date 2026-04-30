@@ -352,6 +352,7 @@ CREATE TABLE public.users (
   account_type text,
   province text,
   must_change_password boolean DEFAULT false,
+  theme text DEFAULT 'classic'::text,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.water_supply_reports (

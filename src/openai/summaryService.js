@@ -11,7 +11,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
  * Builds the plain-text prompt payload from the report data.
  */
 function buildPromptPayload(data, event, relatedIncidents = []) {
-  const { categoryTotals, byCityCategory } = data
+  const { categoryTotals, byCityCategory, details } = data
   const fmt = (n) => (n || 0).toLocaleString()
 
   const incidents = categoryTotals?.relatedIncidents ?? 0
@@ -32,13 +32,32 @@ function buildPromptPayload(data, event, relatedIncidents = []) {
 
   const affectedCities = Object.keys(byCityCategory || {}).join(', ') || 'various areas'
 
+  // Extract qualitative remarks from all categories if details are provided
+  const categoryRemarks = []
+  if (details) {
+    Object.entries(details).forEach(([cat, list]) => {
+      if (!Array.isArray(list)) return
+      const catRemarks = list
+        .map(item => {
+          const text = item.remarks || item.description || item.damage_description || item.subject
+          return text?.trim()
+        })
+        .filter(Boolean)
+      
+      if (catRemarks.length > 0) {
+        const label = cat.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+        categoryRemarks.push(`${label} Remarks:\n- ${catRemarks.slice(0, 15).join('\n- ')}`)
+      }
+    })
+  }
+
   const incidentLines = (relatedIncidents || [])
-    .slice(0, 10)
+    .slice(0, 15)
     .map(inc => {
-      const d = new Date(inc.date_time || inc.created_at)
+      const d = new Date(inc.date_time || inc.created_at || inc.date_of_occurrence)
       const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
       const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-      return `- ${dateStr} at ${timeStr}: ${inc.description || 'Incident reported'}`
+      return `- ${dateStr} at ${timeStr}: ${inc.description || inc.type_of_incident || 'Incident reported'}`
     })
     .join('\n')
 
@@ -64,19 +83,27 @@ function buildPromptPayload(data, event, relatedIncidents = []) {
     `State of Calamity Declarations: ${fmt(calamity)}`,
     `Assistance Provided Records: ${fmt(assist)}`,
     `LGU/Agency Assistance Records: ${fmt(lguAssist)}`,
-    incidentLines ? `\nTimeline of Incidents:\n${incidentLines}` : ''
+    incidentLines ? `\nTimeline of Incidents:\n${incidentLines}` : '',
+    categoryRemarks.length > 0 ? `\nDetailed Remarks & Observations:\n${categoryRemarks.join('\n\n')}` : ''
   ].filter(Boolean).join('\n')
 
-  return `You are a professional disaster risk reduction officer. Based on the following situational report data, write a formal Executive Summary for an official government PDF document. Use clear, concise, and factual Philippine government report language. Structure it with sections: Introduction, Chronology of Events, Impact Overview, Infrastructure Status, Damage Assessment, Government Actions, and Response Efforts. Each section should be a short paragraph. Do not include section header labels if the section has no data. Keep the total summary under 400 words.\n\nDATA:\n${stats}`
+  return `You are a professional disaster risk reduction officer. Based on the following situational report data and qualitative remarks, write a formal Executive Summary for an official government PDF document. Use clear, concise, and factual Philippine government report language. 
+
+Incorporate the qualitative remarks and specific observations into the relevant sections to provide context beyond just numbers. Structure it with sections: Introduction, Chronology of Events, Impact Overview, Infrastructure Status, Damage Assessment, Government Actions, and Response Efforts. 
+
+Each section should be a short, professional paragraph. Do not include section header labels if the section has no data. Keep the total summary under 500 words and ensure it flows logically.
+
+DATA & REMARKS:
+${stats}`
 }
 
 /**
  * Generates an AI-powered executive summary using the Google Gemini API.
  * Falls back to the rule-based summary on failure or missing API key.
  *
- * @param {Object} data - The aggregated data from fetchEventConsolidatedData
+ * @param {Object} data - The aggregated data (including details)
  * @param {Object} event - The event object
- * @param {Array} relatedIncidents - Array of incident objects
+ * @param {Array} relatedIncidents - Array of incident objects (optional if already in data.details)
  * @returns {Promise<string>} The generated summary text
  */
 export async function generateAISummary(data, event, relatedIncidents = []) {
