@@ -1,15 +1,16 @@
-import regionData from './region1_complete.json'
+import regionData from './region1_barangays.json'
 
 /**
  * Build a flat list of all LGUs (cities + municipalities) across all provinces.
  */
 const allLgus = []
 for (const province of regionData.provinces) {
-  for (const city of province.cities || []) {
-    allLgus.push({ name: city.name, province: province.name, barangays: city.barangays || [] })
-  }
-  for (const mun of province.municipalities || []) {
-    allLgus.push({ name: mun.name, province: province.name, barangays: mun.barangays || [] })
+  for (const lgu of province.cities_municipalities || []) {
+    allLgus.push({ 
+      name: lgu.name, 
+      province: province.name, 
+      barangays: (lgu.barangays || []).map(b => typeof b === 'string' ? b : b.name) 
+    })
   }
 }
 

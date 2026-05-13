@@ -465,7 +465,7 @@ export default function AddReport() {
   const defaultCity = user?.city ?? ''
   const [view, setView] = useState('events') // 'events', 'versions', or 'entries'
   const [selectedEvent, setSelectedEvent] = useState(null)
-  const { currentSituationalReport, setCurrentSituationalReport, situationalReports, fetchSituationalReports, createSituationalReport, updateSituationalReport, sendSituationalReport, markSitRepNotificationsAsRead } = useEvents()
+  const { currentSituationalReport, setCurrentSituationalReport, situationalReports, fetchSituationalReports, createSituationalReport, updateSituationalReport, sendSituationalReport, markSitRepNotificationsAsRead, markEventNotificationsAsRead } = useEvents()
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [activeCategoryModal, setActiveCategoryModal] = useState(null)
   
@@ -2417,8 +2417,14 @@ export default function AddReport() {
 
   const navigateTo = (newView, data = {}) => {
     setView(newView)
-    if (data.event !== undefined) setSelectedEvent(data.event)
-    if (data.sitrep !== undefined) setCurrentSituationalReport(data.sitrep)
+    if (data.event !== undefined) {
+      setSelectedEvent(data.event)
+      if (data.event?.id) markEventNotificationsAsRead(data.event.id)
+    }
+    if (data.sitrep !== undefined) {
+      setCurrentSituationalReport(data.sitrep)
+      if (data.sitrep?.id) markSitRepNotificationsAsRead(data.sitrep.id)
+    }
 
     if (newView === 'events') {
       setSelectedEvent(null)
@@ -2573,7 +2579,17 @@ export default function AddReport() {
                         }}
                       >
                         <td style={{ fontWeight: 600, color: '#0f172a' }}>
-                          {hasUnread(ev.id) && <span className="table-ping" title="New Activity"></span>}
+                          {hasUnread(ev.id) && (
+                            <span 
+                              className="table-ping" 
+                              title="Clear Notifications" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markEventNotificationsAsRead(ev.id);
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            ></span>
+                          )}
                           {ev.name}
                         </td>
                         <td style={{ color: '#334155' }}>
@@ -2650,7 +2666,17 @@ export default function AddReport() {
                         </td>
                         <td style={{ color: '#334155' }}>
                           <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {hasUnread(selectedEvent?.id, sr.id) && <span className="table-ping" title="Update Required"></span>}
+                             {hasUnread(selectedEvent?.id, sr.id) && (
+                               <span 
+                                 className="table-ping" 
+                                 title="Clear Notifications" 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   markSitRepNotificationsAsRead(sr.id);
+                                 }}
+                                 style={{ cursor: 'pointer' }}
+                               ></span>
+                             )}
                             {sr.title}
                           </div>
                           {sr.rejection_remarks && (

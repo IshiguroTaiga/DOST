@@ -285,6 +285,44 @@ export function EventProvider({ children, user }) {
     }
   }, [user, notifications])
 
+  const markEventNotificationsAsRead = useCallback(async (eventId) => {
+    if (!user || !eventId) return
+    try {
+      const relevantNotifs = notifications.filter(n => {
+        if (n.is_read) return false
+        let d = n.data
+        if (typeof d === 'string') try { d = JSON.parse(d) } catch (e) { d = {} }
+        return String(d?.event_id) === String(eventId)
+      })
+      if (relevantNotifs.length === 0) return
+      const ids = relevantNotifs.map(n => n.id)
+      await api.post('/api/notifications/mark-many-read', { ids })
+      setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - ids.length))
+    } catch (err) {
+      console.error('Error marking event notifications as read:', err)
+    }
+  }, [user, notifications])
+
+  const markUserNotificationsAsRead = useCallback(async (targetUserId) => {
+    if (!user || !targetUserId) return
+    try {
+      const relevantNotifs = notifications.filter(n => {
+        if (n.is_read) return false
+        let d = n.data
+        if (typeof d === 'string') try { d = JSON.parse(d) } catch (e) { d = {} }
+        return String(d?.user_id) === String(targetUserId) || String(d?.target_user_id) === String(targetUserId)
+      })
+      if (relevantNotifs.length === 0) return
+      const ids = relevantNotifs.map(n => n.id)
+      await api.post('/api/notifications/mark-many-read', { ids })
+      setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - ids.length))
+    } catch (err) {
+      console.error('Error marking user notifications as read:', err)
+    }
+  }, [user, notifications])
+
   // 4.5. Data Refresh Effect
   useEffect(() => {
     if (!user) return
@@ -812,6 +850,8 @@ export function EventProvider({ children, user }) {
     unreadCount,
     markNotificationAsRead,
     markSitRepNotificationsAsRead,
+    markEventNotificationsAsRead,
+    markUserNotificationsAsRead,
     fetchEvents,
     fetchNotifications,
     pendingUsersCount,

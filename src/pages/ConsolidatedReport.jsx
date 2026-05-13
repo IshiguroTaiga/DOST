@@ -84,7 +84,7 @@ const CATEGORY_TO_TABLE = {
 
 export default function ConsolidatedReport() {
   const { user } = useOutletContext() ?? {}
-  const { events, loading: eventsLoading, showSuccess, showConfirm, fetchSituationalReports, sendSituationalReport, notifications, markSitRepNotificationsAsRead } = useEvents()
+  const { events, loading: eventsLoading, showSuccess, showConfirm, fetchSituationalReports, sendSituationalReport, notifications, markSitRepNotificationsAsRead, markEventNotificationsAsRead } = useEvents()
 
   const unreadNotifs = useMemo(() => notifications?.filter(n => !n.is_read) || [], [notifications])
 
@@ -315,8 +315,14 @@ export default function ConsolidatedReport() {
 
   const navigateTo = (newView, data = {}) => {
     setView(newView)
-    if (data.event !== undefined) setSelectedEvent(data.event)
-    if (data.sitrep !== undefined) setSelectedSitRep(data.sitrep)
+    if (data.event !== undefined) {
+      setSelectedEvent(data.event)
+      if (data.event?.id) markEventNotificationsAsRead(data.event.id)
+    }
+    if (data.sitrep !== undefined) {
+      setSelectedSitRep(data.sitrep)
+      if (data.sitrep?.id) markSitRepNotificationsAsRead(data.sitrep.id)
+    }
     if (data.category !== undefined) setSelectedCategory(data.category)
     if (data.lgu !== undefined) setSelectedLgu(data.lgu)
     if (data.province !== undefined) setSelectedProvince(data.province)
@@ -1966,7 +1972,17 @@ export default function ConsolidatedReport() {
                   paginatedEvents.map((event) => (
                     <tr key={event.id}>
                       <td className="event-name-cell">
-                        {hasUnread(event.id) && <span className="table-ping" title="New Activity"></span>}
+                        {hasUnread(event.id) && (
+                          <span 
+                            className="table-ping" 
+                            title="Clear Notifications" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markEventNotificationsAsRead(event.id);
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          ></span>
+                        )}
                         {event.name}
                       </td>
                       <td className="event-date-cell">
@@ -2041,7 +2057,17 @@ export default function ConsolidatedReport() {
                   filteredSitReps.map((v) => (
                     <tr key={v.id}>
                       <td className="event-name-cell">
-                        {hasUnread(selectedEvent?.id, v.id) && <span className="table-ping" title="New Notification"></span>}
+                        {hasUnread(selectedEvent?.id, v.id) && (
+                          <span 
+                            className="table-ping" 
+                            title="Clear Notifications" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markSitRepNotificationsAsRead(v.id);
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          ></span>
+                        )}
                         {v.title}
                       </td>
                       <td className="event-date-cell">

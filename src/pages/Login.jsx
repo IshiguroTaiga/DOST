@@ -48,8 +48,7 @@ export default function Login({ onLogin }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <FileText className="login-logo" size={28} />
-          <h1>RDRMS C1</h1>
+          <img src="/asset1-logo.svg" alt="SIREN Logo" className="login-logo-img" />
           <p>Sign in to your account</p>
         </div>
 

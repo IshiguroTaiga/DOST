@@ -1,17 +1,14 @@
 /**
  * Provinces and cities (LGUs) for the report system.
- * Derived from region1_complete.json so all location data stays in sync.
+ * Derived from region1_barangays.json so all location data stays in sync.
  */
-import regionData from './region1_complete.json'
+import regionData from './region1_barangays.json'
 
 export const PROVINCE_NAMES = regionData.provinces.map((p) => p.name)
 
 export const PROVINCES_WITH_CITIES = {}
 for (const province of regionData.provinces) {
-  const cityNames = [
-    ...(province.cities || []).map((c) => c.name),
-    ...(province.municipalities || []).map((m) => m.name),
-  ]
+  const cityNames = (province.cities_municipalities || []).map((c) => c.name)
   PROVINCES_WITH_CITIES[province.name] = cityNames
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Upload, UserPlus, X, CaretDown, CaretUp, Eye, EyeClosed, WarningCircle, Plus, FileCsv, PencilSimple, Trash, MagnifyingGlass, UserCircle, Envelope, Phone, Shield, MapPin, Copy, Check } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
@@ -41,7 +41,16 @@ const MOCK_USERS = [
 
 export default function Users() {
   const { user: currentUser } = useOutletContext() ?? {}
-  const { showSuccess, showConfirm, fetchPendingUsersCount } = useEvents()
+  const { showSuccess, showConfirm, fetchPendingUsersCount, notifications, markUserNotificationsAsRead } = useEvents()
+  const unreadNotifs = useMemo(() => notifications?.filter(n => !n.is_read) || [], [notifications])
+
+  const hasUnread = useCallback((userId) => {
+    return unreadNotifs.some(n => {
+      let data = n.data
+      if (typeof data === 'string') try { data = JSON.parse(data) } catch (e) { data = {} }
+      return (String(data?.user_id) === String(userId) || String(data?.target_user_id) === String(userId))
+    })
+  }, [unreadNotifs])
 
   const accountType = currentUser?.account_type || ''
   const isSuperAdmin = currentUser?.role === 'Super Admin' || accountType === 'Super Admin'
@@ -170,6 +179,7 @@ export default function Users() {
 
   const openViewDetailsModal = (user) => {
     setViewDetailsUser(user)
+    if (user?.id) markUserNotificationsAsRead(user.id)
   }
 
   const closeViewDetailsModal = () => {
@@ -185,6 +195,7 @@ export default function Users() {
 
   const openEditModal = (user) => {
     setEditingUser(user)
+    if (user?.id) markUserNotificationsAsRead(user.id)
     setForm({
       email: user.email || '',
       firstName: user.first_name || '',
@@ -245,6 +256,28 @@ export default function Users() {
           
           await fetchUsers()
           if (fetchPendingUsersCount) fetchPendingUsersCount()
+
+          // Notify relevant admins about the new user
+          try {
+            const { data: admins } = await api.get('/api/users')
+            const adminsToNotify = admins.filter(u => 
+              u.id !== currentUser.id && 
+              (u.role === 'Super Admin' || u.account_type?.includes('Admin'))
+            )
+            
+            if (adminsToNotify.length > 0) {
+              const notifications = adminsToNotify.map(adm => ({
+                user_id: adm.id,
+                type: 'user_created',
+                title: 'New User Registered',
+                message: `${form.firstName} ${form.lastName} has been added as ${form.accountType}.`,
+                data: { target_user_id: data.id, email: form.email }
+              }))
+              await api.post('/api/notifications/bulk', notifications)
+            }
+          } catch (notifErr) {
+            console.error('Failed to send user creation notifications:', notifErr)
+          }
           
           setTempPasswordResult({ 
             email: form.email.trim(), 
@@ -475,8 +508,19 @@ export default function Users() {
                           <td>
                             <div className="users-cell-name">
                               <div className="users-avatar">{firstLetter(user)}</div>
-                              {(user.status === 'Pending' || user.must_change_password) && (
-                                <span className="table-ping" title="New User" style={{ marginRight: '4px' }}></span>
+                              {hasUnread(user.id) && (
+                                <span 
+                                  className="table-ping" 
+                                  title="Clear Notification"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markUserNotificationsAsRead(user.id);
+                                  }}
+                                  style={{ 
+                                    marginRight: '4px',
+                                    cursor: 'pointer'
+                                  }}
+                                ></span>
                               )}
                               {displayName(user)}
                             </div>

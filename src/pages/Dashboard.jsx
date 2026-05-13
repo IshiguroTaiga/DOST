@@ -641,6 +641,8 @@ export default function Dashboard() {
       console.warn('[Dashboard] No situational reports with "Approved" status found for event:', currentEventId)
     }
 
+    const lguCityFilter = user?.account_type === 'LGU' ? (user?.city || null) : null
+
 
     let referenceDate = new Date()
     // If the event is in the past or future, center our "Current" window around its startDate
@@ -693,8 +695,8 @@ export default function Dashboard() {
       dayCounts[dateStr] = 0
     }
 
-    const addToStats = (category, barangay, amount, dateStr) => {
-      const city = toCity(barangay)
+    const addToStats = (category, barangay, amount, dateStr, cityOverride) => {
+      const city = cityOverride || toCity(barangay)
       const isCurrent = dateStr >= sinceISO
       const isPrevious = dateStr >= prevSinceISO && dateStr < sinceISO
 
@@ -749,7 +751,7 @@ export default function Dashboard() {
       if (data) data.forEach(row => {
         let amount = 1;
         const brgy = row[col];
-        const city = toCity(brgy);
+        const city = row.city || row.mun || toCity(brgy);
         const province = getProvinceForCity(city) || 'Unknown';
 
         // Initialize province stats
@@ -846,7 +848,7 @@ export default function Dashboard() {
           details.infrastructure.push({ name: row.infrastructure_name || brgy, city, type: row.type || 'infrastructure', status: row.status });
         }
 
-        addToStats(category, brgy, amount, row[dateCol])
+        addToStats(category, brgy, amount, row[dateCol], city)
       })
     })
 
@@ -883,7 +885,7 @@ export default function Dashboard() {
             const per = Number(row?.affected_persons ?? 0) || 0
             const inFam = Number(row?.inside_families_now ?? 0) || 0
             const outFam = Number(row?.outside_families_now ?? 0) || 0
-            const city = toCity(row.barangay);
+            const city = row.city || toCity(row.barangay);
             const province = getProvinceForCity(city) || 'Unknown';
 
             if (!details.byProvince[province]) {
@@ -925,7 +927,7 @@ export default function Dashboard() {
             p.outPer += Number(row.outside_persons_now || 0)
             if (row.ecs_now > 0) p.ecs += Number(row.ecs_now)
 
-            addToStats('affectedPopulation', row.barangay, per, report.submitted_at)
+            addToStats('affectedPopulation', row.barangay, per, report.submitted_at, city)
           })
         })
       } catch (err) {
@@ -944,6 +946,7 @@ export default function Dashboard() {
           const isCurrent = row.created_at >= sinceISO
           const type = row.type || 'N/A'
           const brgy = row.barangay || 'N/A';
+          const city = row.city || row.mun || toCity(brgy);
 
           if (isCurrent) {
             byBarangayCategory['waterSupply'] = byBarangayCategory['waterSupply'] || {}
@@ -951,7 +954,8 @@ export default function Dashboard() {
             const d = row.created_at.split('T')[0]
             if (dayCounts[d] !== undefined) dayCounts[d] += 1
 
-            details.infrastructure.push({ mun: toCity(brgy), area: brgy, type: 'water', status: row.date_restored ? 'operational' : 'interrupted', int: row.created_at, res: row.date_restored });
+            const city = row.city || toCity(brgy);
+            details.infrastructure.push({ mun: city, area: brgy, type: 'water', status: row.date_restored ? 'operational' : 'interrupted', int: row.created_at, res: row.date_restored });
           }
         })
       } catch (err) {
@@ -959,103 +963,13 @@ export default function Dashboard() {
       }
     })()
 
-    await Promise.all([...tablePromises, reportsPromise, waterPromise])
+    await Promise.all([...tablePromises, reportsPromise, waterPromise]);
 
-    // Filters and Processing...
-    if (provinceFilter) {
-      const provinceCitySet = new Set(getCitiesForProvince(provinceFilter).map(c => c.toLowerCase()))
-      const filterCity = (city) => !city || city === 'N/A' || provinceCitySet.has(String(city).toLowerCase())
-
-      Object.keys(totalByCity).forEach(city => {
-        if (!filterCity(city)) {
-          delete totalByCity[city]
-          delete byCityCategory[city]
-        }
-      })
-      Object.keys(prevTotalByCity).forEach(city => {
-        if (!filterCity(city)) {
-          delete prevTotalByCity[city]
-          delete prevByCityCategory[city]
-        }
-      })
-      Object.keys(byBarangayCategory).forEach(cat => {
-        const counts = byBarangayCategory[cat]
-        const filtered = {}
-        Object.entries(counts).forEach(([brgy, n]) => {
-          if (brgy === 'N/A' || filterCity(toCity(brgy))) filtered[brgy] = n
-        })
-        byBarangayCategory[cat] = filtered
-      })
-
-      // Filter details too
-      details.incidents = details.incidents.filter(i => filterCity(i.city));
-      details.infrastructure = details.infrastructure.filter(i => filterCity(i.city || i.mun));
-      details.preEvacuation = details.preEvacuation.filter(i => filterCity(i.mun));
-      Object.keys(details.populationByLgu).forEach(city => {
-        if (!filterCity(city)) delete details.populationByLgu[city];
-      });
-    }
-
-    // LGU accounts: filter to only their city's data
-    const lguCityFilter = user?.account_type === 'LGU' ? (user?.city || null) : null
-    if (lguCityFilter) {
-      // Build a set of valid barangays for this LGU's city
-      const lguBarangays = new Set(
-        getBarangaysForCity(lguCityFilter).map(b => b.toLowerCase())
-      )
-      const hasBarangaySet = lguBarangays.size > 0
-
-      // Match by barangay set if available, otherwise by city name
-      const matchesLguCity = (city) => !city || city === 'N/A' || String(city).toLowerCase() === lguCityFilter.toLowerCase()
-      const matchesLguBrgy = (brgy) => !brgy || brgy === 'N/A' || lguBarangays.has(String(brgy).toLowerCase())
-
-      Object.keys(totalByCity).forEach(city => {
-        if (!matchesLguCity(city)) {
-          delete totalByCity[city]
-          delete byCityCategory[city]
-        }
-      })
-      Object.keys(prevTotalByCity).forEach(city => {
-        if (!matchesLguCity(city)) {
-          delete prevTotalByCity[city]
-          delete prevByCityCategory[city]
-        }
-      })
-      Object.keys(byBarangayCategory).forEach(cat => {
-        const counts = byBarangayCategory[cat]
-        const filtered = {}
-        Object.entries(counts).forEach(([brgy, n]) => {
-          if (brgy === 'N/A' || (hasBarangaySet ? matchesLguBrgy(brgy) : matchesLguCity(toCity(brgy)))) filtered[brgy] = n
-        })
-        byBarangayCategory[cat] = filtered
-      })
-
-      details.incidents = details.incidents.filter(i => matchesLguCity(i.city));
-      details.infrastructure = details.infrastructure.filter(i => matchesLguCity(i.city || i.mun));
-      details.preEvacuation = details.preEvacuation.filter(i => matchesLguCity(i.mun));
-      details.damagedHouses = details.damagedHouses.filter(i => matchesLguCity(i.city));
-      details.commLines = details.commLines.filter(i => matchesLguCity(i.city));
-      details.infraDamage = details.infraDamage.filter(i => matchesLguCity(i.city));
-      details.suspensions = details.suspensions.filter(i => matchesLguCity(i.city));
-      Object.keys(details.populationByLgu).forEach(city => {
-        if (!matchesLguCity(city)) delete details.populationByLgu[city];
-      });
-      Object.keys(details.assistanceByLgu).forEach(city => {
-        if (!matchesLguCity(city)) delete details.assistanceByLgu[city];
-      });
-      Object.keys(details.agriByCity).forEach(city => {
-        if (!matchesLguCity(city)) delete details.agriByCity[city];
-      });
-      Object.keys(details.byCity).forEach(city => {
-        if (!matchesLguCity(city)) delete details.byCity[city];
-      });
-    }
-
-    const topCityEntry = Object.entries(totalByCity).sort((a, b) => b[1] - a[1])[0]
-    const topCity = topCityEntry ? topCityEntry[0] : null
-    const total = topCity ? topCityEntry[1] : 0
-    const prevTotal = topCity ? (prevTotalByCity[topCity] || 0) : 0
-    const totalTrend = pctChange(total, prevTotal)
+    const topCityEntry = Object.entries(totalByCity).sort((a, b) => b[1] - a[1])[0];
+    const topCity = topCityEntry ? topCityEntry[0] : null;
+    const total = Object.values(totalByCity).reduce((s, n) => s + n, 0);
+    const prevTotal = topCity ? (prevTotalByCity[topCity] || 0) : 0;
+    const totalTrend = pctChange(total, prevTotal);
 
     const top4 = topCity ? Object.entries(byCityCategory[topCity] || {})
       .map(([cat, count]) => ({
@@ -1066,19 +980,19 @@ export default function Dashboard() {
         trend: pctChange(count, prevByCityCategory[topCity]?.[cat] || 0)
       }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 4) : []
+      .slice(0, 4) : [];
 
     const categoryCards = Object.keys(CATEGORY_LABELS).map(cat => {
-      const counts = byBarangayCategory[cat] || {}
-      const entries = Object.entries(counts)
-      const totalCount = Object.values(counts).reduce((s, n) => s + n, 0)
-      const topEntry = entries.sort((a, b) => b[1] - a[1])[0]
-      const [topBrgy, topCount] = topEntry || ['---', 0]
-      const city = topBrgy && topBrgy !== 'N/A' ? toCity(topBrgy) : (topBrgy === 'N/A' ? 'All areas' : '---')
+      const counts = byBarangayCategory[cat] || {};
+      const entries = Object.entries(counts);
+      const totalCount = Object.values(counts).reduce((s, n) => s + n, 0);
+      const topEntry = [...entries].sort((a, b) => b[1] - a[1])[0];
+      const [topBrgy, topCount] = topEntry || ['---', 0];
+      const city = topBrgy && topBrgy !== 'N/A' ? toCity(topBrgy) : (topBrgy === 'N/A' ? 'All areas' : '---');
 
       const barangayData = entries
         .sort((a, b) => b[1] - a[1])
-        .map(([name, value]) => ({ name, value }))
+        .map(([name, value]) => ({ name, value }));
 
       return {
         category: cat,
@@ -1089,21 +1003,21 @@ export default function Dashboard() {
         city,
         detail: topCount > 0 ? `${topCount.toLocaleString()} report${topCount !== 1 ? 's' : ''}` : 'No reports',
         barangayData
-      }
-    })
+      };
+    });
 
     const overviewData = categoryCards
       .filter(c => c.totalCount > 0)
       .map(c => ({ name: c.label, value: c.totalCount }))
-      .sort((a, b) => b.value - a.value)
+      .sort((a, b) => b.value - a.value);
 
     const trendChartData = Object.entries(dayCounts).map(([date, count]) => ({
       date: new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
       count
-    }))
+    }));
 
-    return { topCity, total, totalTrend, top4, categoryCards, overviewData, trendChartData, details }
-  }, [provinceFilter, currentEventId, toCity, currentEvent])
+    return { topCity, total, totalTrend, top4, categoryCards, overviewData, trendChartData, details };
+  }, [currentEventId, toCity, currentEvent, user]);
 
   useEffect(() => {
     // Guard: wait until events have finished loading before fetching dashboard data.

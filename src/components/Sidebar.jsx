@@ -79,8 +79,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-branding">
-          <img src="/logo.png" alt="Logo" className="sidebar-logo-image" />
-          {!isCollapsed && <h1 className="sidebar-title">PROACT</h1>}
+          <img src="/asset1-logo.svg" alt="SIREN Logo" className="sidebar-logo-image" />
         </div>
         <button 
           className="sidebar-toggle-btn" 
@@ -194,7 +193,9 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
               <span className="user-greeting">Hello, {displayName}</span>
               <span className="user-type-label">
                 {user?.account_type || user?.role || 'User'}
-                {user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : ''}
+                {user?.account_type?.startsWith('Provincial')
+                  ? (user?.province ? ` · ${user.province}` : '') 
+                  : (user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : '')}
               </span>
             </div>
           )}
