@@ -1825,33 +1825,33 @@ export default function ConsolidatedReport() {
     // If we're doing a specific sitrep, use its ID for processing state, else use a string
     setProcessingId(sitRepId || `csv-${event.id}`)
     try {
-      const data = await fetchEventConsolidatedData(event, sitRepId)
-      if (!data) return
-
-      generateConsolidatedCsv({
-        eventName: event.name,
-        province: province || 'Region 1',
-        cities: Object.keys(data.byCityCategory || {}).sort(),
-        categoryTotals: data.categoryTotals,
-        byCityCategory: data.byCityCategory,
-        affectedPopulationDetails: data.details.affectedPopulation,
-        relatedIncidentsDetails: data.details.relatedIncidents,
-        roadsAndBridgesDetails: data.details.roadsAndBridges,
-        powerDetails: data.details.power,
-        waterSupplyDetails: data.details.waterSupply,
-        communicationLinesDetails: data.details.communicationLines,
-        damagedHousesDetails: data.details.damagedHouses,
-        classSuspensionDetails: data.details.classSuspension,
-        workSuspensionDetails: data.details.workSuspension,
-        stateOfCalamityDetails: data.details.stateOfCalamity,
-        preEmptiveEvacuationDetails: data.details.preEmptiveEvacuation,
-        assistanceProvidedDetails: data.details.assistanceProvided,
-        assistanceLgusDetails: data.details.assistanceLgus,
-        agricultureDamageDetails: data.details.agricultureDamage,
-        infrastructureDamageDetails: data.details.infrastructureDamage,
-        summaryText: sitrep?.summary || `Consolidated Report for ${event.name}`,
-        signatories: { preparedBy: [], notedBy: null, approvedBy: null }
+      const { data: allData } = await api.get('/reports/all-types', {
+        params: { situational_report_id: sitRepId }
       })
+
+      const exportData = {
+        eventName: event?.name || 'Event',
+        province: province || 'Region 1',
+        summaryText: sitrep?.title || sitrep?.summary || '',
+        relatedIncidentsDetails: allData.filter(d => d.category === 'incidents'),
+        affectedPopulationDetails: allData.filter(d => d.category === 'evacuation'),
+        roadsAndBridgesDetails: allData.filter(d => d.category === 'roads'),
+        powerDetails: allData.filter(d => d.category === 'power'),
+        waterSupplyDetails: allData.filter(d => d.category === 'water'),
+        communicationLinesDetails: allData.filter(d => d.category === 'communication'),
+        damagedHousesDetails: allData.filter(d => d.category === 'houses'),
+        classSuspensionDetails: allData.filter(d => d.category === 'class'),
+        workSuspensionDetails: allData.filter(d => d.category === 'work'),
+        stateOfCalamityDetails: allData.filter(d => d.category === 'calamity'),
+        preEmptiveEvacuationDetails: allData.filter(d => d.category === 'preemptive'),
+        assistanceProvidedDetails: allData.filter(d => d.category === 'assistance'),
+        assistanceLgusDetails: allData.filter(d => d.category === 'assistance_lgus'),
+        agricultureDamageDetails: allData.filter(d => d.category === 'agriculture'),
+        infrastructureDamageDetails: allData.filter(d => d.category === 'infrastructure'),
+      }
+
+      generateConsolidatedCsv(exportData)
+      showSuccess('Export Success', 'Consolidated report generated successfully.')
     } catch (err) {
       console.error('CSV Generation Error:', err)
       showSuccess('Error', 'Failed to generate CSV.')
