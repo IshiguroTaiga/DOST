@@ -634,7 +634,9 @@ export default function Dashboard() {
     const { data: approvedSitreps } = await api.get('/situational-reports', {
       params: { event_id: currentEventId, status: 'Approved' }
     })
-    const approvedIds = (approvedSitreps || []).map(s => s.id)
+    // Only use the latest approved situational report to avoid double-counting or stale data
+    const latestSitRep = (approvedSitreps || []).length > 0 ? [approvedSitreps[0]] : []
+    const approvedIds = latestSitRep.map(s => s.id)
     const approvedIdsCsv = approvedIds.join(',')
 
     if (approvedIds.length === 0) {
@@ -939,7 +941,10 @@ export default function Dashboard() {
     const waterPromise = (async () => {
       try {
         const { data } = await api.get('/reports/water_supply_reports', {
-          params: { event_id: currentEventId }
+          params: { 
+            event_id: currentEventId,
+            situational_report_id: approvedIdsCsv
+          }
         })
         if (!data) return
         data.forEach(row => {
