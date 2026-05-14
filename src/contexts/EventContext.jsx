@@ -352,7 +352,11 @@ export function EventProvider({ children, user }) {
     if (!user) return
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
-    const socket = io(API_URL, { transports: ['websocket'] })
+    const socket = io(API_URL, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000
+    })
     socketRef.current = socket
 
     console.log('[Socket.io] Connecting for user:', user.id)

@@ -769,6 +769,7 @@ export default function Dashboard() {
       infraDamage: [],
       populationByLgu: {},
       commLines: [],
+      damagedHouses: [], // Added to fix push error
       ageTally: { kids: 0, adults: 0, seniors: 0 },
       sitRepStatus: allSitreps || []
     }
@@ -1054,8 +1055,14 @@ export default function Dashboard() {
     await Promise.all([...tablePromises, reportsPromise, waterPromise]);
 
     // After all data is fetched and deduplicated, finalize infrastructure stats
+    const defaultProvinceCity = { persons: 0, families: 0, inside: 0, outside: 0, dmg: 0, served: 0, ecs: 0, powerInt: 0, powerRes: 0, roadsNotPassable: 0, roadsPassable: 0, brgys: new Set() };
+
     Object.values(latestInfra).forEach(row => {
       const { category, city, brgy, province } = row;
+
+      // Ensure province/city entries exist before incrementing counters
+      if (!details.byProvince[province]) details.byProvince[province] = { ...defaultProvinceCity, brgys: new Set() };
+      if (!details.byCity[city]) details.byCity[city] = { ...defaultProvinceCity, brgys: new Set() };
       
       if (category === 'power') {
         const statusRaw = String(row.status || '').toLowerCase().trim();
