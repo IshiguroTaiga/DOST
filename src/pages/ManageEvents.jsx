@@ -26,7 +26,7 @@ const WeatherIcon = () => <CloudWarning size={32} weight="duotone" />
 const OtherIcon = () => <WarningCircle size={32} weight="duotone" />
 
 const EVENT_CATEGORIES = [
-  { value: 'typhoon',    label: 'Typhoon',        Icon: TyphoonIcon },
+  { value: 'typhoon',    label: 'Tropical Cyclone',        Icon: TyphoonIcon },
   { value: 'flood',     label: 'Flood',           Icon: FloodIcon },
   { value: 'earthquake',label: 'Earthquake',      Icon: EarthquakeIcon },
   { value: 'tsunami',   label: 'Tsunami',         Icon: TsunamiIcon },
@@ -235,7 +235,7 @@ export default function ManageEvents() {
         let finalSummary = form.summary
         if (!finalSummary) {
           if (form.eventType === 'typhoon') {
-            finalSummary = `**TYPHOON ${form.name.toUpperCase()}**\n\n* **Category**: ${form.typhoonCategory || 'Monitoring'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
+            finalSummary = `**TROPICAL CYCLONE ${form.name.toUpperCase()}**\n\n* **Category**: ${form.typhoonCategory || 'Monitoring'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
           } else if (form.eventType === 'earthquake') {
             finalSummary = `**EARTHQUAKE: ${form.name}**\n\n* **Magnitude**: ${form.magnitude || '—'}\n* **Intensity**: Intensity ${form.intensity || '—'}\n* **Status**: ${form.alertStatus.toUpperCase()}`
           } else if (form.eventType === 'tsunami') {
@@ -715,7 +715,7 @@ export default function ManageEvents() {
                   <label style={LABEL_STYLE}>Event Name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Typhoon EGAY (DOKSURI)"
+                    placeholder="e.g. Tropical Cyclone EGAY (DOKSURI)"
                     value={form.name}
                     onChange={e => {
                       const val = e.target.value;

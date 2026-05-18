@@ -1800,7 +1800,12 @@ CHRONOLOGY OF EVENTS`;
                         userSignal === '2' ? '#fdba74' : 
                         userSignal === '3' ? '#fca5a5' : 
                         userSignal === '4' ? '#f9a8d4' : 
-                        userSignal === '5' ? '#d8b4fe' : undefined
+                        userSignal === '5' ? '#d8b4fe' : 
+                        (currentEvent?.eventType === 'typhoon'
+                          ? 'linear-gradient(135deg, #ef4444 0%, #3b82f6 50%, #ffffff 100%)'
+                          : undefined),
+            color: (!userSignal && currentEvent?.eventType === 'typhoon') ? '#1e293b' : undefined,
+            border: (!userSignal && currentEvent?.eventType === 'typhoon') ? '1px solid rgba(0,0,0,0.1)' : undefined
           }}>
             {userSignal ? (
               <span style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>{userSignal}</span>
@@ -3169,7 +3174,7 @@ CHRONOLOGY OF EVENTS`;
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Event Name</label>
             <input
               type="text"
-              placeholder="e.g. Typhoon Kristine"
+              placeholder="e.g. Tropical Cyclone Kristine"
               value={editForm.name}
               onChange={(e) => {
                 const val = e.target.value;
@@ -3188,7 +3193,7 @@ CHRONOLOGY OF EVENTS`;
                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white' }}
               >
                 <option value="calamity">Calamity</option>
-                <option value="typhoon">Typhoon</option>
+                <option value="typhoon">Tropical Cyclone</option>
                 <option value="flood">Flood</option>
                 <option value="earthquake">Earthquake</option>
                 <option value="fire">Fire Incident</option>
@@ -3207,7 +3212,7 @@ CHRONOLOGY OF EVENTS`;
 
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>
-              {editForm.eventType === 'typhoon' ? 'Typhoon Category' : 'Alert Level / Warning Signal'}
+              {editForm.eventType === 'typhoon' ? 'Tropical Cyclone Category' : 'Alert Level / Warning Signal'}
             </label>
             <select
               value={editForm.alertLevel || ''}
