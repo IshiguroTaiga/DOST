@@ -1801,11 +1801,12 @@ CHRONOLOGY OF EVENTS`;
                         userSignal === '3' ? '#fca5a5' : 
                         userSignal === '4' ? '#f9a8d4' : 
                         userSignal === '5' ? '#d8b4fe' : 
-                        (currentEvent?.eventType === 'typhoon'
-                          ? 'linear-gradient(135deg, #ef4444 0%, #3b82f6 50%, #ffffff 100%)'
-                          : undefined),
-            color: (!userSignal && currentEvent?.eventType === 'typhoon') ? '#1e293b' : undefined,
-            border: (!userSignal && currentEvent?.eventType === 'typhoon') ? '1px solid rgba(0,0,0,0.1)' : undefined
+                        (currentEvent?.alertStatus === 'red' ? '#ef4444' :
+                         currentEvent?.alertStatus === 'blue' ? '#3b82f6' :
+                         currentEvent?.alertStatus === 'white' ? '#ffffff' :
+                         currentEvent?.color || '#ffffff'),
+            color: (!userSignal && (currentEvent?.alertStatus === 'red' || currentEvent?.alertStatus === 'blue')) ? '#ffffff' : '#1e293b',
+            border: (!userSignal && currentEvent?.alertStatus === 'white') ? '1px solid #e2e8f0' : undefined
           }}>
             {userSignal ? (
               <span style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>{userSignal}</span>
