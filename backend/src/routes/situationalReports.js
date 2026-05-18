@@ -63,8 +63,10 @@ router.get('/:id', authenticate, async (req, res) => {
 
 // POST /api/situational-reports
 router.post('/', authenticate, async (req, res) => {
+  console.log('[SitReps/POST] Request received. Body:', req.body);
   const { event_id, title, target_lgus, pinged_report_types, province } = req.body;
   const user = req.user;
+  let totalCloned = 0;
   try {
     // Get next report number
     const countRes = await pool.query(
@@ -123,10 +125,116 @@ router.post('/', authenticate, async (req, res) => {
       }
     }
 
+    // --- Clone data from a previous SitRep if requested ---
+    const { copy_from_id } = req.body;
+    console.log('[SitReps/POST] copy_from_id received:', copy_from_id);
+    if (copy_from_id) {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        console.log('[SitReps/POST] Starting clone from', copy_from_id, 'to', sitRep.id);
+
+        // Tables to clone directly (have situational_report_id FK, no parent dependency)
+        const simpleTables = [
+          'related_incidents',
+          'agriculture_damage_reports',
+          'assistance_lgus_agencies_reports',
+          'assistance_provided_reports',
+          'class_suspension_reports',
+          'communication_lines_reports',
+          'damaged_houses_reports',
+          'declaration_state_of_calamity_reports',
+          'infrastructure_damage_reports',
+          'power_reports',
+          'pre_emptive_evacuation_reports',
+          'roads_and_bridges',
+          'water_supply_reports',
+          'work_suspension_reports',
+        ];
+
+
+
+        for (const table of simpleTables) {
+          const { rows: sourceRows } = await client.query(
+            `SELECT * FROM ${table} WHERE situational_report_id = $1::uuid`,
+            [copy_from_id]
+          );
+          
+          if (sourceRows.length > 0) {
+            console.log(`[SitReps/POST] Cloning ${sourceRows.length} rows from table: ${table}`);
+            totalCloned += sourceRows.length;
+            for (const row of sourceRows) {
+              const cols = Object.keys(row).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
+              const values = cols.map(k => k === 'situational_report_id' ? sitRep.id : row[k]);
+              const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+              await client.query(
+                `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`,
+                values
+              );
+            }
+          } else {
+            // Optional: Log which tables are empty for debugging
+            // console.log(`[SitReps/POST] Table ${table} is empty for source report.`);
+          }
+        }
+
+        // Clone 'reports' (Affected Population) and their child 'report_rows'
+        const { rows: sourceReports } = await client.query(
+          `SELECT * FROM reports WHERE situational_report_id = $1::uuid`,
+          [copy_from_id]
+        );
+        
+        if (sourceReports.length > 0) {
+          console.log(`[SitReps/POST] Cloning ${sourceReports.length} reports`);
+          totalCloned += sourceReports.length;
+          for (const report of sourceReports) {
+            const rCols = Object.keys(report).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
+            const rVals = rCols.map(k => k === 'situational_report_id' ? sitRep.id : report[k]);
+            const rPlaceholders = rVals.map((_, i) => `$${i + 1}`).join(', ');
+            const { rows: newReportRows } = await client.query(
+              `INSERT INTO reports (${rCols.join(', ')}) VALUES (${rPlaceholders}) RETURNING id`,
+              rVals
+            );
+            const newReportId = newReportRows[0].id;
+
+            const { rows: sourceReportRows } = await client.query(
+              `SELECT * FROM report_rows WHERE report_id = $1::uuid`,
+              [report.id]
+            );
+            if (sourceReportRows.length > 0) {
+              console.log(`[SitReps/POST] Cloning ${sourceReportRows.length} report_rows for report ${report.id}`);
+              for (const rrow of sourceReportRows) {
+                const rrCols = Object.keys(rrow).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
+                const rrVals = rrCols.map(k => k === 'report_id' ? newReportId : rrow[k]);
+                const rrPlaceholders = rrVals.map((_, i) => `$${i + 1}`).join(', ');
+                await client.query(
+                  `INSERT INTO report_rows (${rrCols.join(', ')}) VALUES (${rrPlaceholders})`,
+                  rrVals
+                );
+              }
+            }
+          }
+        }
+
+        await client.query('COMMIT');
+        console.log(`[SitReps/POST] Data inheritance completed. Total items cloned: ${totalCloned}`);
+      } catch (cloneErr) {
+        await client.query('ROLLBACK');
+        console.error('[SitReps/POST] Cloning failed, rolled back:', cloneErr);
+      } finally {
+        client.release();
+      }
+    } else {
+      console.log('[SitReps/POST] No copy_from_id provided, skipping inheritance.');
+    }
+
     const io = req.app.locals.io;
     io.emit('sitrep:created', sitRep);
 
-    res.status(201).json(sitRep);
+    res.status(201).json({ 
+      ...sitRep, 
+      debug_cloned_count: typeof totalCloned !== 'undefined' ? totalCloned : 0 
+    });
   } catch (err) {
     console.error('[SitReps/POST]', err);
     res.status(500).json({ error: 'Server error' });

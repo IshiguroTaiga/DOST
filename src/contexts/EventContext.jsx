@@ -109,6 +109,7 @@ export function EventProvider({ children, user }) {
   }, [])
 
   const handleConfirmAction = useCallback(async () => {
+    console.log('[EventContext] handleConfirmAction triggered', { hasOnConfirm: !!confirmModal.onConfirm });
     if (!confirmModal.onConfirm) {
       closeConfirm()
       return
@@ -116,10 +117,12 @@ export function EventProvider({ children, user }) {
     
     setConfirmModal(prev => ({ ...prev, isLoading: true }))
     try {
+      console.log('[EventContext] Executing onConfirm callback...');
       await confirmModal.onConfirm()
+      console.log('[EventContext] onConfirm callback finished successfully.');
       closeConfirm()
     } catch (err) {
-      console.error('Confirm action failed:', err)
+      console.error('[EventContext] Confirm action failed:', err)
       setConfirmModal(prev => ({ ...prev, isLoading: false }))
     }
   }, [confirmModal, closeConfirm])
@@ -296,7 +299,7 @@ export function EventProvider({ children, user }) {
       })
       if (relevantNotifs.length === 0) return
       const ids = relevantNotifs.map(n => n.id)
-      await api.post('/api/notifications/mark-many-read', { ids })
+      await api.post('/notifications/mark-many-read', { ids })
       setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
       setUnreadCount(prev => Math.max(0, prev - ids.length))
     } catch (err) {
@@ -315,7 +318,7 @@ export function EventProvider({ children, user }) {
       })
       if (relevantNotifs.length === 0) return
       const ids = relevantNotifs.map(n => n.id)
-      await api.post('/api/notifications/mark-many-read', { ids })
+      await api.post('/notifications/mark-many-read', { ids })
       setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
       setUnreadCount(prev => Math.max(0, prev - ids.length))
     } catch (err) {
@@ -466,13 +469,17 @@ export function EventProvider({ children, user }) {
   const createSituationalReport = useCallback(async (eventId, title, options = {}) => {
     if (!eventId) return null
     try {
-      const { data } = await api.post('/situational-reports', { 
-        event_id: eventId, 
-        title, 
+      const payload = {
+        event_id: eventId,
+        title,
         target_lgus: options.targetLgus || [],
         pinged_report_types: options.pingedReportTypes || [],
-        province: options.province || null
-      })
+        province: options.province || null,
+      }
+      if (options.copyFromId) {
+        payload.copy_from_id = options.copyFromId
+      }
+      const { data } = await api.post('/situational-reports', payload)
       
       setSituationalReports(prev => [data, ...prev])
       return data

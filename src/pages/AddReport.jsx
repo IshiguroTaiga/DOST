@@ -503,6 +503,7 @@ export default function AddReport() {
   const [editingSitRep, setEditingSitRep] = useState(null)
   const [newSitRepTitle, setNewSitRepTitle] = useState('')
   const [pingedCategories, setPingedCategories] = useState([])
+  const [shouldInheritData, setShouldInheritData] = useState(true)
 
   // Signatories State
   const [showSignatoriesModal, setShowSignatoriesModal] = useState(false)
@@ -1409,16 +1410,40 @@ export default function AddReport() {
       onConfirm: async () => {
         try {
           setSubmitting(true)
+
+          // Determine if we should copy from the most recent SitRep
+          console.log('[AddReport] situationalReports list:', situationalReports);
+          
+          // Sort by report_number DESC, then by created_at DESC as fallback
+          const sortedSitReps = [...situationalReports].sort((a, b) => {
+            const numA = parseInt(a.report_number) || 0;
+            const numB = parseInt(b.report_number) || 0;
+            if (numB !== numA) return numB - numA;
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+          
+          const previousSitRep = sortedSitReps[0]
+          console.log('[AddReport] previousSitRep found for cloning:', previousSitRep);
+          
+          const copyFromId = shouldInheritData && previousSitRep ? previousSitRep.id : undefined
+          console.log('[AddReport] shouldInheritData:', shouldInheritData);
+          console.log('[AddReport] final copyFromId to send:', copyFromId);
+
           const newSR = await createSituationalReport(selectedEvent.id, newSitRepTitle.trim(), {
             pingedReportTypes: pingedCategories,
             targetLgus: targetLgus,
-            province: selectedProvinces.length === 1 ? selectedProvinces[0] : (selectedProvinces.length > 1 ? 'Region 1' : userProvince)
+            province: selectedProvinces.length === 1 ? selectedProvinces[0] : (selectedProvinces.length > 1 ? 'Region 1' : userProvince),
+            copyFromId
           })
           if (newSR) {
+            console.log('[AddReport] SitRep created successfully:', newSR);
+            showSuccess('Report Created', `Successfully created ${newSR.title}${copyFromId ? ' with data inherited from the previous report.' : '.'}`)
+            
             setCurrentSituationalReport(newSR)
             setShowNewSitRepModal(false)
             setNewSitRepTitle('')
             setPingedCategories([])
+            setShouldInheritData(true)
             setView('entries')
           } else {
             showSuccess('Error', 'Failed to create Situation Report.')
@@ -3321,6 +3346,53 @@ export default function AddReport() {
               autoFocus
             />
           </div>
+
+          {/* Inherit data checkbox — only shown when a previous SitRep exists */}
+          {situationalReports.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              padding: '0.875rem 1rem',
+              borderRadius: '10px',
+              border: `1px solid ${shouldInheritData ? '#3b82f6' : '#e2e8f0'}`,
+              background: shouldInheritData ? 'rgba(59,130,246,0.05)' : '#f8fafc',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+              onClick={() => setShouldInheritData(prev => !prev)}
+            >
+              <div style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '4px',
+                border: `2px solid ${shouldInheritData ? '#3b82f6' : '#cbd5e1'}`,
+                background: shouldInheritData ? '#3b82f6' : '#fff',
+                flexShrink: 0,
+                marginTop: '1px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}>
+                {shouldInheritData && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <div>
+                <div style={{ fontSize: '0.875rem', fontWeight: '600', color: shouldInheritData ? '#1e40af' : '#334155' }}>
+                  Inherit data from previous report
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                  Copies all entries from <strong style={{ color: '#475569' }}>
+                    {[...situationalReports].sort((a,b) => (b.report_number||0)-(a.report_number||0))[0]?.title || 'the latest report'}
+                  </strong> into this new report. You can then edit only what changed.
+                </div>
+              </div>
+            </div>
+          )}
 
           {(isSuperAdmin || isRegional) && (
             <div>
