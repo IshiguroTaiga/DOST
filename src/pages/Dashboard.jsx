@@ -1795,7 +1795,13 @@ CHRONOLOGY OF EVENTS`;
 
         {/* Hero Section */}
         <section className="dash-hero">
-          <div className={`dash-hero-icon alert-status-${currentEvent?.alertStatus || 'white'}`} style={{
+          <div className={`dash-hero-icon alert-status-${currentEvent?.alertStatus || 'white'} ${
+            !userSignal ? (
+              currentEvent?.alertStatus === 'red' ? 'dash-hero-icon-alarm-red' :
+              currentEvent?.alertStatus === 'blue' ? 'dash-hero-icon-alarm-blue' :
+              currentEvent?.alertStatus === 'white' ? 'dash-hero-icon-alarm-white' : ''
+            ) : ''
+          }`} style={{
             background: userSignal === '1' ? '#fde047' : 
                         userSignal === '2' ? '#fdba74' : 
                         userSignal === '3' ? '#fca5a5' : 
