@@ -508,7 +508,7 @@
   text-overflow: ellipsis;
 }
 /*comment me out if u wat to place me on top*/
-.sidebar-link--solido-bottom {
+/* .sidebar-link--solido-bottom {
   margin-top: auto;
   border-top: 1px solid var(--border-color);
   padding-top: 0.75rem;
@@ -517,4 +517,5 @@
   align-items: center;
   gap: 0.625rem;
   padding-left: 0.5rem;  /* reduce from 0.875rem to pull left */
-}
+} */
+	
