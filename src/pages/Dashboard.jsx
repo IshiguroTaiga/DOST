@@ -1854,7 +1854,7 @@ CHRONOLOGY OF EVENTS`;
                     background: 'rgba(255,255,255,0.8)',
                     flexShrink: 0
                   }} />
-                  {currentEvent.alertStatus === 'red' ? 'Red' : currentEvent.alertStatus === 'blue' ? 'Blue' : 'White'}
+                  {currentEvent.alertStatus === 'red' ? 'Red Alert' : currentEvent.alertStatus === 'blue' ? 'Blue Alert' : 'White'}
                 </span>
               </div>
             )}
