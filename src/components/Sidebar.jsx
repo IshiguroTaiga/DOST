@@ -74,8 +74,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
 
   // Users link is now handled conditionally (admin-only) below
 
-
-
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
@@ -167,7 +165,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-        {isAdmin && (
+{isAdmin && (
           <NavLink
             to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -182,8 +180,30 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-      </nav>
 
+        {/* ── Solido DRRM Knowledge Hub — opens in new tab ── */}
+        {/*copy paste this block for the solido link and if u want to move it around, just change the href and img src as needed*/}
+        <a
+        href="https://solido.dost1.ph/home"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="sidebar-link sidebar-link--solido-bottom"
+        title={isCollapsed ? 'Solido DRRM · Knowledge Hub' : ''}
+      >
+        <img
+          src="https://solido.dost1.ph/assets/SOLIDO-Icon-DV7YFduV.png"
+          alt="Solido Logo"
+          className="sidebar-solido-icon"
+        />
+        {!isCollapsed && (
+          <div className="sidebar-solido-text">
+            <span className="sidebar-solido-name">Solido DRRM</span>
+            <span className="sidebar-solido-sub">Knowledge Hub</span>
+          </div>
+        )}
+      </a>
+
+      </nav>
       <div className="sidebar-footer">
         <div className="sidebar-user-profile">
           <div className="user-avatar-small" title={isCollapsed ? displayName : ''}>

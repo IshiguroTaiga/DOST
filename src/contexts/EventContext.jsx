@@ -623,12 +623,14 @@ export function EventProvider({ children, user }) {
       const { data } = await api.get('/signals', { params: { event_id: eventId } })
       
       const deduplicated = (data || []).reduce((acc, current) => {
-        const key = `${current.city?.toLowerCase() || ''}-${current.barangay?.toLowerCase() || ''}`;
+        const key = `${current.province?.toLowerCase() || ''}-${current.city?.toLowerCase() || ''}-${current.barangay?.toLowerCase() || ''}`;
         if (!acc[key]) {
           acc[key] = current;
         }
         return acc;
       }, {});
+
+setEventSignals(Object.values(deduplicated))
       
       setEventSignals(Object.values(deduplicated))
       return data || []

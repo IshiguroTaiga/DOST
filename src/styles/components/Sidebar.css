@@ -467,3 +467,54 @@
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
 }
+/* ── Solido DRRM Knowledge Hub nav item ── */
+.sidebar-solido-icon {
+  width: 33px !important;
+  height: 33px !important;
+  min-width: 33px !important;
+  max-width: 33x !important;
+  max-height: 33px !important;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.sidebar-solido-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+  align-self: center;
+  justify-content: center;
+}
+
+.sidebar-solido-name {
+  font-size: 1.00rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-solido-sub {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/*comment me out if u wat to place me on top*/
+.sidebar-link--solido-bottom {
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.625rem;
+  padding-left: 0.5rem;  /* reduce from 0.875rem to pull left */
+}

@@ -297,49 +297,75 @@ export default function ManageEvents() {
     }))
   }
 
-  const handleAssignSignal = async (location, signal) => {
-    let province = ''
-    let city = ''
-    let barangay = ''
+const handleAssignSignal = async (location, signal) => {
+  let province = ''
+  let city = ''
+  let barangay = ''
 
-    if (activeSignalTab === 'provinces') {
-      province = location
-    } else if (activeSignalTab === 'lgus') {
-      province = (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') ? (selectedSignalProvince || getProvinceForCity(location)) : user.province
-      city = location
-    } else if (activeSignalTab === 'barangays') {
-      province = (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') ? (selectedSignalProvince || getProvinceForCity(selectedSignalCity || '')) : user.province
-      city = (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') ? (selectedSignalCity || '') : user.city
-      barangay = location
-    }
+  const isRegional = user.account_type === 'Regional Admin' || user.account_type === 'Super Admin'
 
-    if (editingId) {
-      const success = await assignSignal(editingId, province, city, barangay, signal)
-      if (success) {
-        await fetchEventSignals(editingId)
-      }
-    } else {
-      setForm(f => {
-        const newSignals = { ...(f.pendingSignals || {}) }
-        if (signal === null) delete newSignals[location]
-        else newSignals[location] = signal
-        return { ...f, pendingSignals: newSignals }
-      })
-    }
+  if (activeSignalTab === 'provinces') {
+    province = location
+    city = null
+    barangay = null
+  } else if (activeSignalTab === 'lgus') {
+    // Use the province that owns this city, not just selectedSignalProvince
+    province = isRegional
+      ? (selectedSignalProvince || getProvinceForCity(location))
+      : user.province
+    city = location
+  } else if (activeSignalTab === 'barangays') {
+    province = isRegional
+      ? (selectedSignalProvince || getProvinceForCity(selectedSignalCity || ''))
+      : user.province
+    city = isRegional ? (selectedSignalCity || '') : user.city
+    barangay = location
   }
 
-  const handleApplyAll = async (signal) => {
-    const provinceToApply = (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') ? selectedSignalProvince : user.province;
-    if (!editingId || !provinceToApply || activeSignalTab !== 'lgus') return
-    
-    const locations = [...new Set(getCitiesForProvince(provinceToApply))]
-    if (locations.length === 0) return
-    
-    const success = await bulkAssignSignals(editingId, provinceToApply, locations, signal)
+  if (editingId) {
+    const success = await assignSignal(editingId, province, city, barangay, signal)
     if (success) {
       await fetchEventSignals(editingId)
     }
+  } else {
+    setForm(f => {
+      const newSignals = { ...(f.pendingSignals || {}) }
+      if (signal === null) delete newSignals[location]
+      else newSignals[location] = signal
+      return { ...f, pendingSignals: newSignals }
+    })
   }
+}
+
+const handleApplyAll = async (signal) => {
+  if (!editingId) return
+
+  if (activeSignalTab === 'provinces') {
+    // Apply signal to all affected provinces
+    for (const prov of form.affectedProvinces) {
+      await assignSignal(editingId, prov, null, null, signal)
+    }
+    await fetchEventSignals(editingId)
+    return
+  }
+
+  if (activeSignalTab === 'lgus') {
+    const isRegional = user.account_type === 'Regional Admin' || user.account_type === 'Super Admin'
+    const provincesToApply = isRegional && !selectedSignalProvince
+      ? form.affectedProvinces
+      : [selectedSignalProvince || user.province]
+
+    if (provincesToApply.length === 0) return
+
+    for (const prov of provincesToApply) {
+      const locations = [...new Set(getCitiesForProvince(prov))]
+      if (locations.length === 0) continue
+      await bulkAssignSignals(editingId, prov, locations, signal)
+    }
+
+    await fetchEventSignals(editingId)
+  }
+}
 
   const SIGNAL_COLORS = {
     '1': { bg: '#fef9c3', text: '#854d0e', border: '#fde047' }, // Yellow
@@ -961,46 +987,45 @@ export default function ManageEvents() {
                     {activeSignalTab === 'provinces' ? 'Provincial Level (Region)' : activeSignalTab === 'lgus' ? `LGU Level (Province)` : `Barangay Level (LGU)`}
                   </span>
 
-                  {activeSignalTab === 'lgus' && modalMode === 'edit' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Apply to All:</span>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {[1, 2, 3, 4, 5].map(s => (
-                          <button
-                            key={s}
-                            type="button"
-                            onClick={() => handleApplyAll(s)}
-                            disabled={modalMode === 'view'}
-                            className="apply-all-btn"
-                            style={{
-                              width: '24px', height: '24px', borderRadius: '4px',
-                              background: 'white', color: '#64748b', border: '1px solid #e2e8f0',
-                              fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              transition: 'all 0.2s',
-                              opacity: modalMode === 'view' ? 0.5 : 1
-                            }}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => handleApplyAll(null)}
-                          disabled={modalMode === 'view'}
-                          style={{
-                            width: '24px', height: '24px', borderRadius: '4px',
-                            background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca',
-                            fontSize: '0.7rem', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            opacity: modalMode === 'view' ? 0.5 : 1
-                          }}
-                        >
-                          <X size={12} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+              {(activeSignalTab === 'lgus' || activeSignalTab === 'provinces') && modalMode === 'edit' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Apply to All:</span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => handleApplyAll(s)}
+                        disabled={modalMode === 'view'}
+                        style={{
+                          width: '24px', height: '24px', borderRadius: '4px',
+                          background: 'white', color: '#64748b', border: '1px solid #e2e8f0',
+                          fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'all 0.2s',
+                          opacity: modalMode === 'view' ? 0.5 : 1
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleApplyAll(null)}
+                      disabled={modalMode === 'view'}
+                      style={{
+                        width: '24px', height: '24px', borderRadius: '4px',
+                        background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca',
+                        fontSize: '0.7rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        opacity: modalMode === 'view' ? 0.5 : 1
+                      }}
+                    >
+                      <X size={12} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              )}
                 </div>
                 <div>
                   {loadingSignals ? <div style={{ padding: '30px', textAlign: 'center' }}><LoadingSpinner size={24} /></div> : (
@@ -1021,12 +1046,17 @@ export default function ManageEvents() {
                         )].filter(loc => loc && loc.toLowerCase().includes(signalSearchTerm.toLowerCase()))
                       ).map(loc => {
                         const signalData = eventSignals.find(s => {
-                          if (activeSignalTab === 'provinces') return s.province === loc && !s.city
-                          if (activeSignalTab === 'lgus') return s.city?.toLowerCase() === loc?.toLowerCase() && !s.barangay
-                          if (activeSignalTab === 'barangays') return s.barangay?.toLowerCase() === loc?.toLowerCase()
+                          if (activeSignalTab === 'provinces') 
+                            return s.province === loc && (!s.city || s.city === '')
+                          if (activeSignalTab === 'lgus') 
+                            return s.city?.toLowerCase() === loc?.toLowerCase() && (!s.barangay || s.barangay === '')
+                          if (activeSignalTab === 'barangays') 
+                            return s.barangay?.toLowerCase() === loc?.toLowerCase()
                           return false
                         })
-                        const currentSignal = editingId ? signalData?.signal : (activeSignalTab === 'provinces' ? form.pendingSignals?.[loc] : null)
+                        const currentSignal = editingId 
+                          ? (signalData?.signal ? String(signalData.signal) : null)
+                          : (activeSignalTab === 'provinces' ? form.pendingSignals?.[loc] : null);
                         const canEdit = activeSignalTab === 'provinces' 
                           ? (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin')
                           : activeSignalTab === 'lgus'
