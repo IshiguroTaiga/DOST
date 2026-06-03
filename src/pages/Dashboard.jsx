@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
-import { ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle } from '@phosphor-icons/react'
+import { ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle, CheckCircle } from '@phosphor-icons/react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -1813,40 +1813,64 @@ CHRONOLOGY OF EVENTS`;
           </div>
 
           <div className="dash-hero-title-wrap">
+            {currentEvent?.alertLevel && (
+              <span style={{
+                display: 'inline-block',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                marginBottom: '4px',
+              }}>
+                {currentEvent.alertLevel}
+              </span>
+            )}
             <h2 className="dash-hero-amount">
               {currentEvent ? currentEvent.name : 'Clear Skies (No Active Event)'}
             </h2>
-            {userSignal && (
+            {userSignal ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
                 Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> assigned to your area
+              </p>
+            ) : currentEvent && currentEvent.id !== 'default-good-day' && currentEvent.alertLevel && (
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
+                Currently monitoring <strong style={{ color: 'var(--text-main)' }}>{currentEvent.alertLevel}</strong> event in your area
               </p>
             )}
           </div>
 
           <div className={`dash-hero-meta alert-status-${currentEvent?.alertStatus || 'white'}`}>
             {currentEvent && currentEvent.id !== 'default-good-day' && currentEvent.alertStatus && (
-              <div className="meta-item">
-                <span style={{
-                  padding: '5px 14px',
-                  borderRadius: '20px',
-                  fontSize: '0.7rem',
-                  fontWeight: 900,
-                  letterSpacing: '1.5px',
-                  textTransform: 'up  percase',
-                  background: currentEvent.alertStatus === 'red' ? '#ef4444' : currentEvent.alertStatus === 'blue' ? '#3b82f6' : '#94a3b8',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  <span style={{
-                    width: '6px', height: '6px', borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.8)',
-                    flexShrink: 0
-                  }} />
-                  {currentEvent.alertStatus === 'red' ? 'Red' : currentEvent.alertStatus === 'blue' ? 'Blue' : 'White'}
-                </span>
+            <div className="meta-item">
+              <div className="meta-content" style={{ alignItems: 'center' }}>
+                <span className="meta-label">Alert Status</span>
+                  <span className="meta-value">
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '8px 25px',
+                      borderRadius: '10px',
+                      fontSize: '1.00rem',
+                      fontWeight: 50,
+                      letterSpacing: '1.5px',
+                      textTransform: 'uppercase',
+                      background:
+                        currentEvent.alertStatus === 'red' ? '#dc2626' :
+                        currentEvent.alertStatus === 'blue' ? '#2563eb' :
+                        currentEvent.alertStatus === 'yellow' ? '#d97706' :
+                        currentEvent.alertStatus === 'orange' ? '#ea580c' :
+                        currentEvent.alertStatus === 'purple' ? '#7c3aed' :
+                        '#475569',
+                      color: '#ffffff',
+                    }}>
+                      {currentEvent.alertStatus === 'yellow' ? 'Yellow' :
+                      currentEvent.alertStatus === 'orange' ? 'Orange' :
+                      currentEvent.alertStatus === 'red' ? 'Red' :
+                      currentEvent.alertStatus === 'blue' ? 'Blue' :
+                      currentEvent.alertStatus === 'purple' ? 'Purple' : 'White'}
+                    </span>
+                  </span>
+                </div>
               </div>
             )}
 
@@ -1863,17 +1887,15 @@ CHRONOLOGY OF EVENTS`;
             <div className="meta-item">
               <div className="meta-icon"><Info size={18} /></div>
               <div className="meta-content">
-                <span className="meta-label">
-                  {userSignal ? 'My Signal' : (currentEvent?.eventType === 'earthquake' ? 'Magnitude' : 'Category')}
-                </span>
-                <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
-                  {userSignal 
-                    ? `Public Warning Signal ${userSignal}` 
-                    : (currentEvent?.eventType === 'earthquake' && currentEvent?.alertLevel?.startsWith('Magnitude ')
-                        ? currentEvent.alertLevel.replace('Magnitude ', '') 
-                        : (currentEvent?.alertLevel || 'No Alert'))
-                  }
-                </span>
+              <span className="meta-label">
+                {currentEvent?.eventType === 'earthquake' ? 'Magnitude' : 'Category'}
+              </span>
+              <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
+                {currentEvent?.eventType === 'earthquake' && currentEvent?.alertLevel?.startsWith('Magnitude ')
+                  ? currentEvent.alertLevel.replace('Magnitude ', '')
+                  : (currentEvent?.alertLevel || 'No Alert')
+                }
+              </span>
               </div>
             </div>
 

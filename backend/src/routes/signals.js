@@ -26,18 +26,49 @@ router.get('/user', authenticate, async (req, res) => {
   const { event_id } = req.query;
   if (!event_id) return res.status(400).json({ error: 'event_id is required' });
   try {
-    let query, params;
+    let signal = null;
+    
     if (user.account_type === 'Provincial Admin') {
-      query = `SELECT signal FROM event_signals WHERE event_id = $1 AND province = $2 AND city IS NULL LIMIT 1`;
-      params = [event_id, user.province];
+      // Check province-level signal
+      const { rows } = await pool.query(
+        `SELECT signal FROM event_signals WHERE event_id = $1 AND province = $2 AND city IS NULL AND barangay IS NULL LIMIT 1`,
+        [event_id, user.province]
+      );
+      signal = rows[0]?.signal || null;
     } else if (user.account_type === 'LGU Admin' || user.account_type === 'LGU') {
-      query = `SELECT signal FROM event_signals WHERE event_id = $1 AND city = $2 AND barangay IS NULL LIMIT 1`;
-      params = [event_id, user.city];
+      // Check city-level signal first, then fall back to province-level
+      const { rows } = await pool.query(
+        `SELECT signal FROM event_signals WHERE event_id = $1 AND city = $2 AND barangay IS NULL LIMIT 1`,
+        [event_id, user.city]
+      );
+      signal = rows[0]?.signal || null;
+      
+      // If no city-level signal, try province-level
+      if (!signal && user.province) {
+        const { rows: provRows } = await pool.query(
+          `SELECT signal FROM event_signals WHERE event_id = $1 AND province = $2 AND city IS NULL AND barangay IS NULL LIMIT 1`,
+          [event_id, user.province]
+        );
+        signal = provRows[0]?.signal || null;
+      }
+    } else if (user.account_type === 'Provincial' || user.account_type === 'Provincial Approver') {
+      // Check for signals in their city (or province if no city)
+      const { rows } = await pool.query(
+        `SELECT signal FROM event_signals WHERE event_id = $1 AND (city = $2 OR (city IS NULL AND province = $3)) LIMIT 1`,
+        [event_id, user.city, user.province]
+      );
+      signal = rows[0]?.signal || null;
+    } else if (user.account_type === 'Regional Admin' || user.account_type === 'Regional' || user.role === 'Super Admin') {
+      // Regional users can see signals for any province they oversee
+      const { rows } = await pool.query(
+        `SELECT signal FROM event_signals WHERE event_id = $1 AND province = $2 AND city IS NULL LIMIT 1`,
+        [event_id, user.province]
+      );
+      signal = rows[0]?.signal || null;
     } else {
       return res.json({ signal: null });
     }
-    const { rows } = await pool.query(query, params);
-    res.json({ signal: rows[0]?.signal || null });
+    res.json({ signal });
   } catch (err) {
     console.error('[Signals/user]', err);
     res.status(500).json({ error: 'Server error' });

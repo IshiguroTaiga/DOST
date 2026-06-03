@@ -40,10 +40,15 @@
 }
 
 .sidebar-branding {
-	display: flex;
-	align-items: center;
-	gap: 0.625rem;
-	min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.sidebar-branding:hover {
+  opacity: 0.85;
 }
 
 .sidebar.collapsed .sidebar-branding {

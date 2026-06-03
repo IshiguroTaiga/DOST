@@ -1013,9 +1013,11 @@ export default function AddReport() {
     }
   }, [selectedEvent?.id, fetchSituationalReports])
 
-  useEffect(() => {
+useEffect(() => {
+  if (view === 'entries') {
     fetchReports()
-  }, [fetchReports])
+  }
+}, [fetchReports, view])
 
   useEffect(() => {
     if (showSignatoriesModal) fetchSignatories()
@@ -1735,7 +1737,7 @@ export default function AddReport() {
                   return {
                     ...base,
                     type: row.type,
-                    count_soc: row.count_soc ? parseInt(row.count_soc) : null,
+                    count_soc: row.count_soc ? parseInt(row.countSoc) : null,
                     resolution_number: row.resolutionNo,
                     resolution_date: row.resolutionDate || null,
                     status: row.status || 'Declared'
@@ -1816,6 +1818,7 @@ export default function AddReport() {
           }
 
           showSuccess('Success', `${categoryTitle} report(s) updated!`)
+          handleCloseActiveModal()
           await fetchReports()
           if (currentSituationalReport?.id) {
             await markSitRepNotificationsAsRead(currentSituationalReport.id)
@@ -3006,15 +3009,14 @@ export default function AddReport() {
         ) : null}
       </div>
 
-      {showCategoryModal && (
-        <CategorySelectionModal
-          onClose={() => setShowCategoryModal(false)}
-          onSelect={handleCategorySelect}
-          pingedReportTypes={selectedEvent?.pingedReportTypes || []}
-          submittedCategories={new Set(submittedReports.map(r => r.category))}
-        />
-      )}
-
+{showCategoryModal && (
+  <CategorySelectionModal
+    onClose={() => setShowCategoryModal(false)}
+    onSelect={handleCategorySelect}
+    pingedReportTypes={currentSituationalReport?.pinged_report_types || selectedEvent?.pingedReportTypes || []}
+    submittedCategories={new Set(submittedReports.map(r => r.category))}
+  />
+)}
       <HeaderFooterModal
         isOpen={!!detailsModal}
         onClose={() => setDetailsModal(null)}
