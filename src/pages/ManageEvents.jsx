@@ -264,6 +264,15 @@ export default function ManageEvents() {
         if (form.eventType === 'earthquake') {
           payload.alertLevel = form.magnitude ? `Magnitude ${form.magnitude}` : 'Monitoring'
         }
+        if (form.eventType === 'flood') {
+          payload.alertLevel = form.floodLevel || 'Monitoring'
+        }
+        if (form.eventType === 'tsunami') {
+          payload.alertLevel = form.tsunamiAlert || 'Monitoring'
+        }
+        if (form.eventType === 'weather') {
+          payload.alertLevel = form.alertLevel || 'Monitoring'
+        }
 
         let resultId = null
         if (editingId) {
