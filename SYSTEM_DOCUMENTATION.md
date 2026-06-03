@@ -509,7 +509,7 @@ Super Admin
          │
          ▼
     Status: Draft
-         │  (LGU fills data via AddReport)
+         │  (LGU fills data via AddReport) NOTE as of: 01/06/26 LGU should be able to approve own report
          ▼
     Status: Sent
          │  (Provincial submits for approval)

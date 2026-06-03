@@ -320,25 +320,16 @@ export default function Dashboard() {
     bulkAssignSignals
   } = useEvents()
 
-  const handleNotificationClick = (notif) => {
-    if (notif.type === 'event_deployment') {
-      // Prevent LGU users from triggering the deployment modal
-      if (user?.account_type === 'LGU') {
-        console.log('LGU users cannot trigger event deployment modal');
-        return;
-      }
-
-      const data = typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data
-      const eventId = data?.event_id
-      if (event) {
-        // Instead of showing the deployment checkbox modal (Image 1),
-        // we now show the signal management modal (Image 2)
-        setSelectedEventToDeploy(event)
-        fetchEventSignals(eventId)
-        setShowSignalDetailsModal(true)
-      }
-    }
+const handleNotificationClick = (notif) => {
+  const data = typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data
+  const eventId = data?.event_id
+  
+  if (eventId && notif.type?.includes('sitrep')) {
+    switchEvent(eventId)
+  } else if (eventId && notif.type === 'event_deployment') {
+    switchEvent(eventId)
   }
+}
 
   const handleLguDeploySubmit = async (e) => {
     e.preventDefault()
@@ -1841,7 +1832,7 @@ CHRONOLOGY OF EVENTS`;
                   fontSize: '0.7rem',
                   fontWeight: 900,
                   letterSpacing: '1.5px',
-                  textTransform: 'uppercase',
+                  textTransform: 'up  percase',
                   background: currentEvent.alertStatus === 'red' ? '#ef4444' : currentEvent.alertStatus === 'blue' ? '#3b82f6' : '#94a3b8',
                   color: '#ffffff',
                   display: 'flex',
@@ -1854,7 +1845,7 @@ CHRONOLOGY OF EVENTS`;
                     background: 'rgba(255,255,255,0.8)',
                     flexShrink: 0
                   }} />
-                  {currentEvent.alertStatus === 'red' ? 'Red Alert' : currentEvent.alertStatus === 'blue' ? 'Blue Alert' : 'White'}
+                  {currentEvent.alertStatus === 'red' ? 'Red' : currentEvent.alertStatus === 'blue' ? 'Blue' : 'White'}
                 </span>
               </div>
             )}

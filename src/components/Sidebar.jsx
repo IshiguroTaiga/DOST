@@ -77,7 +77,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        <div className="sidebar-branding">
+        <div className="sidebar-branding" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
           <img src="/proactLogo.png" alt="PROACT Logo" className="sidebar-logo-image" />
         </div>
         <button 
