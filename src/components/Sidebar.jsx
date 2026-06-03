@@ -78,7 +78,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-branding">
-          <img src="/asset1-logo.svg" alt="SIREN Logo" className="sidebar-logo-image" />
+          <img src="/proactLogo.png" alt="PROACT Logo" className="sidebar-logo-image" />
         </div>
         <button 
           className="sidebar-toggle-btn" 
