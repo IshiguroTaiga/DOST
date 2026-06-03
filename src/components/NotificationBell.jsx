@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, X, Calendar, PaperPlaneRight, Info, CheckCircle } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
+import { useNavigate } from 'react-router-dom'
 import '../styles/components/NotificationBell.css'
 
 export default function NotificationBell({ onNotificationClick }) {
   const { notifications, unreadCount, markNotificationAsRead } = useEvents()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const navigate = useNavigate()
 
   const [isRinging, setIsRinging] = useState(false)
   const prevCountRef = useRef(unreadCount)
@@ -33,6 +35,19 @@ export default function NotificationBell({ onNotificationClick }) {
   const handleItemClick = (notif) => {
     markNotificationAsRead(notif.id)
     onNotificationClick?.(notif)
+    
+    // Navigate based on notification type
+    let dataObj = notif.data
+    if (typeof dataObj === 'string') {
+      try { dataObj = JSON.parse(dataObj) } catch (e) { dataObj = {} }
+    }
+    
+    if (dataObj?.event_id) {
+      navigate(`/dashboard?event=${dataObj.event_id}`)
+    } else if (dataObj?.sitrep_id) {
+      navigate(`/consolidated-report`)
+    }
+    
     setIsOpen(false)
   }
 
