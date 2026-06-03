@@ -330,7 +330,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                             </div>
                         </div>
                     )}
-                    {activeTab === 'maintenance' && isSuperAdmin && (
+                    {activeTab === 'maintenance' && isSuperAdmin && (   
                         <div className="settings-tab-pane">
                             <h3 className="settings-section-title">Maintenance</h3>
                             <p className="settings-section-desc">Backup and restore system data including database records and uploaded files. This action is irreversible.</p>
