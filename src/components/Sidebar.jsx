@@ -246,7 +246,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
         title="Log out"
         message="Are you sure you want to log out?"
         confirmText="Log out"
-        type="danger"
+        type="danger" 
         icon={SignOut}
         onConfirm={confirmLogout}
         maxWidth="380px"
