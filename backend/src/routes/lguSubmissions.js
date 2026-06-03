@@ -85,12 +85,6 @@ router.post('/submit', authenticate, async (req, res) => {
     console.error('[LguSubmissions/submit]', err);
     res.status(500).json({ error: 'Server error' });
   }
-
-    res.json(submission);
-  } catch (err) {
-    console.error('[LguSubmissions/submit]', err);
-    res.status(500).json({ error: 'Server error' });
-  }
 });
 
 // POST /approve – LGU Approver approves LGU data
