@@ -496,9 +496,6 @@ export default function AddReport() {
   const [showTextEditorModal, setShowTextEditorModal] = useState(false)
   const [editingItemId, setEditingItemId] = useState(null)
   const [deletedRowIds, setDeletedRowIds] = useState([])
-  const [excelFile, setExcelFile] = useState(null)
-  const [importingExcel, setImportingExcel] = useState(false)
-  const [excelError, setExcelError] = useState(null)
 
   // New Sit Rep Modal State
   const [showNewSitRepModal, setShowNewSitRepModal] = useState(false)
@@ -2837,40 +2834,22 @@ useEffect(() => {
                             {sr.status || 'Draft'}
                           </span>
                         </td>
-                          <td className="col-action" onClick={(e) => e.stopPropagation()} style={{ width: '280px' }}>
-                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center' }}>
-                              <Button
-                                variant="solid"
-                                color="primary"
-                                size="sm"
-                                onClick={() => {
-                                  setCurrentSituationalReport(sr)
-                                  setView('entries')
-                                  setCurrentPage(1)
-                                }}
-                                icon={<FileText size={14} />}
-                              >
-                                {(isLGU || user?.account_type === 'LGU Admin') ? 'View Details' : 'Manage Entries'}
+                        <td className="col-action" onClick={(e) => e.stopPropagation()} style={{ width: '200px' }}>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
+                            <Button variant="solid" color="primary" size="sm"
+                              onClick={() => { setCurrentSituationalReport(sr); setView('entries'); setCurrentPage(1); }}
+                              icon={<FileText size={14} />}>
+                              Manage
+                            </Button>
+                            {(isProvincial || isSuperAdmin || isRegional) && (
+                              <Button variant="solid" color="success" size="sm"
+                                onClick={() => handleUploadPdfClick(sr)}
+                                icon={<Upload size={14} />}>
+                                Send
                               </Button>
-                              
-                               {(!sr.status || ['draft', 'sent'].includes(sr.status.toLowerCase())) && (
-                                 <Button
-                                   variant="solid"
-                                   color="primary"
-                                   size="sm"
-                                   onClick={() => {
-                                     setCurrentSituationalReport(sr)
-                                     setView('entries')
-                                     setCurrentPage(1)
-                                   }}
-                                   title="Manage Entries"
-                                   icon={<FileText size={14} />}
-                                 >
-                                   Manage
-                                 </Button>
-                               )}
-                            </div>
-                          </td>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     ))
                   ) : (
