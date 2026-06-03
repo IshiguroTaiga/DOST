@@ -3,9 +3,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: transparent;
 	padding: 1.5rem;
 	position: relative;
+	background: #f8fafc; /* modern */
 }
 
 .login-footer {
