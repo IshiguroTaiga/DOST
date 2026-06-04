@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
@@ -47,8 +47,9 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     }
   }
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
+const [showLogoutModal, setShowLogoutModal] = useState(false)
+   const [showSettingsModal, setShowSettingsModal] = useState(false)
+   const [showHazardDropdown, setShowHazardDropdown] = useState(false)
 
   const displayName = user?.first_name || user?.name || user?.email || 'User'
 
@@ -60,8 +61,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     onLogout?.()
     navigate('/login', { replace: true })
   }
-
-
 
   useEffect(() => {
     if (!showLogoutModal) return
@@ -182,66 +181,76 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           </NavLink>
         )}
 
-        {/* ── Solido DRRM Knowledge Hub — opens in new tab ── */}
-        <a
-        href="https://solido.dost1.ph/home"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="sidebar-link sidebar-link--solido-bottom"
-        title={isCollapsed ? 'Solido DRRM · Knowledge Hub' : ''}
-        >
-        <img
-          src="https://solido.dost1.ph/assets/SOLIDO-Icon-DV7YFduV.png"
-          alt="Solido Logo"
-          className="sidebar-solido-icon"
-        />
-        {!isCollapsed && (
-          <div className="sidebar-solido-text">
-            <span className="sidebar-solido-name">Solido DRRM</span>
-            <span className="sidebar-solido-sub">Knowledge Hub</span>
-          </div>
-        )}
-      </a>
+        {/* ── Hazard Information Dropdown ── */}
+        <div className="sidebar-item-with-sub">
+          <button
+            className="sidebar-link sidebar-link-parent"
+            onClick={() => setShowHazardDropdown(!showHazardDropdown)}
+            title={isCollapsed ? 'Hazard Information' : ''}
+          >
+            <FileText size={16} weight="bold" />
+            {!isCollapsed && (
+              <>
+                <span>Hazard Information</span>
+                <CaretDown 
+                  size={14} 
+                  weight="bold" 
+                  className={`sidebar-chevron ${showHazardDropdown ? 'rotated' : ''}`}
+                />
+              </>
+            )}
+          </button>
+          <div className="sidebar-submenu" style={{ 
+            maxHeight: showHazardDropdown ? '300px' : '0', 
+            opacity: showHazardDropdown ? 1 : 0,
+            visibility: showHazardDropdown ? 'visible' : 'hidden'
+          }}>
+            <a
+              href="https://solido.dost1.ph/home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sidebar-sub-link sidebar-link--solido-bottom"
+              title="Solido DRRM · Knowledge Hub"
+            >
+              <img
+                src="https://solido.dost1.ph/assets/SOLIDO-Icon-DV7YFduV.png"
+                alt="Solido Logo"
+                className="sidebar-solido-icon"
+              />
+              <span>Solido DRRM Knowledge Hub</span>
+            </a>
 
-      <a
-        href="https://www.facebook.com/PAGASA.DOST.GOV.PH"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="sidebar-link sidebar-link--DOSTPAGASA-bottom"
-        title={isCollapsed ? 'DOST PAGASA' : ''}
-        >
-        <img
-          src="/dostPagasa.png"
-          alt="DOST PAGASA LOGO"
-          className="sidebar-DOSTPAGASA-icon"
-        />
-        {!isCollapsed && (
-          <div className="sidebar-DOSTPAGASA-text">
-            <span className="sidebar-DOSTPAGASA-name">DOST PAGASA</span>
-            <span className="sidebar-DOSTPAGASA-sub">Facebook Page</span>
-          </div>
-        )}
-      </a>
+            <a
+              href="https://www.facebook.com/PAGASA.DOST.GOV.PH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sidebar-sub-link sidebar-link--DOSTPAGASA-bottom"
+              title="DOST PAGASA"
+            >
+              <img
+                src="/dostPagasa.png"
+                alt="DOST PAGASA LOGO"
+                className="sidebar-DOSTPAGASA-icon"
+              />
+              <span>DOST PAGASA Facebook Page</span>
+            </a>
 
-      <a
-        href="https://www.facebook.com/PHIVOLCS"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="sidebar-link sidebar-link--DOSTPHIVOLCS-bottom"
-        title={isCollapsed ? 'DOST PHIVOLCS' : ''}
-        >
-        <img
-          src="/dostPhivolcs.png"
-          alt="DOST PHIVOLCS LOGO"
-          className="sidebar-DOSTPHIVOLCS-icon"
-        />
-        {!isCollapsed && (
-          <div className="sidebar-DOSTPHIVOLCS-text">
-            <span className="sidebar-DOSTPHIVOLCS-name">DOST PHIVOLCS</span>
-            <span className="sidebar-DOSTPHIVOLCS-sub">Facebook Page</span>
+            <a
+              href="https://www.facebook.com/PHIVOLCS"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sidebar-sub-link sidebar-link--DOSTPHIVOLCS-bottom"
+              title="DOST PHIVOLCS"
+            >
+              <img
+                src="/dostPhivolcs.png"
+                alt="DOST PHIVOLCS LOGO"
+                className="sidebar-DOSTPHIVOLCS-icon"
+              />
+              <span>DOST PHIVOLCS Facebook Page</span>
+            </a>
           </div>
-        )}
-      </a>
+        </div>
       
 
       </nav>
