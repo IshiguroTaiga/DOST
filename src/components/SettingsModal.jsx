@@ -275,8 +275,8 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                             <h3 className="settings-section-title">UI Theme</h3>
                             <p className="settings-section-desc">Choose between the classic interface or the modern style guide palette.</p>
                             
-                            <div className="theme-selector-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
-                                <div 
+                            <div className="theme-selector-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginTop: '1.5rem' }}>
+                                {/* <div  
                                     className={`theme-option-card ${theme === 'classic' ? 'active' : ''}`}
                                     onClick={() => handleThemeChange('classic')}
                                     style={{
@@ -291,7 +291,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                 >
                                     <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Classic</div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Standard PROACT interface colors</div>
-                                </div>
+                                </div> */}
 
                                 <div 
                                     className={`theme-option-card ${theme === 'modern' ? 'active' : ''}`}
