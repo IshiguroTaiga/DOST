@@ -34,7 +34,6 @@ router.get('/all-types', authenticate, async (req, res) => {
 
   const user = req.user;
   const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
-  const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
 
   try {
     const tables = [
@@ -75,11 +74,13 @@ router.get('/all-types', authenticate, async (req, res) => {
         }
       }
 
-      if (isRegional && !isSuperAdmin) {
-        query += ` AND (rr.city IS NULL OR rr.city = '' OR EXISTS (
-          SELECT 1 FROM users u 
-          WHERE u.city = rr.city AND u.status = 'Active'
-        ))`;
+      if (!isLgu) {
+        conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
+          SELECT 1 FROM lgu_submissions ls 
+          WHERE ls.situational_report_id = t.situational_report_id 
+            AND ls.city = t.city 
+            AND ls.status = 'Approved'
+        ))`);
       }
 
       const { rows } = await pool.query(`${query} WHERE ${conditions.join(' AND ')}`, params);
@@ -135,7 +136,7 @@ router.get('/all-types', authenticate, async (req, res) => {
       if (isLgu && user.city) {
         rowsParams.push(user.city);
         rowsConditions.push(`t.city = $${rowsParams.length}`);
-      } else if (isRegional && !isSuperAdmin) {
+      } else if (!isLgu) {
         rowsConditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
           SELECT 1 FROM lgu_submissions ls 
           WHERE ls.situational_report_id = r.situational_report_id 
