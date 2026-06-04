@@ -273,7 +273,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                     {activeTab === 'appearance' && (
                         <div className="settings-tab-pane">
                             <h3 className="settings-section-title">UI Theme</h3>
-                            <p className="settings-section-desc">Choose between the classic interface or the modern style guide palette.</p>
+                            <p className="settings-section-desc">The Modern Style Guide Palette.</p>
                             
                             <div className="theme-selector-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginTop: '1.5rem' }}>
                                 {/* <div  
