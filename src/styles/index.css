@@ -12,7 +12,7 @@
 	-moz-osx-font-smoothing: grayscale;
 
 	/* --- Classic Theme Tokens (Default) --- */
-	--bg-page: #f8fafc;
+	/* --bg-page: #f8fafc;
 	--bg-card: #ffffff;
 	--bg-sidebar: rgba(255, 255, 255, 0.45);
 	--text-main: #0f172a;
@@ -20,16 +20,18 @@
 	--border-color: rgba(0, 0, 0, 0.1);
 	--accent: #6366f1;
 	--accent-hover: #4f46e5;
-	--accent-glow: rgba(99, 102, 241, 0.15);
+	--accent-glow: rgba(99, 102, 241, 0.15); */
 	
 	/* --- Modern Theme (Style Guide Reference) --- */
-	--modern-blue: #0052FF;
-	--modern-blue-dark: #03369D;
-	--modern-blue-light: #DFE9FF;
-	--modern-bg: #F2F4F7;
-	--modern-text: #131415;
-	--modern-text-muted: #4B5666;
-	--modern-border: #DBE1E8;
+	--bg-page: #F2F4F7;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --text-main: #131415;
+  --text-muted: #4B5666;
+  --border-color: #DBE1E8;
+  --accent: #0052FF;
+  --accent-hover: #03369D;
+  --accent-glow: rgba(0, 82, 255, 0.15);
 
 	/* Radius & Shadows (Global Modern Standard) */
 	--radius-xs: 4px;
@@ -81,7 +83,7 @@
 }
 
 /* --- Theme Overrides --- */
-[data-theme="modern"] {
+/* [data-theme="modern"] {
 	--bg-page: var(--modern-bg);
 	--text-main: var(--modern-text);
 	--text-muted: var(--modern-text-muted);
@@ -98,8 +100,11 @@
 
 [data-theme="modern"] body {
 	background-color: var(--bg-page) !important;
-}
+} */
 
+.mesh-gradient-container {
+  display: none !important;
+}
 
 /* Modern Typography Scale */
 h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
