@@ -604,7 +604,7 @@
 	position: relative;
 	overflow: hidden;
 }
-
+/* Meta Section */
 .dash-hero-meta {
   padding: 1.25rem 1.5rem;
   gap: 1.5rem;
@@ -614,7 +614,7 @@
   justify-content: flex-end;
   align-items: center;
   min-width: 800px;
-  width: 950px;      	 /* Increased to accommodate weather */
+  width: 1000px;      	 /* Increased to accommodate weather */
 }
 
 .dash-hero-icon {
@@ -750,8 +750,8 @@
 
 /* Weather - new item */
 .weather-item {
-  min-width: 200px;
-  width: 200px;
+  min-width: 250px;
+  width: 25	0px;
   border-left: 1px solid rgba(0,0,0,0.1);
   padding-left: 1.5rem;
 }

@@ -1945,7 +1945,7 @@ CHRONOLOGY OF EVENTS`;
               </span>
               </div>
             </div>
-
+            {/* New Real Time Weather display*/}
             <div className="meta-item weather-item">
               <div className="meta-icon">
                 {weatherLoading ? <ArrowsClockwise size={18} className="animate-spin" /> : getWeatherIcon(weather?.code, weather?.desc)}
@@ -1953,7 +1953,7 @@ CHRONOLOGY OF EVENTS`;
               <div className="meta-content">
                 <span className="meta-label">Weather</span>
                 <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
-                  {weather ? `${weather.temp}°C · ${weather.desc}` : (weatherLoading ? 'Loading...' : 'N/A')}
+                  {weather ? `${weather.temp}°C · ${weather.desc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}` : (weatherLoading ? 'Loading...' : 'N/A')}
                 </span>
               </div>
             </div>
