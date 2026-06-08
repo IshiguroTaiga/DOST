@@ -284,33 +284,6 @@ export default function Dashboard() {
   const [selectedEventIdToEdit, setSelectedEventIdToEdit] = useState('')
   const [isEditingExistingEvent, setIsEditingExistingEvent] = useState(false)
 
-  const handleTabChangeWithScroll = (tab) => {
-    setActiveTab(tab);
-    setTimeout(() => {
-      const mainCard = document.querySelector('.dash-main-card');
-      if (mainCard) {
-        mainCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
-
-  const handleScrollToBottom = (tab) => {
-    setActiveTab(tab);
-    setTimeout(() => {
-      const targetSection = document.getElementById('damaged-houses-section');
-      if (targetSection) {
-        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        const mainCard = document.querySelector('.dash-main-card');
-        if (mainCard) {
-          mainCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        } else {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-      }
-    }, 150);
-  };
-
   // --- Weather Logic ---
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
