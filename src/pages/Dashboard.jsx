@@ -2214,7 +2214,10 @@ CHRONOLOGY OF EVENTS`;
                       <div className="kpi-label-premium">Assistance Value</div>
                       <div className="kpi-value-premium">₱ {(() => {
                         const val = Object.values(details.assistanceByLgu || {}).reduce((s, v) => s + v, 0);
-                        return val >= 1000 ? `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}K` : val.toLocaleString();
+                        if (val >= 1000000000) return `${(val / 1000000000).toLocaleString(undefined, { maximumFractionDigits: 1 })}B`;
+                        if (val >= 1000000) return `${(val / 1000000).toLocaleString(undefined, { maximumFractionDigits: 1 })}M`;
+                        if (val >= 1000) return `${(val / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}K`;
+                        return val.toLocaleString();
                       })()}</div>
                       <div className="kpi-sub-premium">Total funds disbursed</div>
                     </div>
