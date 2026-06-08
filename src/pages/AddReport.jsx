@@ -374,6 +374,86 @@ const CAT_ID_TO_PING_KEY = {
   assistance: 'assistanceProvided',
 }
 
+const enrichReportItem = (item) => {
+  const categoryInfo = REPORT_CATEGORIES.find(c => c.id === item.category)
+  const categoryTitle = categoryInfo?.title || 'Report'
+  const appItem = dbRowToApp(item, item.category)
+  
+  let subject = ''
+  let summary = ''
+  
+  switch (item.category) {
+    case 'power':
+    case 'water':
+      subject = appItem.serviceProvider || (item.category === 'power' ? 'Power Status' : 'Water Status')
+      summary = `${appItem.type || 'Total'} | ${appItem.status || 'Ongoing'}`
+      break
+    case 'roads':
+      subject = appItem.roadBridgeName || 'Road/Bridge'
+      summary = `${appItem.classification || 'National'} | ${appItem.status || 'Not Passable'}`
+      break
+    case 'incidents':
+      subject = appItem.typeOfIncident || 'Incident'
+      summary = appItem.description || ''
+      break
+    case 'houses':
+      const totally = parseInt(appItem.totallyDamaged) || 0
+      const partially = parseInt(appItem.partiallyDamaged) || 0
+      subject = `Houses: ${totally + partially} affected`
+      summary = `Totally: ${totally}, Partially: ${partially}`
+      break
+    case 'class':
+      subject = `Class Suspension: ${appItem.level || 'All Levels'}`
+      summary = appItem.typeOfSuspension || ''
+      break
+    case 'work':
+      subject = 'Work Suspension'
+      summary = appItem.typeOfSuspension || ''
+      break
+    case 'calamity':
+      subject = appItem.type || 'State of Calamity'
+      summary = appItem.resolutionNo || ''
+      break
+    case 'preemptive':
+      subject = `${appItem.families || 0} Families`
+      summary = `${appItem.total || 0} Persons`
+      break
+    case 'assistance':
+      subject = appItem.needs || 'Assistance Provided'
+      summary = `${appItem.fnfiQty || ''} ${appItem.fnfiUnit || ''}`.trim()
+      break
+    case 'assistance_lgus':
+      subject = appItem.type || 'LGU Assistance'
+      summary = `${appItem.qty || ''} ${appItem.unit || ''} from ${appItem.source || ''}`.trim()
+      break
+    case 'agriculture':
+      subject = appItem.type || 'Agriculture Damage'
+      summary = `${appItem.farmersAffected || 0} farmers | ${appItem.classification || 'Crop'}`
+      break
+    case 'infrastructure':
+      subject = appItem.infrastructureName || 'Infrastructure'
+      summary = `${appItem.type || ''} | ${appItem.classification || 'National'}`
+      break
+    case 'communication':
+      subject = appItem.telecompany || 'Communication'
+      summary = appItem.statusOfCommunication || ''
+      break
+    default:
+      subject = appItem.barangay || appItem.city || 'Entry'
+      summary = appItem.remarks || ''
+  }
+
+  return {
+    ...item,
+    categoryTitle,
+    categoryLabel: categoryTitle,
+    location: item.barangay || item.city || 'Entry',
+    subject,
+    classification: subject,
+    summary
+  }
+}
+
 // Category Selection Modal Component
 function CategorySelectionModal({ onClose, onSelect, pingedReportTypes = [], submittedCategories = new Set() }) {
   return (
@@ -591,7 +671,7 @@ export default function AddReport() {
           }
           evacuationByReport[item.report_id].push(item)
         } else {
-          grouped.push(item)
+          grouped.push(enrichReportItem(item))
         }
       })
 
@@ -615,9 +695,11 @@ export default function AddReport() {
           report_id: reportId,
           category: 'evacuation',
           categoryTitle: 'Affected Population',
+          categoryLabel: 'Affected Population',
           tableName: 'reports',
           location: provinceDisplay,
           subject: `${rows.length} Barangays Affected`,
+          classification: `${rows.length} Barangays Affected`,
           summary: `Total Affected: ${rows.reduce((acc, r) => acc + (parseInt(r.affected_families) || 0), 0)} families`,
           status: first.status || 'Resolved',
           timestamp: first.timestamp,
@@ -1750,10 +1832,19 @@ useEffect(() => {
                     status: row.status || 'Reported'
                   }
                 case 'class':
-                case 'work':
                   return {
                     ...base,
                     level_from: row.level || '',
+                    type: row.typeOfSuspension || '',
+                    date_of_suspension: row.dateOfSuspension || null,
+                    time_of_suspension: row.timeOfSuspension || null,
+                    date_resumed: row.dateOfResumption || null,
+                    time_resumed: row.timeOfResumption || null,
+                    status: row.status || 'Ongoing'
+                  }
+                case 'work':
+                  return {
+                    ...base,
                     type: row.typeOfSuspension || '',
                     date_of_suspension: row.dateOfSuspension || null,
                     time_of_suspension: row.timeOfSuspension || null,
