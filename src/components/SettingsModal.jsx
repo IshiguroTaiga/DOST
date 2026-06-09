@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info, Database, DownloadSimple, UploadSimple, WarningCircle, FileZip, Envelope } from '@phosphor-icons/react'
+import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info, Database, DownloadSimple, UploadSimple, WarningCircle, FileZip, Envelope, Sparkle } from '@phosphor-icons/react'
 import { zip, unzip, strToU8, strFromU8 } from 'fflate'
 import pkg from '../../package.json'
 
@@ -53,6 +53,18 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
     const [smtpLogs, setSmtpLogs] = useState([])
     const [loadingLogs, setLoadingLogs] = useState(false)
 
+    // AI Config State
+    const [aiConfig, setAiConfig] = useState({
+        activeModel: 'groq',
+        geminiKey: '',
+        groqKey: ''
+    })
+    const [aiLoading, setAiLoading] = useState(false)
+    const [aiError, setAiError] = useState(null)
+    const [aiSuccess, setAiSuccess] = useState(false)
+    const [showGeminiKey, setShowGeminiKey] = useState(false)
+    const [showGroqKey, setShowGroqKey] = useState(false)
+
     // Auto-fill SMTP host/port based on provider
     useEffect(() => {
         if (emailConfig.provider === 'Gmail') {
@@ -74,6 +86,41 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             console.error('Failed to fetch email config', err)
         } finally {
             setEmailLoading(false)
+        }
+    }
+
+    const fetchAiConfig = async () => {
+        try {
+            setAiLoading(true)
+            const { data } = await api.get('/settings/ai')
+            if (data) {
+                setAiConfig(data)
+            }
+        } catch (err) {
+            console.error('Failed to fetch AI config', err)
+        } finally {
+            setAiLoading(false)
+        }
+    }
+
+    const handleSaveAiConfig = async () => {
+        try {
+            setAiLoading(true)
+            setAiError(null)
+            setAiSuccess(false)
+            
+            const { data } = await api.put('/settings/ai', aiConfig)
+            if (data.success) {
+                setAiSuccess('AI configuration saved successfully.')
+            } else {
+                setAiError('Failed to save AI configuration.')
+            }
+        } catch (err) {
+            console.error('Save failed:', err)
+            const msg = err.response?.data?.error || err.message || 'Server error'
+            setAiError(`Failed: ${msg}`)
+        } finally {
+            setAiLoading(false)
         }
     }
 
@@ -140,12 +187,15 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             setMaintenanceProgress('')
             setEmailError(null)
             setEmailSuccess(false)
+            setAiError(null)
+            setAiSuccess(false)
         }
     }, [isOpen])
 
     useEffect(() => {
-        if (isOpen && isSuperAdmin && activeTab === 'email') {
-            fetchEmailConfig()
+        if (isOpen && isSuperAdmin) {
+            if (activeTab === 'email') fetchEmailConfig()
+            if (activeTab === 'ai-config') fetchAiConfig()
         }
     }, [isOpen, activeTab, isSuperAdmin])
 
@@ -286,6 +336,15 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                             className={`modal-sidebar-tab ${activeTab === 'email-logs' ? 'active' : ''}`}
                         >
                             <ClockCounterClockwise size={16} /> Email Config Logs
+                        </button>
+                    )}
+
+                    {isSuperAdmin && (
+                        <button
+                            onClick={() => setActiveTab('ai-config')}
+                            className={`modal-sidebar-tab ${activeTab === 'ai-config' ? 'active' : ''}`}
+                        >
+                            <Sparkle size={16} /> AI Configuration
                         </button>
                     )}
 
@@ -617,6 +676,92 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                     style={{ marginTop: '10px', width: '100%' }}
                                 >
                                     Save Email Settings
+                                </Button>
+                            </form>
+                        </div>
+                    )}
+
+                    {activeTab === 'ai-config' && isSuperAdmin && (
+                        <div className="settings-tab-pane">
+                            <h3 className="settings-section-title">AI Configuration</h3>
+                            <p className="settings-section-desc">
+                                Configure the AI model used for generating executive summaries. You can switch between Google Gemini and Groq (Llama 3).
+                            </p>
+                            
+                            {aiError && <div className="settings-error-msg">{aiError}</div>}
+                            {aiSuccess && typeof aiSuccess === 'string' && <div className="settings-success-msg">{aiSuccess}</div>}
+                            
+                            <form onSubmit={(e) => { e.preventDefault(); handleSaveAiConfig() }} className="settings-form">
+                                <div className="form-group">
+                                    <label>Active AI Model</label>
+                                    <select 
+                                        className="settings-input"
+                                        value={aiConfig.activeModel} 
+                                        onChange={e => setAiConfig({...aiConfig, activeModel: e.target.value})}
+                                    >
+                                        <option value="groq">Groq (Llama 3)</option>
+                                        <option value="gemini">Google Gemini</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Groq API Key</label>
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showGroqKey ? 'text' : 'password'}
+                                            className="settings-input"
+                                            placeholder="gsk_..."
+                                            value={aiConfig.groqKey}
+                                            onChange={e => setAiConfig({...aiConfig, groqKey: e.target.value})}
+                                            style={{ paddingRight: '40px' }}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowGroqKey(!showGroqKey)} 
+                                            className="password-toggle-btn"
+                                            style={{ top: '50%', transform: 'translateY(-50%)' }}
+                                        >
+                                            {showGroqKey ? <EyeClosed size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+                                    <span className="settings-hint">
+                                        Required if Groq is the active model. Get one from <a href="https://console.groq.com" target="_blank" rel="noreferrer">console.groq.com</a>.
+                                    </span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Google Gemini API Key</label>
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showGeminiKey ? 'text' : 'password'}
+                                            className="settings-input"
+                                            placeholder="AIzaSy..."
+                                            value={aiConfig.geminiKey}
+                                            onChange={e => setAiConfig({...aiConfig, geminiKey: e.target.value})}
+                                            style={{ paddingRight: '40px' }}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowGeminiKey(!showGeminiKey)} 
+                                            className="password-toggle-btn"
+                                            style={{ top: '50%', transform: 'translateY(-50%)' }}
+                                        >
+                                            {showGeminiKey ? <EyeClosed size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+                                    <span className="settings-hint">
+                                        Required if Gemini is the active model. Get one from <a href="https://aistudio.google.com" target="_blank" rel="noreferrer">aistudio.google.com</a>.
+                                    </span>
+                                </div>
+
+                                <Button 
+                                    type="submit" 
+                                    variant="solid" 
+                                    color="primary" 
+                                    isLoading={aiLoading}
+                                    style={{ marginTop: '10px', width: '100%' }}
+                                >
+                                    Save AI Settings
                                 </Button>
                             </form>
                         </div>

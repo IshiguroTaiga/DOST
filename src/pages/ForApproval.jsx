@@ -16,7 +16,7 @@ import '../styles/pages/ConsolidatedReport.css'
 
 export default function ForApproval() {
   const { user } = useOutletContext() ?? {}
-  const { showSuccess, showConfirm } = useEvents()
+  const { showSuccess, showConfirm, showToast } = useEvents()
 
   const isLguApprover = user?.account_type === 'LGU Approver'
   const isSuperAdmin = user?.role === 'Super Admin' || user?.account_type === 'Super Admin'
@@ -65,7 +65,7 @@ export default function ForApproval() {
           showSuccess('Approved', `"${reviewSitRep.title}" has been approved successfully.`)
           fetchPendingSitreps()
         } catch (err) {
-          showSuccess('Error', err.response?.data?.error || err.message || 'Failed to approve report.')
+          showToast('Error', err.response?.data?.error || err.message || 'Failed to approve report.', 'danger')
         } finally {
           setProcessingReview(false)
         }

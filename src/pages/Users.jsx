@@ -41,7 +41,7 @@ const MOCK_USERS = [
 
 export default function Users() {
   const { user: currentUser } = useOutletContext() ?? {}
-  const { showSuccess, showConfirm, fetchPendingUsersCount, notifications, markUserNotificationsAsRead } = useEvents()
+  const { showSuccess, showToast, showConfirm, fetchPendingUsersCount, notifications, markUserNotificationsAsRead } = useEvents()
   const unreadNotifs = useMemo(() => notifications?.filter(n => !n.is_read) || [], [notifications])
 
   const hasUnread = useCallback((userId) => {
@@ -221,7 +221,7 @@ export default function Users() {
 
   const handleDeleteUser = async (userId, userEmail) => {
     if (userId === currentUser?.id) {
-      showSuccess('Error', 'You cannot delete your own account.')
+      showToast('Error', 'You cannot delete your own account.', 'danger')
       return
     }
 
@@ -238,7 +238,7 @@ export default function Users() {
           fetchUsers()
           if (fetchPendingUsersCount) fetchPendingUsersCount()
         } catch (err) {
-          showSuccess('Error', err.response?.data?.error || 'Failed to delete user.')
+          showToast('Error', err.response?.data?.error || 'Failed to delete user.', 'danger')
         }
       }
     })
@@ -247,12 +247,12 @@ export default function Users() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.email.trim() || !form.firstName.trim() || !form.lastName.trim()) {
-      showSuccess('Validation Error', 'Please fill in Email, First Name, and Last Name.')
+      showToast('Validation Error', 'Please fill in Email, First Name, and Last Name.', 'warning')
       return
     }
     // Account type & location validation
     if (!form.accountType) {
-      showSuccess('Validation Error', 'Please select an Account type.')
+      showToast('Validation Error', 'Please select an Account type.', 'warning')
       return
     }
 
@@ -260,11 +260,11 @@ export default function Users() {
 
     // Province is required for Provincial and LGU
     if (!isRegionalType && !form.province) {
-      showSuccess('Validation Error', 'Please select a Province.')
+      showToast('Validation Error', 'Please select a Province.', 'warning')
       return
     }
     if (form.accountType?.includes('LGU') && !form.city) {
-      showSuccess('Validation Error', 'Please select a City for LGU account.')
+      showToast('Validation Error', 'Please select a City for LGU account.', 'warning')
       return
     }
     showConfirm({
@@ -315,7 +315,7 @@ export default function Users() {
           })
           closeModal()
         } catch (err) {
-          showSuccess('Error', err.response?.data?.error || 'Failed to add user.')
+          showToast('Error', err.response?.data?.error || 'Failed to add user.', 'danger')
         } finally {
           setSubmitting(false)
         }
@@ -327,31 +327,31 @@ export default function Users() {
     e.preventDefault()
     if (!editingUser) return
     if (!form.email.trim() || !form.firstName.trim() || !form.lastName.trim()) {
-      showSuccess('Validation Error', 'Please fill in Email, First Name, and Last Name.')
+      showToast('Validation Error', 'Please fill in Email, First Name, and Last Name.', 'warning')
       return
     }
     if (canCreateAccounts) {
       if (!form.accountType) {
-        showSuccess('Validation Error', 'Please select Account type.')
+        showToast('Validation Error', 'Please select Account type.', 'warning')
         return
       }
       if (form.accountType !== 'Regional' && !form.province) {
-        showSuccess('Validation Error', 'Please select a Province.')
+        showToast('Validation Error', 'Please select a Province.', 'warning')
         return
       }
       if (form.accountType?.includes('LGU') && !form.city) {
-        showSuccess('Validation Error', 'Please select a City for LGU account.')
+        showToast('Validation Error', 'Please select a City for LGU account.', 'warning')
         return
       }
     }
     if (form.password || form.confirmPassword) {
       const pwdValidation = validatePassword(form.password)
       if (!pwdValidation.valid) {
-        showSuccess('Validation Error', pwdValidation.message)
+        showToast('Validation Error', pwdValidation.message, 'warning')
         return
       }
       if (form.password !== form.confirmPassword) {
-        showSuccess('Validation Error', 'New password and Confirm password do not match.')
+        showToast('Validation Error', 'New password and Confirm password do not match.', 'warning')
         return
       }
     }
@@ -398,7 +398,7 @@ export default function Users() {
     } catch (err) {
       console.error('Update failed:', err)
       const errorMsg = err.response?.data?.error || err.message || 'Failed to update user.'
-      showSuccess('Error', errorMsg)
+      showToast('Error', errorMsg, 'danger')
     } finally {
       setSubmittingEdit(false)
     }

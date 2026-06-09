@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams, useLocation, useOutletContext } from 'react-router-dom'
 import { FilePlus, Plus, Trash, X, Eye, PencilSimple, Upload, PaperPlaneRight, CaretDown, CaretUp, ArrowLeft, Lightning, Drop, Warning, CloudRain, Info, ShieldWarning, Phone, HardHat, House, FileText, CalendarX, Handshake, Users, Pulse, FileArrowDown, ChartBar, ArrowsClockwise, Check, CheckCircle, Sparkle, Download, ArrowSquareOut, FileXls } from '@phosphor-icons/react'
 import SearchInput from '../components/SearchInput'
@@ -600,10 +600,20 @@ export default function AddReport() {
   const [approvedBy, setApprovedBy] = useState(null)
   const [availableSignatories, setAvailableSignatories] = useState([])
   const [loadingSignatories, setLoadingSignatories] = useState(false)
-  const [processingExportId, setProcessingExportId] = useState(null)
   const [signatoriesReturnToPdf, setSignatoriesReturnToPdf] = useState(false)
+  const [processingExportId, setProcessingExportId] = useState(null)
   
-  // Approval states (for Provincial users to upload signed PDF)
+  // Refs to track current state for async callbacks
+  const preparedByRef = useRef([])
+  const notedByRef = useRef(null)
+  const approvedByRef = useRef(null)
+  const pdfParamsRef = useRef(null)
+  const aiSummaryTextRef = useRef('')
+
+  useEffect(() => { preparedByRef.current = preparedBy }, [preparedBy])
+  useEffect(() => { notedByRef.current = notedBy }, [notedBy])
+  useEffect(() => { approvedByRef.current = approvedBy }, [approvedBy])
+  useEffect(() => { aiSummaryTextRef.current = aiGeneratedSummaryText }, [aiGeneratedSummaryText])
   const [showApprovalUploadModal, setShowApprovalUploadModal] = useState(false)
   const [approvalFile, setApprovalFile] = useState(null)
   const [uploadingApproval, setUploadingApproval] = useState(false)
@@ -622,19 +632,38 @@ export default function AddReport() {
   const [lguSubmissionStatus, setLguSubmissionStatus] = useState(null) // null | 'Draft' | 'Submitted' | 'Approved' | 'Rejected'
   const [lguSubmissionRemarks, setLguSubmissionRemarks] = useState(null)
   const [submittingLgu, setSubmittingLgu] = useState(false)
+  const currentGeneratingSitRepId = useRef(null)
+
   const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isLGU = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
   const isProvincialApprover = user?.account_type === 'Provincial Approver'
   const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
-  console.log('DEBUG: AddReport Render', { view, showPdfEditModal, hasData: !!generatedSummaryData })
+  console.log('DEBUG: AddReport Render', { 
+    view, 
+    showPdfEditModal, 
+    hasBlob: !!pdfPreviewBlobUrl,
+    blobUrl: pdfPreviewBlobUrl,
+    sitRepId: generatedSummaryData?.situationalReportId 
+  })
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
-  
+
   const userProvince = useMemo(() => {
     if (user?.province) return user.province;
     if (user?.city) return getProvinceForCity(user.city);
     return isSuperAdmin ? 'Region 1' : null;
   }, [user, isSuperAdmin]);
 
+  // Clean up Blob URLs when they change or component unmounts
+  useEffect(() => {
+    console.log('DEBUG: pdfPreviewBlobUrl EFFECT triggered with value:', pdfPreviewBlobUrl)
+    const url = pdfPreviewBlobUrl
+    return () => {
+      if (url && url.startsWith('blob:')) {
+        console.log('DEBUG: Revoking old Blob URL:', url)
+        URL.revokeObjectURL(url)
+      }
+    }
+  }, [pdfPreviewBlobUrl])
   const filteredLguNames = useMemo(() => {
     return getLguNames(userProvince);
   }, [userProvince]);
@@ -779,7 +808,7 @@ export default function AddReport() {
           showSuccess('Success', `Your data for "${currentSituationalReport.title}" has been submitted and approved successfully.`)
         } catch (err) {
           console.error('[LGU] Submit error:', err)
-          showSuccess('Error', err.response?.data?.error || err.message || 'Failed to submit data.')
+          showToast('Error', err.response?.data?.error || err.message || 'Failed to submit data.', 'danger')
         } finally {
           setSubmittingLgu(false)
         }
@@ -815,29 +844,44 @@ export default function AddReport() {
   }
 
   const deleteReport = async (item) => {
+    console.log('[AddReport] Attempting to delete item:', item);
     try {
       await resetSitRepStatus()
-      const table = item.tableName === 'reports' ? 'report_rows' : item.tableName
-      await api.delete(`/reports/${table}/bulk`, { data: { ids: [item.id] } })
+      const table = item.tableName
+      if (!table) {
+        throw new Error('Table name missing for this item')
+      }
+      
+      // Use single delete endpoint for individual items, it's more standard and avoids bulk payload issues
+      await api.delete(`/reports/${table}/${item.id}`)
       
       showSuccess('Success', 'Report deleted successfully')
       fetchReports()
     } catch (err) {
       console.error('Delete error:', err)
-      showSuccess('Error', err.message || 'Failed to delete report')
+      const errorMsg = err.response?.data?.details || err.response?.data?.error || err.message || 'Failed to delete report'
+      showToast('Error', errorMsg, 'danger')
     }
   }
 
   const fetchFullSitRepData = async (sitRep) => {
     if (!sitRep) return null
+    const eventId = selectedEvent?.id || sitRep.event_id
+    console.log(`DEBUG: fetchFullSitRepData START for SitRep: ${sitRep.id}, Event: ${eventId}`)
 
     try {
       const { data } = await api.get('/reports/consolidated', {
         params: {
-          event_id: selectedEvent?.id || sitRep.event_id,
-          situational_report_ids: sitRep.id
+          event_id: eventId,
+          situational_report_ids: sitRep.id,
+          _t: Date.now() // Cache buster
         }
       })
+      console.log('DEBUG: fetchFullSitRepData SUCCESS. Tables found:', Object.keys(data.details || {}))
+      // Log sample data to see if it's changing
+      if (data.details?.related_incidents?.length > 0) {
+        console.log('DEBUG: First Related Incident ID:', data.details.related_incidents[0].id)
+      }
 
       if (!data) return null
 
@@ -930,14 +974,17 @@ export default function AddReport() {
   }, [])
 
   const generatePdfBlobUrl = (pdfParams, summaryOverride, sigs) => {
+    console.log('DEBUG: generatePdfBlobUrl called for reportTitle:', pdfParams?.reportTitle)
     try {
       const doc = generateRelatedIncidentsPdf({
         ...pdfParams,
         summaryText: summaryOverride,
-        signatories: sigs || { preparedBy, notedBy, approvedBy }
+        signatories: sigs || { preparedBy: [], notedBy: null, approvedBy: null }
       })
       const blob = doc.output('blob')
-      return URL.createObjectURL(blob)
+      const url = URL.createObjectURL(blob)
+      console.log('DEBUG: New Blob URL created:', url)
+      return url
     } catch (e) {
       console.error('PDF preview error', e)
       return null
@@ -1026,49 +1073,76 @@ export default function AddReport() {
   const startReportGeneration = async (sr) => {
     console.log('DEBUG: startReportGeneration called for sr.id:', sr?.id)
     setProcessingExportId(sr?.id)
+    
+    // Fix Race Condition & Stuck Preview: Clear states IMMEDIATELY
+    setPdfPreviewBlobUrl(null)
+    setGeneratedSummaryData(null)
+    setAiGeneratedSummaryText('')
+    currentGeneratingSitRepId.current = sr.id
+
     try {
+      // Ensure we have the correct event object, even if state is slightly out of sync
+      const eventToUse = selectedEvent || events?.find(e => e.id === sr.event_id)
+      console.log('DEBUG: eventToUse found:', !!eventToUse, eventToUse?.name)
+
       const data = await fetchFullSitRepData(sr)
       console.log('DEBUG: fetchFullSitRepData result:', !!data)
+      
+      // If the user started another generation while this was fetching, abort this one.
+      if (currentGeneratingSitRepId.current !== sr.id) {
+        console.log('DEBUG: Aborting generation, another sitrep was selected.')
+        return
+      }
+
       if (data) {
         const summaryPlaceholder = sr.summary || 'Generating AI Summary... Please wait.'
         setAiGeneratedSummaryText(summaryPlaceholder)
-        setGeneratedSummaryData({ pdfParams: data, event: selectedEvent, situationalReportId: sr.id })
+        setGeneratedSummaryData({ pdfParams: data, event: eventToUse, situationalReportId: sr.id })
         
         console.log('DEBUG: Generating initial PDF preview...')
-        // Generate initial PDF preview blob immediately
         const blobUrl = generatePdfBlobUrl(data, summaryPlaceholder, { preparedBy: [], notedBy: null, approvedBy: null })
-        console.log('DEBUG: blobUrl created:', !!blobUrl)
         setPdfPreviewBlobUrl(blobUrl)
         
-        // Background AI summary generation if needed
         if (!sr.summary) {
           console.log('DEBUG: Starting background AI summary generation...')
-          generateAISummary(data.summaryData, selectedEvent, data.relatedIncidentsDetails || [])
+          const summaryPayload = data.summaryData || { 
+            categoryTotals: data.categoryTotals || {}, 
+            byCityCategory: data.byCityCategory || {}, 
+            details: data 
+          }
+          generateAISummary(summaryPayload, eventToUse, data.relatedIncidentsDetails || [])
             .then(text => {
-              if (text) {
-                console.log('DEBUG: AI Summary generated')
+              // Ensure we only update if this is still the active generation
+              if (currentGeneratingSitRepId.current === sr.id && text) {
+                console.log('DEBUG: AI Summary generated (Length:', text.length, ')')
                 setAiGeneratedSummaryText(text)
-                const newUrl = generatePdfBlobUrl(data, text, { preparedBy, notedBy, approvedBy })
+                // Use Refs for signatories to ensure we have the absolute latest if they were changed
+                const newUrl = generatePdfBlobUrl(data, text, { 
+                  preparedBy: preparedByRef.current, 
+                  notedBy: notedByRef.current, 
+                  approvedBy: approvedByRef.current 
+                })
                 setPdfPreviewBlobUrl(newUrl)
               }
             })
             .catch(err => {
-              console.error('Background AI summary failed:', err)
-              setAiGeneratedSummaryText('AI summary unavailable. Using rule-based fallback.')
+              if (currentGeneratingSitRepId.current === sr.id) {
+                console.error('Background AI summary failed:', err)
+                setAiGeneratedSummaryText('AI summary unavailable. Using rule-based fallback.')
+              }
             })
         }
 
-        console.log('DEBUG: Fetching signatories and opening modal...')
         fetchSignatories()
         setShowPdfEditModal(true)
-      } else {
-        console.warn('DEBUG: fetchFullSitRepData returned null')
       }
     } catch (err) {
       console.error('CRITICAL ERROR in startReportGeneration:', err)
       setError('An error occurred while preparing the report data.')
     } finally {
-      setProcessingExportId(null)
+      if (currentGeneratingSitRepId.current === sr.id) {
+        setProcessingExportId(null)
+      }
     }
   }
 
@@ -1119,7 +1193,7 @@ useEffect(() => {
   const handleUploadPdfSubmit = async () => {
     if (!approvalFile || !currentSituationalReport) return
     if (approvalFile.type !== 'application/pdf') {
-      showSuccess('Validation Error', 'Only PDF files are allowed.')
+      showToast('Validation Error', 'Only PDF files are allowed.', 'warning')
       return
     }
     setUploadingApproval(true)
@@ -1199,7 +1273,7 @@ useEffect(() => {
       setApprovalConfirmMessage(successMsg)
       setShowApprovalConfirmation(true)
     } catch (err) {
-      showSuccess('Error', err.message || 'Failed to upload PDF.')
+      showToast('Error', err.message || 'Failed to upload PDF.', 'danger')
     } finally {
       setUploadingApproval(false)
     }
@@ -1225,7 +1299,7 @@ useEffect(() => {
           await markSitRepNotificationsAsRead(sitRep.id)
           if (selectedEvent) fetchSituationalReports(selectedEvent.id)
         } catch (err) {
-          showSuccess('Error', err.message || 'Failed to approve report.')
+          showToast('Error', err.message || 'Failed to approve report.', 'danger')
         }
       }
     })
@@ -1273,7 +1347,7 @@ useEffect(() => {
       await markSitRepNotificationsAsRead(reviewSitRep.id)
       if (selectedEvent) fetchSituationalReports(selectedEvent.id)
     } catch (err) {
-      showSuccess('Error', err.message || 'Failed to approve report.')
+      showToast('Error', err.message || 'Failed to approve report.', 'danger')
     } finally {
       setProcessingReview(false)
     }
@@ -1281,7 +1355,7 @@ useEffect(() => {
 
   const handleRejectConfirm = async () => {
     if (!reviewSitRep || !rejectRemarks.trim()) {
-      showSuccess('Required', 'Please enter remarks before rejecting.')
+      showToast('Required', 'Please enter remarks before rejecting.', 'warning')
       return
     }
     setProcessingReview(true)
@@ -1315,7 +1389,7 @@ useEffect(() => {
       await markSitRepNotificationsAsRead(reviewSitRep.id)
       if (selectedEvent) fetchSituationalReports(selectedEvent.id)
     } catch (err) {
-      showSuccess('Error', err.message || 'Failed to reject report.')
+      showToast('Error', err.message || 'Failed to reject report.', 'danger')
     } finally {
       setProcessingReview(false)
     }
@@ -1548,7 +1622,7 @@ useEffect(() => {
 
   const handleCreateSitRep = async () => {
     if (!newSitRepTitle.trim()) {
-      showSuccess('Validation Error', 'Please enter a title for the situational report.')
+      showToast('Validation Error', 'Please enter a title for the situational report.', 'warning')
       return
     }
 
@@ -1602,7 +1676,7 @@ useEffect(() => {
           }
         } catch (err) {
           console.error('Error in handleCreateSitRep:', err)
-          showSuccess('Error Creating Sit Rep', err?.message || 'An unexpected error occurred.')
+          showToast('Error', err?.message || 'An unexpected error occurred.', 'danger')
         } finally {
           setSubmitting(false)
         }
@@ -1619,7 +1693,7 @@ useEffect(() => {
 
   const handleUpdateSitRep = async () => {
     if (!newSitRepTitle.trim()) {
-      showSuccess('Validation Error', 'Please enter a title for the situational report.')
+      showToast('Validation Error', 'Please enter a title for the situational report.', 'warning')
       return
     }
 
@@ -1643,7 +1717,7 @@ useEffect(() => {
           }
         } catch (err) {
           console.error('Error in handleUpdateSitRep:', err)
-          showSuccess('Error Updating Sit Rep', err?.message || 'An unexpected error occurred.')
+          showToast('Error', err?.message || 'An unexpected error occurred.', 'danger')
         } finally {
           setSubmitting(false)
         }
@@ -1945,7 +2019,7 @@ useEffect(() => {
         } catch (err) {
           const errorMsg = err.response?.data?.details || err.response?.data?.error || err.message || 'Failed to submit report'
           const reportInfo = typeof reportId !== 'undefined' ? ` (Report ID: ${reportId})` : ''
-          showSuccess('Error', `${errorMsg}${reportInfo}`)
+          showToast('Error', `${errorMsg}${reportInfo}`, 'danger')
         } finally {
           setSubmitting(false)
         }
@@ -2691,6 +2765,19 @@ useEffect(() => {
               suggestions={view === 'events' ? events.map(e => e.name) : submittedReports.map((r) => r.location)}
               className="consolidated-report-search-box"
             />
+            {view === 'events' && (
+              <Button 
+                variant="solid" 
+                color="primary" 
+                onClick={() => openSelectEventModal('versions', (ev) => {
+                   navigateTo('versions', { event: ev })
+                })} 
+                leftIcon={<Plus size={18} />}
+                className="toolbar-action-btn add-entry-btn"
+              >
+                Make Report
+              </Button>
+            )}
             {(view === 'versions' || view === 'entries') && (
               <>
                 {view === 'entries' && (
@@ -3981,7 +4068,7 @@ useEffect(() => {
             if (file && file.type === 'application/pdf') {
               setApprovalFile(file);
             } else if (file) {
-              showSuccess('Validation Error', 'Only PDF files are allowed.');
+              showToast('Validation Error', 'Only PDF files are allowed.', 'warning');
             }
           }}
         >
@@ -4068,6 +4155,7 @@ useEffect(() => {
               <div className="pdf-preview-container" style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
                 {pdfPreviewBlobUrl ? (
                   <iframe
+                    key={pdfPreviewBlobUrl}
                     src={pdfPreviewBlobUrl}
                     title="PDF Preview"
                     style={{ width: '100%', height: '100%', border: 'none' }}
@@ -4086,7 +4174,7 @@ useEffect(() => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div className="gemini-badge">
                     <Sparkle size={14} />
-                    Gemini AI Summary
+                    Groq AI Summary
                   </div>
                 </div>
                 <textarea

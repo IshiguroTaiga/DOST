@@ -368,10 +368,12 @@ export function EventProvider({ children, user }) {
     if (!user) return
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+    const token = localStorage.getItem('proact_token')
     const socket = io(API_URL, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
-      reconnectionDelay: 2000
+      reconnectionDelay: 2000,
+      auth: { token }
     })
     socketRef.current = socket
 

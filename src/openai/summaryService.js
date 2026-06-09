@@ -5,13 +5,14 @@
  * a rule-based fallback when no API key is configured or when the API fails.
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
+import api from '../lib/api'
 
 /**
  * Builds the plain-text prompt payload from the report data.
  */
 function buildPromptPayload(data, event, relatedIncidents = []) {
-  const { categoryTotals, byCityCategory, details } = data
+  if (!data) data = {}
+  const { categoryTotals = {}, byCityCategory = {}, details = {} } = data
   const fmt = (n) => (n || 0).toLocaleString()
 
   const incidents = categoryTotals?.relatedIncidents ?? 0
@@ -32,7 +33,6 @@ function buildPromptPayload(data, event, relatedIncidents = []) {
 
   const affectedCities = Object.keys(byCityCategory || {}).join(', ') || 'various areas'
 
-  // Extract qualitative remarks from all categories if details are provided
   const categoryRemarks = []
   if (details) {
     Object.entries(details).forEach(([cat, list]) => {
@@ -98,48 +98,78 @@ ${stats}`
 }
 
 /**
- * Generates an AI-powered executive summary using the Google Gemini API.
+ * Generates an AI-powered executive summary using the Groq API (Llama 3).
  * Falls back to the rule-based summary on failure or missing API key.
- *
- * @param {Object} data - The aggregated data (including details)
- * @param {Object} event - The event object
- * @param {Array} relatedIncidents - Array of incident objects (optional if already in data.details)
- * @returns {Promise<string>} The generated summary text
  */
 export async function generateAISummary(data, event, relatedIncidents = []) {
-  if (!GEMINI_API_KEY) {
-    console.warn('[summaryService] VITE_GEMINI_API_KEY not set – using rule-based fallback.')
-    return generateSummary(data, event, relatedIncidents)
+  let aiConfig = {
+    activeModel: 'groq',
+    geminiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
+    groqKey: import.meta.env.VITE_GROQ_API_KEY || ''
   }
 
   try {
-    const prompt = buildPromptPayload(data, event, relatedIncidents)
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 700,
-          topP: 0.8
-        }
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status} ${response.statusText}`)
+    const { data: configData } = await api.get('/settings/ai')
+    if (configData) {
+      aiConfig = { ...aiConfig, ...configData }
     }
-
-    const json = await response.json()
-    const text = json?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) throw new Error('Empty response from Gemini')
-
-    return text.trim()
   } catch (err) {
-    console.warn('[summaryService] AI summary failed, using rule-based fallback:', err.message)
+    console.warn('[summaryService] Failed to fetch AI config from backend, using env fallback.')
+  }
+
+  const activeModel = aiConfig.activeModel || 'groq'
+  const prompt = buildPromptPayload(data, event, relatedIncidents)
+
+  try {
+    if (activeModel === 'gemini') {
+      if (!aiConfig.geminiKey) throw new Error('Gemini API key is not configured.')
+      
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${aiConfig.geminiKey}`
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 700, topP: 0.8 }
+        })
+      })
+
+      if (!response.ok) throw new Error(`Gemini API error: ${response.status} ${response.statusText}`)
+      const json = await response.json()
+      const text = json?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!text) throw new Error('Empty response from Gemini')
+      return text.trim()
+
+    } else {
+      // Default to Groq
+      if (!aiConfig.groqKey) throw new Error('Groq API key is not configured.')
+
+      const endpoint = 'https://api.groq.com/openai/v1/chat/completions'
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${aiConfig.groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: 'You are a helpful assistant that generates professional disaster report summaries.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.5,
+          max_tokens: 1024
+        })
+      })
+
+      if (!response.ok) throw new Error(`Groq API error: ${response.status} ${response.statusText}`)
+      const json = await response.json()
+      const text = json?.choices?.[0]?.message?.content
+      if (!text) throw new Error('Empty response from Groq')
+      return text.trim()
+    }
+  } catch (err) {
+    console.warn(`[summaryService] ${activeModel} AI summary failed, using rule-based fallback:`, err.message)
     return generateSummary(data, event, relatedIncidents)
   }
 }
@@ -154,9 +184,19 @@ export async function generateAISummary(data, event, relatedIncidents = []) {
  * @returns {string} The generated summary text
  */
 export function generateSummary(data, event, relatedIncidents = []) {
-  if (!data || !event) return 'No data available to generate summary.'
+  console.log('[generateSummary] Checking inputs:', { hasData: !!data, hasEvent: !!event })
+  
+  if (!data || !event) {
+    console.warn('[generateSummary] Missing required parameters. data:', !!data, 'event:', !!event)
+    return 'No data available to generate summary.'
+  }
 
   const { categoryTotals } = data
+  // Also warn if categoryTotals is missing, though we still try to generate
+  if (!categoryTotals) {
+    console.warn('[generateSummary] data object is missing categoryTotals')
+  }
+
   const fmt = (n) => (n || 0).toLocaleString()
 
   let summary = `EXECUTIVE SUMMARY\n\n`

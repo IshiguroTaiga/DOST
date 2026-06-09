@@ -208,9 +208,33 @@ router.patch('/:id', authenticate, async (req, res) => {
 // DELETE /api/events/:id
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
+  const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+  
+  if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    return res.status(400).json({ error: 'Invalid event ID format' });
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    
+    // 1. Delete grandchild records first to prevent FK constraint violations
+    // We target rows linked directly to the event OR via any of its situational reports
+    await client.query(`
+      DELETE FROM report_rows 
+      WHERE report_id IN (
+        SELECT id FROM reports 
+        WHERE event_id = $1 OR situational_report_id IN (SELECT id FROM situational_reports WHERE event_id = $1)
+      )
+    `, [id]);
+    
+    await client.query(`
+      DELETE FROM roads_and_bridges_sections 
+      WHERE report_id IN (
+        SELECT id FROM roads_and_bridges 
+        WHERE event_id = $1 OR situational_report_id IN (SELECT id FROM situational_reports WHERE event_id = $1)
+      )
+    `, [id]);
     
     // Cascading delete is better handled by DB constraints, but we can do it manually for safety
     const childTables = [
@@ -237,16 +261,20 @@ router.delete('/:id', authenticate, async (req, res) => {
       await client.query(`DELETE FROM ${table} WHERE event_id = $1`, [id]);
     }
 
-    await client.query('DELETE FROM events WHERE id = $1', [id]);
+    const { rowCount } = await client.query('DELETE FROM events WHERE id = $1', [id]);
     await client.query('COMMIT');
     
+    if (rowCount === 0) {
+       return res.status(404).json({ error: 'Event not found' });
+    }
+
     const io = req.app.locals.io;
-    io.emit('events:deleted', { id });
+    if (io) io.emit('events:deleted', { id });
     res.json({ success: true });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('[Events/DELETE]', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('[Events/DELETE] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message, table: err.table, constraint: err.constraint });
   } finally {
     client.release();
   }
