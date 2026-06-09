@@ -586,6 +586,7 @@
 	padding: 0 1rem;
 	width: 100%;
 	min-width: 0;
+	flex-wrap: wrap; /* Allow wrapping for responsiveness */
 }
 
 .dash-hero-meta,

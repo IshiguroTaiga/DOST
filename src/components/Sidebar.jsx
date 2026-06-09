@@ -213,7 +213,7 @@ const [showLogoutModal, setShowLogoutModal] = useState(false)
               title="Solido DRRM · Knowledge Hub"
             >
               <img
-                src="https://solido.dost1.ph/assets/SOLIDO-Icon-DV7YFduV.png"
+                src="/SOLIDO-Icon-DV7YFduV.png"
                 alt="Solido Logo"
                 className="sidebar-solido-icon"
               />

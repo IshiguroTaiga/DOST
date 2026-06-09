@@ -255,8 +255,11 @@ export default function Users() {
       showSuccess('Validation Error', 'Please select an Account type.')
       return
     }
+
+    const isRegionalType = form.accountType === 'Regional' || form.accountType === 'Regional Admin'
+
     // Province is required for Provincial and LGU
-    if (!form.province) {
+    if (!isRegionalType && !form.province) {
       showSuccess('Validation Error', 'Please select a Province.')
       return
     }
@@ -275,7 +278,7 @@ export default function Users() {
             first_name: form.firstName.trim(),
             last_name: form.lastName.trim(),
             account_type: form.accountType || null,
-            province: form.province || null,
+            province: isRegionalType ? null : (form.province || null),
             city: form.accountType?.includes('LGU') ? (form.city.trim() || null) : null,
           })
           
@@ -686,28 +689,30 @@ export default function Users() {
           </div>
           {form.accountType && (
             <>
-              <div className="users-form-group">
-                <label htmlFor="user-province">Province *</label>
-                {isRegionalOrSuper ? (
-                  <SearchableSelect
-                    value={form.province}
-                    options={PROVINCE_NAMES}
-                    onChange={(e) => {
-                      handleChange('province', e.target.value)
-                      handleChange('city', '')
-                    }}
-                    placeholder="Select province..."
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    value={currentUser?.province || ''}
-                    readOnly
-                    disabled
-                    style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
-                  />
-                )}
-              </div>
+              {!(form.accountType === 'Regional' || form.accountType === 'Regional Admin') && (
+                <div className="users-form-group">
+                  <label htmlFor="user-province">Province *</label>
+                  {isRegionalOrSuper ? (
+                    <SearchableSelect
+                      value={form.province}
+                      options={PROVINCE_NAMES}
+                      onChange={(e) => {
+                        handleChange('province', e.target.value)
+                        handleChange('city', '')
+                      }}
+                      placeholder="Select province..."
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={currentUser?.province || ''}
+                      readOnly
+                      disabled
+                      style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
+                    />
+                  )}
+                </div>
+              )}
               {form.accountType?.includes('LGU') && (
                 <div className="users-form-group">
                   <label htmlFor="user-city-lgu">City / Municipality *</label>
@@ -905,28 +910,30 @@ export default function Users() {
 
             {form.accountType && (
               <>
-                <div className="users-form-group">
-                  <label htmlFor="edit-user-province">Province *</label>
-                  {isRegionalOrSuper ? (
-                    <SearchableSelect
-                      value={form.province}
-                      options={PROVINCE_NAMES}
-                      onChange={(e) => {
-                        handleChange('province', e.target.value)
-                        handleChange('city', '')
-                      }}
-                      placeholder="Select province..."
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      value={form.province || currentUser?.province || ''}
-                      readOnly
-                      disabled
-                      style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
-                    />
-                  )}
-                </div>
+                {!(form.accountType === 'Regional' || form.accountType === 'Regional Admin') && (
+                  <div className="users-form-group">
+                    <label htmlFor="edit-user-province">Province *</label>
+                    {isRegionalOrSuper ? (
+                      <SearchableSelect
+                        value={form.province}
+                        options={PROVINCE_NAMES}
+                        onChange={(e) => {
+                          handleChange('province', e.target.value)
+                          handleChange('city', '')
+                        }}
+                        placeholder="Select province..."
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={form.province || currentUser?.province || ''}
+                        readOnly
+                        disabled
+                        style={{ background: '#f1f5f9', cursor: 'not-allowed' }}
+                      />
+                    )}
+                  </div>
+                )}
                 {form.accountType?.includes('LGU') && (
                   <div className="users-form-group">
                     <label htmlFor="edit-user-city-lgu">City / Municipality *</label>
