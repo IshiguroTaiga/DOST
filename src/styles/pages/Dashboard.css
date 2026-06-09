@@ -581,11 +581,11 @@
 .dash-hero {
 	display: flex;
 	align-items: center;
-	gap: 2rem;
+	gap: 0.6rem;
 	margin-bottom: 1.25rem;
 	padding: 0 1rem;
 	width: 100%;
-	flex-wrap: nowrap; /* Enforce static layout */
+	min-width: 0;
 }
 
 .dash-hero-meta,
@@ -601,57 +601,54 @@
 	box-shadow: var(--shadow-premium);
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	color: var(--dash-text-main);
 	position: relative;
-	overflow: hidden;
 }
 
 .dash-hero-icon {
-	width: 56px;
-	height: 56px;
-	border-radius: 16px;	
+	width: 42px;
+	height: 42px;
+	border-radius: 10px;	
 	flex-shrink: 0;
+	justify-content: center;
 }
 
 /* Meta Section */
 .dash-hero-meta {
-  padding: 1.25rem 1.5rem;
-  gap: 1.5rem;
   margin-left: auto;
+  padding: 0.4rem 0.6rem;
+  gap: 0.4rem;
   display: flex;
   flex-wrap: nowrap;
-  justify-content: flex-end;
   align-items: center;
-  min-width: 600px;
-  width: 850px;
-  flex-shrink: 0; /* Do not allow meta box to shrink */
+  justify-content: flex-start;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .dash-hero-title-wrap {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	flex: 1; /* Take up remaining space */
-	min-width: 0; /* Allow title to truncate if absolutely necessary */
-	overflow: hidden;
+	width: auto;
+	max-width: 240px;
+	flex-shrink: 1;
+	min-width: 100px;
 }
 
 .dash-hero-amount {
-	font-size: 3.5rem;
+	font-size: 3rem;
 	font-weight: 800;
 	letter-spacing: -0.04em;
 	margin: 0;
 	color: var(--text-main);
 	line-height: 1.05;
 	max-width: 100%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	word-wrap: nowrap;
 }
 
 .dash-hero-subtitle {
-	font-size: 1.1rem;
+	font-size: 0.9rem;
 	font-weight: 700;
 	color: var(--accent);
 	/* Primary Indigo */
@@ -736,43 +733,43 @@
 	flex-shrink: 0;        /* don't shrink */
 }
 
-/* Alert Status - Fixed width */
+/* Alert Status - condensed */
 .meta-item:nth-child(1) {
 	padding-left: 0.7rem;
-	width: 110px;
-	min-width: 110px;
+	min-width: 0;
 	padding-bottom: 0.5rem;
 }
 
-/* Type - Fixed width */
+/* Type - condensed */
 .meta-item:nth-child(2) {
-	padding-left: 0.5rem;
-	width: 160px;
-	min-width: 160px;
+	padding-left: 1rem;
+	padding-right: 0.5rem;
+	min-width: 0;
 }
 
-/* Category - Fixed width */
+/* Category - condensed */
 .meta-item:nth-child(3) {
 	border-left: 1px solid rgba(0, 0, 0, 0.2);
-	padding-left: 0.5rem;
-	width: 200px;
-	min-width: 200px;
+	padding-left: 1rem;
+	padding-right: 0.5rem;
+	min-width: 0;
 }
 
-/* Weather - Fixed width */
+/* Weather - condensed */
 .weather-item {
-	width: 130px;
-	min-width: 130px;
+	min-width: 0;
 	border-left: 1px solid rgba(0,0,0,0.2);
-	padding-left: 0.5rem;
+	padding-left: 1rem;
+	padding-right: 0.5rem;
+
 }
 
-/* Date - Fixed width */
+/* Date - condensed */
 .meta-item:last-child {
-	width: 120px;
-	min-width: 120px;
+	min-width: 0;
 	border-left: 1px solid rgba(0,0,0,0.2);
-	padding-left: 0.5rem;
+	padding-left: 1rem;
+	padding-right: 0.5rem;
 }
 
 .animate-spin {
@@ -789,9 +786,6 @@
 	font-weight: 700;
 	color: var(--text-main);
 	white-space: nowrap;    /* prevent wrapping */
-	overflow: hidden;
-	text-overflow: ellipsis; /* Handle overflow gracefully */
-	display: block;
 }
 
 .meta-label {

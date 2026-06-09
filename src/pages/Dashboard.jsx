@@ -1902,11 +1902,11 @@ CHRONOLOGY OF EVENTS`;
               </span>
             )}
             <h2 className="dash-hero-amount" style={{
-              fontSize: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '2rem' : undefined,
+              fontSize: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.975rem' : undefined,
               lineHeight: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.2' : undefined
             }}>
               {!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white'
-                ? "It's a good day! (No Active Threats)"
+                ? "It's a Good Day! (No Active Threats)"
                 : currentEvent.name}
             </h2>
             {userSignal && currentEvent?.alertStatus !== 'white' ? (
@@ -1919,7 +1919,7 @@ CHRONOLOGY OF EVENTS`;
               </p>
             ) : (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
-                All systems normal. Routine monitoring active.
+                All systems are normal. Routine monitoring active.
               </p>
             )}
           </div>
