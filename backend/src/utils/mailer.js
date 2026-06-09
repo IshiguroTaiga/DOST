@@ -2,71 +2,61 @@ const nodemailer = require('nodemailer');
 const pool = require('../db');
 
 /**
- * Sends a welcome email using Outlook via Nodemailer.
+ * Sends a welcome email using configured SMTP settings.
  */
 const sendWelcomeEmail = async (userEmail, firstName, tempPassword) => {
-  let outlookEmail = process.env.OUTLOOK_EMAIL;
-  let outlookPassword = process.env.OUTLOOK_PASSWORD;
+  // Default values (fallback to ENV)
+  let smtpEmail = process.env.OUTLOOK_EMAIL;
+  let smtpPassword = process.env.OUTLOOK_PASSWORD;
   let senderName = process.env.OUTLOOK_SENDER_NAME || 'DOST DRRMO';
-  let host = 'smtp-mail.outlook.com';
+  let host = 'smtp.office365.com';
   let port = 587;
+  let senderEmail = '';
+
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
   try {
-    // Attempt to fetch SMTP settings from DB
+    // Fetch SMTP settings from DB (Single Query)
     const { rows } = await pool.query('SELECT value FROM settings WHERE key = $1', ['smtp_config']);
     if (rows.length > 0 && rows[0].value) {
       const config = rows[0].value;
       if (config.username && config.password) {
-        outlookEmail = config.username;
-        outlookPassword = config.password;
+        smtpEmail = config.username;
+        smtpPassword = config.password;
         host = config.host || host;
         port = parseInt(config.port) || port;
-        if (config.senderEmail) {
-          senderName = 'PROACT Admin';
-          // Use format "Sender Name <email>" if possible, but some providers require the from address to match the auth user.
-          // The user requested: "sender email address (for the main email to not show) ex: noreply@gmail.com"
-          // We will put it in the "from" field. Note: For Outlook/Office365, sending from a different address requires "Send As" permissions.
-        }
+        senderEmail = config.senderEmail || '';
+        senderName = config.senderName || senderName;
       }
     }
   } catch (dbErr) {
     console.warn('[Mailer] Could not fetch SMTP config from DB, falling back to ENV', dbErr.message);
   }
 
-  if (!outlookEmail || !outlookPassword || outlookEmail === 'your_email@outlook.com') {
-    console.warn('[Mailer] OUTLOOK_EMAIL or OUTLOOK_PASSWORD is not configured. Skipping email.');
-    return { success: false, error: 'Outlook credentials not configured' };
+  if (!smtpEmail || !smtpPassword || smtpEmail === 'your_email@outlook.com') {
+    console.warn('[Mailer] SMTP Credentials not configured. Skipping email.');
+    return { success: false, error: 'SMTP credentials not configured' };
   }
 
-  let fromAddress = `"${senderName}" <${outlookEmail}>`;
-  
-  // If the user specified a senderEmail in settings (like noreply@gmail.com), we try to use it for masking
-  try {
-    const { rows } = await pool.query('SELECT value FROM settings WHERE key = $1', ['smtp_config']);
-    if (rows.length > 0 && rows[0].value) {
-      const dbConfig = rows[0].value;
-      if (dbConfig.senderEmail) {
-        // This is the "noreply@gmail.com" part the user wanted
-        fromAddress = `"${senderName}" <${dbConfig.senderEmail}>`;
-      }
-    }
-  } catch (e) {
-    console.error('[Mailer] Error constructing fromAddress:', e.message);
-  }
+  // Construct fromAddress
+  // Priority: "Name" <senderEmail> OR "Name" <authEmail>
+  const fromAddress = `"${senderName}" <${senderEmail || smtpEmail}>`;
+
+  console.log(`[Mailer] Preparing to send email via ${host}:${port} as ${smtpEmail}`);
 
   const transporter = nodemailer.createTransport({
     host: host,
     port: port,
-    secure: port === 465, 
+    secure: port === 465,
     auth: {
-      user: outlookEmail,
-      pass: outlookPassword,
+      user: smtpEmail,
+      pass: smtpPassword,
     },
     tls: {
-      // Many modern providers require this for security, but allow fallback for older ones
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false,
+      ciphers: 'SSLv3' 
+    },
+    requireTLS: port === 587 || port === 25 // Common for STARTTLS
   });
 
   const htmlContent = `
@@ -180,11 +170,8 @@ const sendWelcomeEmail = async (userEmail, firstName, tempPassword) => {
               <span class="label">Temporary Password</span>
               <div style="margin: 12px 0; display: inline-block; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; position: relative;">
                 <span class="password-value" style="margin: 0; display: inline; user-select: all; -webkit-user-select: all;">${tempPassword}</span>
-                <div style="display: inline-block; margin-left: 12px; padding: 4px 8px; background: #2563eb; color: #ffffff; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer;">
-                  Copy
-                </div>
               </div>
-              <div class="copy-hint">Tip: Double-click the password to quickly select it</div>
+              <div class="copy-hint">Tip: Use this password to log in for the first time.</div>
             </div>
 
             <p>For security reasons, you will be prompted to change this password immediately upon your first login.</p>
@@ -205,6 +192,8 @@ const sendWelcomeEmail = async (userEmail, firstName, tempPassword) => {
   try {
     const info = await transporter.sendMail({
       from: fromAddress,
+      sender: fromAddress,
+      replyTo: senderEmail || smtpEmail,
       to: userEmail,
       subject: "Welcome to PROACT - Your Account Details",
       html: htmlContent
@@ -214,6 +203,26 @@ const sendWelcomeEmail = async (userEmail, firstName, tempPassword) => {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('[Mailer] Nodemailer Error:', error.message);
+    // If it fails, maybe it's because of the spoofed "From" address?
+    // Let's try one last time with the auth email if we tried a custom senderEmail
+    if (senderEmail && senderEmail !== smtpEmail) {
+      console.warn('[Mailer] Retrying with authenticated email as sender...');
+      try {
+        const info = await transporter.sendMail({
+          from: `"${senderName}" <${smtpEmail}>`,
+          sender: `"${senderName}" <${smtpEmail}>`,
+          replyTo: smtpEmail,
+          to: userEmail,
+          subject: "Welcome to PROACT - Your Account Details",
+          html: htmlContent
+        });
+        console.log('[Mailer] Email sent successfully on retry:', userEmail);
+        return { success: true, messageId: info.messageId };
+      } catch (retryError) {
+        console.error('[Mailer] Retry failed:', retryError.message);
+        return { success: false, error: retryError.message };
+      }
+    }
     return { success: false, error: error.message };
   }
 };

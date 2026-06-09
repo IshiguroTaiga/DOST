@@ -33,6 +33,24 @@ const requireSuperAdmin = (req, res, next) => {
   next();
 };
 
+// GET /api/settings/smtp-logs
+router.get('/smtp-logs', authenticate, requireSuperAdmin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT al.*, u.first_name, u.last_name, u.email
+      FROM activity_logs al
+      LEFT JOIN users u ON al.user_id = u.id
+      WHERE al.action = 'SMTP_CONFIG_UPDATED'
+      ORDER BY al.created_at DESC
+      LIMIT 50
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('[Settings/GET smtp/logs]', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/settings/smtp
 router.get('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async (req, res) => {
   try {
@@ -57,16 +75,32 @@ router.get('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async 
 
 // PUT /api/settings/smtp
 router.put('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async (req, res) => {
-  const { provider, senderEmail, host, port, username, password } = req.body;
+  const { provider, senderName, senderEmail, host, port, username, password } = req.body;
   try {
-    const config = { provider, senderEmail, host, port, username, password };
+    const config = { provider, senderName, senderEmail, host, port, username, password };
+    
+    // Mask password for logging
+    const maskedConfig = { ...config, password: '••••••••' };
+
+    await pool.query('BEGIN');
+    
     await pool.query(`
       INSERT INTO settings (key, value, updated_at) 
       VALUES ('smtp_config', $1, NOW())
       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
     `, [JSON.stringify(config)]);
+
+    // Log the activity
+    await pool.query(
+      'INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)',
+      [req.user.id, 'SMTP_CONFIG_UPDATED', JSON.stringify(maskedConfig)]
+    );
+
+    await pool.query('COMMIT');
+    
     res.json({ success: true, config });
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error('[Settings/PUT smtp]', err);
     res.status(500).json({ error: 'Server error: ' + err.message });
   }

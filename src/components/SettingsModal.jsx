@@ -39,6 +39,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
     // Email Config state
     const [emailConfig, setEmailConfig] = useState({
         provider: 'Outlook',
+        senderName: 'DOST DRRMO',
         senderEmail: '',
         host: 'smtp.office365.com',
         port: 587,
@@ -48,6 +49,18 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
     const [emailLoading, setEmailLoading] = useState(false)
     const [emailError, setEmailError] = useState(null)
     const [emailSuccess, setEmailSuccess] = useState(false)
+    const [showSmtpPassword, setShowSmtpPassword] = useState(false)
+    const [smtpLogs, setSmtpLogs] = useState([])
+    const [loadingLogs, setLoadingLogs] = useState(false)
+
+    // Auto-fill SMTP host/port based on provider
+    useEffect(() => {
+        if (emailConfig.provider === 'Gmail') {
+            setEmailConfig(prev => ({ ...prev, host: 'smtp.gmail.com', port: 587 }))
+        } else if (emailConfig.provider === 'Outlook') {
+            setEmailConfig(prev => ({ ...prev, host: 'smtp.office365.com', port: 587 }))
+        }
+    }, [emailConfig.provider])
 
     const fetchEmailConfig = async () => {
         try {
@@ -56,10 +69,30 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             if (data && Object.keys(data).length > 0) {
                 setEmailConfig(data)
             }
+            fetchSmtpLogs()
         } catch (err) {
             console.error('Failed to fetch email config', err)
         } finally {
             setEmailLoading(false)
+        }
+    }
+
+    const fetchSmtpLogs = async () => {
+        try {
+            setLoadingLogs(true)
+            // Check if settings route is active first (for debugging)
+            try {
+                await api.get('/settings/ping')
+            } catch (pErr) {
+                console.warn('Settings ping failed', pErr)
+            }
+            
+            const { data } = await api.get('/settings/smtp-logs')
+            setSmtpLogs(data || [])
+        } catch (err) {
+            console.error('Failed to fetch SMTP logs', err)
+        } finally {
+            setLoadingLogs(false)
         }
     }
 
@@ -79,6 +112,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             const { data } = await api.put('/settings/smtp', emailConfig)
             if (data.success) {
                 setEmailSuccess('Email configuration saved successfully.')
+                fetchSmtpLogs()
             } else {
                 setEmailError('Failed to save configuration.')
             }
@@ -246,6 +280,15 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                         </button>
                     )}
 
+                    {isSuperAdmin && (
+                        <button
+                            onClick={() => setActiveTab('email-logs')}
+                            className={`modal-sidebar-tab ${activeTab === 'email-logs' ? 'active' : ''}`}
+                        >
+                            <ClockCounterClockwise size={16} /> Email Config Logs
+                        </button>
+                    )}
+
                     <button
                         onClick={() => {
                             onClose()
@@ -253,7 +296,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                         }}
                         className="modal-sidebar-tab"
                     >
-                        <ClockCounterClockwise size={16} /> Event Logs
+                        <ClockCounterClockwise size={16} /> System Event Logs
                     </button>
                     <button
                         onClick={() => {
@@ -480,16 +523,30 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                     </select>
                                 </div>
                                 
-                                <div className="form-group">
-                                    <label>Sender Email Address (Optional Display)</label>
-                                    <input
-                                        type="email"
-                                        className="settings-input"
-                                        placeholder="e.g. noreply@dost.gov.ph"
-                                        value={emailConfig.senderEmail}
-                                        onChange={e => setEmailConfig({...emailConfig, senderEmail: e.target.value})}
-                                    />
-                                    <span className="settings-hint">The system will try to mask the sender with this address (Note: Some providers restrict this).</span>
+                                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div className="form-group">
+                                        <label>Sender Display Name</label>
+                                        <input
+                                            type="text"
+                                            className="settings-input"
+                                            placeholder="e.g. DOST PROACT"
+                                            value={emailConfig.senderName}
+                                            onChange={e => setEmailConfig({...emailConfig, senderName: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Sender Email (Optional)</label>
+                                        <input
+                                            type="email"
+                                            className="settings-input"
+                                            placeholder="e.g. noreply@dost.gov.ph"
+                                            value={emailConfig.senderEmail}
+                                            onChange={e => setEmailConfig({...emailConfig, senderEmail: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="settings-hint" style={{ marginTop: '-10px', marginBottom: '15px' }}>
+                                    Note: Most providers (Gmail/Outlook) will only respect these if they are verified aliases.
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '15px' }}>
@@ -528,14 +585,28 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
 
                                 <div className="form-group">
                                     <label>Authentication Password / App Password</label>
-                                    <input
-                                        type="password"
-                                        className="settings-input"
-                                        placeholder="Enter password"
-                                        value={emailConfig.password}
-                                        onChange={e => setEmailConfig({...emailConfig, password: e.target.value})}
-                                        required
-                                    />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showSmtpPassword ? 'text' : 'password'}
+                                            className="settings-input"
+                                            placeholder="Enter password"
+                                            value={emailConfig.password}
+                                            onChange={e => setEmailConfig({...emailConfig, password: e.target.value})}
+                                            required
+                                            style={{ paddingRight: '40px' }}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowSmtpPassword(!showSmtpPassword)} 
+                                            className="password-toggle-btn"
+                                            style={{ top: '50%', transform: 'translateY(-50%)' }}
+                                        >
+                                            {showSmtpPassword ? <EyeClosed size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+                                    <span className="settings-hint">
+                                        For Gmail/Outlook, use an <strong>App Password</strong> if 2FA is enabled on your account.
+                                    </span>
                                 </div>
 
                                 <Button 
@@ -543,11 +614,61 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                     variant="solid" 
                                     color="primary" 
                                     isLoading={emailLoading}
-                                    style={{ marginTop: '10px' }}
+                                    style={{ marginTop: '10px', width: '100%' }}
                                 >
                                     Save Email Settings
                                 </Button>
                             </form>
+                        </div>
+                    )}
+
+                    {activeTab === 'email-logs' && isSuperAdmin && (
+                        <div className="settings-tab-pane">
+                            <h3 className="settings-section-title">Email Configuration Logs</h3>
+                            <p className="settings-section-desc">History of SMTP configuration changes made by system administrators.</p>
+
+                            <div className="smtp-logs-section" style={{ marginTop: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>Configuration History</h4>
+                                    <Button variant="ghost" size="sm" onClick={fetchSmtpLogs} isLoading={loadingLogs}>Refresh</Button>
+                                </div> 
+
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', fontSize: '0.8125rem', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
+                                                <th style={{ padding: '8px' }}>Date</th>
+                                                <th style={{ padding: '8px' }}>Admin</th>
+                                                <th style={{ padding: '8px' }}>Provider</th>
+                                                <th style={{ padding: '8px' }}>Host</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {loadingLogs ? (
+                                                <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}><LoadingSpinner size="sm" /></td></tr>
+                                            ) : smtpLogs.length > 0 ? (
+                                                smtpLogs.map((log) => {
+                                                    let details = {}
+                                                    try {
+                                                        details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details
+                                                    } catch (e) { details = {} }
+                                                    
+                                                    return (
+                                                        <tr key={log.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                            <td style={{ padding: '8px' }}>{new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                                            <td style={{ padding: '8px' }} title={log.email}>{log.first_name || 'System'}</td>
+                                                            <td style={{ padding: '8px' }}>{details.provider || '-'}</td>
+                                                            <td style={{ padding: '8px' }}>{details.host || '-'}</td>
+                                                        </tr>
+                                                    )
+                                                })
+                                            ) : (
+                                                <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No configuration logs found.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
