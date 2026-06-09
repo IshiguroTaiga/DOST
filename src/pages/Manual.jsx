@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { MagnifyingGlass, BookOpen, CalendarCheck, FilePlus, CheckCircle, Users, WarningCircle, CaretRight } from '@phosphor-icons/react'
+import { MagnifyingGlass, BookOpen, CalendarCheck, FilePlus, CheckCircle, Users, WarningCircle, CaretRight, ClockCounterClockwise, FileText } from '@phosphor-icons/react'
 import { MANUAL_CATEGORIES, MANUAL_SECTIONS } from '../data/manualContent'
 import '../styles/pages/Manual.css'
 
@@ -9,7 +9,9 @@ const ICON_MAP = {
   CalendarCheck: CalendarCheck,
   FilePlus: FilePlus,
   CheckCircle: CheckCircle,
-  Users: Users
+  Users: Users,
+  History: ClockCounterClockwise,
+  ClipboardText: FileText
 };
 
 export default function Manual() {

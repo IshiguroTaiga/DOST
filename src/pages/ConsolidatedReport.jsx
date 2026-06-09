@@ -84,7 +84,7 @@ const CATEGORY_TO_TABLE = {
 
 export default function ConsolidatedReport() {
   const { user } = useOutletContext() ?? {}
-  const { events, loading: eventsLoading, showSuccess, showConfirm, fetchSituationalReports, sendSituationalReport, notifications, markSitRepNotificationsAsRead, markEventNotificationsAsRead } = useEvents()
+  const { events, loading: eventsLoading, showSuccess, showToast, showConfirm, fetchSituationalReports, sendSituationalReport, notifications, markSitRepNotificationsAsRead, markEventNotificationsAsRead } = useEvents()
 
   const unreadNotifs = useMemo(() => notifications?.filter(n => !n.is_read) || [], [notifications])
 
@@ -1303,7 +1303,7 @@ export default function ConsolidatedReport() {
   const handleUploadPdfSubmit = async () => {
     if (!approvalFile || !selectedSitRep) return
     if (approvalFile.type !== 'application/pdf') {
-      showSuccess('Validation Error', 'Only PDF files are allowed.')
+      showToast('Validation Error', 'Only PDF files are allowed.', 'warning')
       return
     }
     setUploadingApproval(true)
@@ -1366,7 +1366,7 @@ export default function ConsolidatedReport() {
       setApprovalConfirmMessage('The signed PDF has been uploaded successfully. The report is now pending approval by the Provincial Approver.')
       setShowApprovalConfirmation(true)
     } catch (err) {
-      showSuccess('Error', (err.response?.data?.error || err.message || 'Failed to upload PDF.'))
+      showToast('Error', (err.response?.data?.error || err.message || 'Failed to upload PDF.'), 'danger')
     } finally {
       setUploadingApproval(false)
     }
@@ -1389,7 +1389,7 @@ export default function ConsolidatedReport() {
       setApprovedViewEvent(null)
       handleViewMore(event)
     } catch (err) {
-      showSuccess('Error', 'Failed to reset approval: ' + (err.response?.data?.error || err.message))
+      showToast('Error', 'Failed to reset approval: ' + (err.response?.data?.error || err.message), 'danger')
     }
   }
 
@@ -1423,7 +1423,7 @@ export default function ConsolidatedReport() {
       setLguStatusData({ submitted, pending })
     } catch (err) {
       console.error('Failed to fetch LGU status:', err)
-      showSuccess('Error', 'Failed to fetch LGU submission status.')
+      showToast('Error', 'Failed to fetch LGU submission status.', 'danger')
     } finally {
       setLguStatusLoading(false)
     }
@@ -1856,7 +1856,7 @@ export default function ConsolidatedReport() {
       showSuccess('Export Success', 'Consolidated report generated successfully.')
     } catch (err) {
       console.error('CSV Generation Error:', err)
-      showSuccess('Error', 'Failed to generate CSV.')
+      showToast('Error', 'Failed to generate CSV.', 'danger')
     } finally {
       setProcessingId(null)
     }

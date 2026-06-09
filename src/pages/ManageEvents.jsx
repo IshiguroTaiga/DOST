@@ -211,11 +211,11 @@ eventType: event.eventType,
 
   const handleSubmit = async (shouldClose = true) => {
     if (!form.name.trim()) {
-      showSuccess('Validation Error', 'Please enter an Event Name.')
+      showToast('Validation Error', 'Please enter an Event Name.', 'warning')
       return null
     }
     if (form.eventType === 'earthquake' && !form.magnitude && form.alertStatus !== 'white') {
-      showSuccess('Validation Error', 'Please enter the Magnitude.')
+      showToast('Validation Error', 'Please enter the Magnitude.', 'warning')
       return null
     } else if (form.eventType !== 'earthquake' && ALERT_LEVELS[form.eventType]?.length > 0 && form.alertStatus !== 'white') {
       const selectedValue = form.eventType === 'flood' ? form.floodLevel :
@@ -223,16 +223,16 @@ eventType: event.eventType,
                             form.eventType === 'weather' ? form.alertLevel :
                             form.typhoonCategory;
       if (!selectedValue) {
-        showSuccess('Validation Error', 'Please select a Specific Alert Level / Category.')
+        showToast('Validation Error', 'Please select a Specific Alert Level / Category.', 'warning')
         return null
       }
     }
     if (form.affectedProvinces.length === 0) {
-      showSuccess('Validation Error', 'Please select at least one province for the Deployment Scope.')
+      showToast('Validation Error', 'Please select at least one province for the Deployment Scope.', 'warning')
       return null
     }
     if (!form.startDate) {
-      showSuccess('Validation Error', 'Please select a Start Date & Time.')
+      showToast('Validation Error', 'Please select a Start Date & Time.', 'warning')
       return null
     }
     

@@ -96,7 +96,8 @@ export default function Login({ onLogin }) {
         </form>
       </div>
       <div className="login-footer">
-        Developed by DOST DRRM Unit OJT <span className="highlight-name">Joaquin Patongan</span>
+        Developed by DOST DRRM Unit OJT <span className="highlight-name">Joaquin Patongan</span> <br />
+        Improved by DOST ITSM Unit OJT from <span className="highlight-name">Mariano Marcos State University CCIS</span>
       </div>
     </div>
   )

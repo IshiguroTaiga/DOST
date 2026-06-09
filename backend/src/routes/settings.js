@@ -73,6 +73,61 @@ router.get('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async 
   }
 });
 
+// GET /api/settings/ai (Accessible by any authenticated user for summary generation)
+router.get('/ai', authenticate, ensureSettingsTable, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT value FROM settings WHERE key = $1', ['ai_config']);
+    if (rows.length > 0) {
+      res.json(rows[0].value);
+    } else {
+      res.json({
+        activeModel: 'groq',
+        geminiKey: process.env.VITE_GEMINI_API_KEY || '',
+        groqKey: process.env.VITE_GROQ_API_KEY || ''
+      });
+    }
+  } catch (err) {
+    console.error('[Settings/GET ai]', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// PUT /api/settings/ai (Super Admin only)
+router.put('/ai', authenticate, requireSuperAdmin, ensureSettingsTable, async (req, res) => {
+  const { activeModel, geminiKey, groqKey } = req.body;
+  try {
+    const config = { activeModel, geminiKey, groqKey };
+    
+    // Mask keys for logging
+    const maskedConfig = { 
+      activeModel, 
+      geminiKey: geminiKey ? '••••••••' : '', 
+      groqKey: groqKey ? '••••••••' : '' 
+    };
+
+    await pool.query('BEGIN');
+    
+    await pool.query(`
+      INSERT INTO settings (key, value, updated_at) 
+      VALUES ('ai_config', $1, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+    `, [JSON.stringify(config)]);
+
+    // Log the activity
+    await pool.query(
+      'INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)',
+      [req.user.id, 'AI_CONFIG_UPDATED', JSON.stringify(maskedConfig)]
+    );
+
+    await pool.query('COMMIT');
+    res.json({ success: true });
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    console.error('[Settings/PUT ai]', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // PUT /api/settings/smtp
 router.put('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async (req, res) => {
   const { provider, senderName, senderEmail, host, port, username, password } = req.body;

@@ -165,6 +165,9 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
 // GET /api/situational-reports
 router.get('/', authenticate, async (req, res) => {
   const { event_id, status, count_only } = req.query;
+  const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
+
   try {
     let query = `
       SELECT sr.*, 
@@ -183,9 +186,8 @@ router.get('/', authenticate, async (req, res) => {
       query += ` AND sr.event_id = $${params.length}`;
     }
 
-    // Regional/Super Admin: Only see data from APPROVED situational reports
-    const isRegional = ['Regional Admin', 'Regional', 'Super Admin'].includes(req.user.account_type) || req.user.role === 'Super Admin';
-    if (isRegional) {
+    // Regional Viewer: Only see data from APPROVED situational reports
+    if (req.user.account_type === 'Regional' && !isSuperAdmin) {
       query += " AND sr.status = 'Approved'";
     }
 
@@ -195,10 +197,12 @@ router.get('/', authenticate, async (req, res) => {
     }
 
     // Provincial/LGU-level scoping
-    if (!isRegional && req.user.province) {
-      params.push(req.user.province);
-      // Allow them to see their own province, OR Regional reports (NULL or 'Region 1')
-      query += ` AND (sr.province = $${params.length} OR sr.province IS NULL OR sr.province = 'Region 1')`;
+    if (!isSuperAdmin && !isRegional) {
+      if (req.user.province) {
+        params.push(req.user.province);
+        // Allow them to see their own province, OR Regional reports (NULL or 'Region 1')
+        query += ` AND (sr.province = $${params.length} OR sr.province IS NULL OR sr.province = 'Region 1')`;
+      }
     }
 
     if (count_only === 'true') {
@@ -211,7 +215,7 @@ router.get('/', authenticate, async (req, res) => {
     const { rows } = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
-    console.error('[SitReps/GET]', err);
+    console.error('[SitReps/GET] ERROR:', err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -219,11 +223,27 @@ router.get('/', authenticate, async (req, res) => {
 // GET /api/situational-reports/:id
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM situational_reports WHERE id = $1', [req.params.id]);
-    if (!rows.length) return res.status(404).json({ error: 'Report not found' });
-    res.json(rows[0]);
+    const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+    const { rows } = await pool.query(
+      'SELECT sr.*, u.first_name, u.last_name FROM situational_reports sr LEFT JOIN users u ON sr.created_by = u.id WHERE sr.id = $1',
+      [req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    
+    const report = rows[0];
+    // Check access for basic Regional viewers
+    if (req.user.account_type === 'Regional' && report.status !== 'Approved' && !isSuperAdmin) {
+      console.warn(`[SitReps/GET/:id] Forbidden: Regional viewer ${req.user.email} accessing unapproved SR ${req.params.id}`);
+      return res.status(403).json({ 
+        error: 'Forbidden',
+        debug_reason: 'REGIONAL_VIEWER_UNAPPROVED_REPORT',
+        user: { email: req.user.email, account_type: req.user.account_type, isSuperAdmin }
+      });
+    }
+    
+    res.json(report);
   } catch (err) {
-    console.error('[SitReps/GET/:id]', err);
+    console.error('[SitReps/GET/:id] ERROR:', err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -330,7 +350,7 @@ router.post('/', authenticate, async (req, res) => {
       await client.query('COMMIT');
       
       const io = req.app.locals.io;
-      io.emit('sitrep:created', sitRep);
+      if (io) io.emit('sitrep:created', sitRep);
 
       res.status(201).json({ 
         ...sitRep, 
@@ -342,13 +362,13 @@ router.post('/', authenticate, async (req, res) => {
     } catch (txErr) {
       await client.query('ROLLBACK');
       console.error('[SitReps/POST] Transaction failed:', txErr);
-      res.status(500).json({ error: 'Server error during SitRep creation' });
+      res.status(500).json({ error: 'Server error during SitRep creation', details: txErr.message });
     } finally {
       client.release();
     }
   } catch (err) {
-    console.error('[SitReps/POST]', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('[SitReps/POST] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -371,12 +391,12 @@ router.patch('/:id', authenticate, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Report not found' });
 
     const io = req.app.locals.io;
-    io.emit('sitrep:updated', rows[0]);
+    if (io) io.emit('sitrep:updated', rows[0]);
 
     res.json(rows[0]);
   } catch (err) {
-    console.error('[SitReps/PATCH]', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('[SitReps/PATCH] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -416,7 +436,7 @@ router.get('/:id/report-data', authenticate, async (req, res) => {
 
     res.json(results);
   } catch (err) {
-    console.error('[SitReps/report-data]', err);
+    console.error('[SitReps/report-data] ERROR:', err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -428,34 +448,44 @@ router.delete('/:id', authenticate, async (req, res) => {
   try {
     await client.query('BEGIN');
     
+    // 1. Delete grandchild records first to prevent FK constraint violations
+    await client.query(`
+      DELETE FROM report_rows 
+      WHERE report_id IN (SELECT id FROM reports WHERE situational_report_id = $1)
+    `, [id]);
+    
+    await client.query(`
+      DELETE FROM roads_and_bridges_sections 
+      WHERE report_id IN (SELECT id FROM roads_and_bridges WHERE situational_report_id = $1)
+    `, [id]);
+
     const tables = [
       'related_incidents', 'agriculture_damage_reports', 'assistance_lgus_agencies_reports',
       'assistance_provided_reports', 'class_suspension_reports', 'communication_lines_reports',
       'damaged_houses_reports', 'declaration_state_of_calamity_reports',
       'infrastructure_damage_reports', 'power_reports', 'pre_emptive_evacuation_reports',
       'roads_and_bridges', 'water_supply_reports', 'work_suspension_reports',
-      'reports'
+      'reports', 'lgu_submissions'
     ];
     
-    // Delete child rows from report tables to handle cascade manually if needed
+    // 2. Delete parent records in the report tables
     for (const table of tables) {
       await client.query(`DELETE FROM ${table} WHERE situational_report_id = $1`, [id]);
     }
     
-    // Deleting from situational_reports will naturally delete child records if CASCADE is set,
-    // but the manual deletion above ensures no orphans in non-cascading setups
+    // 3. Finally delete the situational report itself
     await client.query('DELETE FROM situational_reports WHERE id = $1', [id]);
     
     await client.query('COMMIT');
     
     const io = req.app.locals.io;
-    io.emit('sitrep:deleted', { id });
+    if (io) io.emit('sitrep:deleted', { id });
     
     res.json({ success: true });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('[SitReps/DELETE]', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('[SitReps/DELETE] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   } finally {
     client.release();
   }

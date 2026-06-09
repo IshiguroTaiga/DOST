@@ -1,60 +1,64 @@
 export const MANUAL_CATEGORIES = [
-  { id: 'basics', title: 'System Basics', icon: 'BookOpen' },
+  { id: 'admin', title: 'Administration', icon: 'Users' },
   { id: 'events', title: 'Events & Tracking', icon: 'CalendarCheck' },
   { id: 'reporting', title: 'Reporting & Data', icon: 'FilePlus' },
   { id: 'review', title: 'Review & Approvals', icon: 'CheckCircle' },
-  { id: 'admin', title: 'Administration', icon: 'Users' }
+  { id: 'logs_v2', title: 'Update Logs v2 (Current)', icon: 'ClipboardText' },
+  { id: 'logs_v1', title: 'Update Logs v1 (Legacy)', icon: 'History' }
 ];
 
 export const MANUAL_SECTIONS = [
+  // --- ADMINISTRATION (CURRENT) ---
   {
-    id: 'intro',
-    category: 'basics',
-    title: 'Overview of PROACT',
-    roles: ['All'],
-    description: 'PROACT is designed to streamline disaster response data from the local level to regional consolidation.',
+    id: 'admin-auto-clone',
+    category: 'admin',
+    title: 'Intelligent SitRep Auto-Clone',
+    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin'],
+    description: 'Learn how the system automatically carries forward data between reporting cycles.',
     steps: [
       {
-        title: 'Understanding the Dashboard',
-        text: 'The dashboard displays aggregated data from all LGUs. You can see the number of active events, affected populations, and status of critical infrastructure at a glance.',
+        title: 'Automatic Data Inheritance',
+        text: 'When creating a new Situational Report, PROACT automatically detects the latest approved report and clones all 15 data categories. This reduces manual entry and ensures continuity.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
-        title: 'Navigating the Menu',
-        text: 'Use the sidebar to access different modules. Depending on your role, you will see options for Managing Events, Adding Reports, or User Management.',
+        title: 'Hierarchy-Aware Filtering',
+        text: 'Cloning respects your administrative level. LGUs clone only their city data, while Provincial and Regional admins clone their respective consolidated datasets.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
-        title: 'Real-time Updates',
-        text: 'The system uses live connections. When an LGU submits a report or an admin updates an event, the changes are reflected across all dashboards immediately.',
+        title: 'Audit & Traceability',
+        text: 'Every auto-cloned report is marked with its source ID and timestamp. You can see which fields were inherited and which were modified in the activity logs.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
     ]
   },
   {
-    id: 'security-passwords',
-    category: 'basics',
-    title: 'Account Security & Passwords',
-    roles: ['All'],
-    description: 'Protecting your account ensures the integrity of disaster response data.',
+    id: 'admin-hierarchy-rules',
+    category: 'admin',
+    title: 'Role-Based Data Scoping',
+    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin'],
+    description: 'Understanding how data visibility and cloning permissions are strictly enforced.',
     steps: [
       {
-        title: 'First-time Login',
-        text: 'When you first receive your invitation, you will be prompted to change your temporary password. Choose a strong password with at least 8 characters.',
+        title: 'LGU Level Scoping',
+        text: 'LGU users can only access and clone data for their specific city. They cannot see or modify data from neighboring municipalities.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
-        title: 'Updating Passwords',
-        text: 'You can change your password at any time via the Settings modal (gear icon at the bottom left). Regular updates are recommended.',
+        title: 'Provincial Consolidation',
+        text: 'Provincial admins can clone and edit data from all LGUs within their province, providing a middle layer of verification before regional submission.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
     ]
   },
+
+  // --- EVENTS & TRACKING (CURRENT) ---
   {
     id: 'manage-events-detailed',
     category: 'events',
@@ -103,6 +107,8 @@ export const MANUAL_SECTIONS = [
       }
     ]
   },
+
+  // --- REPORTING & DATA (CURRENT) ---
   {
     id: 'add-report-detailed',
     category: 'reporting',
@@ -169,6 +175,8 @@ export const MANUAL_SECTIONS = [
       }
     ]
   },
+
+  // --- REVIEW & APPROVALS (CURRENT) ---
   {
     id: 'review-workflow',
     category: 'review',
@@ -217,70 +225,86 @@ export const MANUAL_SECTIONS = [
       }
     ]
   },
+
+  // --- UPDATE LOGS V2 (CURRENT SUMMARY) ---
   {
-    id: 'user-management-detailed',
-    category: 'admin',
-    title: 'Managing Accounts & Access',
+    id: 'logs-v2-summary',
+    category: 'logs_v2',
+    title: 'System Improvements & Features (v2.0)',
+    roles: ['All'],
+    description: 'Overview of the latest updates and improved reporting features.',
+    steps: [
+      {
+        title: 'Intelligent Auto-Clone',
+        text: 'New automated data inheritance system for Situational Reports.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: 'Enhanced Administration',
+        text: 'Consolidated admin tools and improved role-based scoping.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
+
+  // --- UPDATE LOGS V1 (LEGACY MANUAL) ---
+  {
+    id: 'intro-v1',
+    category: 'logs_v1',
+    title: 'System Overview (Legacy)',
+    roles: ['All'],
+    description: 'Original introduction to the PROACT system.',
+    steps: [
+      {
+        title: 'Understanding the Dashboard',
+        text: 'The dashboard displays aggregated data from all LGUs at a glance.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
+  {
+    id: 'security-passwords-v1',
+    category: 'logs_v1',
+    title: 'Account Security (Legacy)',
+    roles: ['All'],
+    description: 'Original account and password security guidelines.',
+    steps: [
+      {
+        title: 'First-time Login',
+        text: 'Guidelines for initial password changes and account setup.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
+  {
+    id: 'user-management-detailed-v1',
+    category: 'logs_v1',
+    title: 'Managing Accounts (Legacy)',
     roles: ['Super Admin', 'Regional Admin', 'Provincial Admin'],
-    description: 'Best practices for maintaining a secure and organized user directory.',
+    description: 'Legacy user management and tiered permission documentation.',
     steps: [
       {
         title: 'Tiered Permissions',
-        text: 'Admins can only create accounts below their own tier. For example, a Provincial Admin can create LGU and local Provincial accounts but not Regional accounts.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      },
-      {
-        title: 'Account Status',
-        text: 'Suspicious accounts can be deactivated immediately. "Pending" users are those who have been invited but have not yet completed their first login.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      },
-      {
-        title: 'Role Management',
-        text: 'You can update a user\'s role or province as their responsibilities change. Changes take effect immediately upon their next login.',
+        text: 'Original rules for administrative levels and user creation.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
     ]
   },
   {
-    id: 'backup-restore-detailed',
-    category: 'admin',
-    title: 'System Maintenance: Backup & Restore',
+    id: 'backup-restore-detailed-v1',
+    category: 'logs_v1',
+    title: 'Maintenance (Legacy)',
     roles: ['Super Admin'],
-    description: 'Protect system integrity with regular backups.',
+    description: 'Original system backup and restoration procedures.',
     steps: [
       {
         title: 'Full System Backup',
-        text: 'Navigate to Settings > Maintenance. Click "Backup Now" to download a complete ZIP archive of the database and all uploaded documents.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      },
-      {
-        title: 'Restoring from Backup',
-        text: 'In the same menu, upload a valid backup ZIP to restore the system. Warning: This is a destructive action that overwrites current data.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      }
-    ]
-  },
-  {
-    id: 'invitation-troubleshooting',
-    category: 'admin',
-    title: 'User Invitations & Troubleshooting',
-    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin'],
-    description: 'Handle issues during the user onboarding process.',
-    steps: [
-      {
-        title: 'Inviting Users',
-        text: 'Add a new user in the User Management module. The system will automatically try to send an email with their temporary password.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      },
-      {
-        title: 'Email Failure Fallback',
-        text: 'If the email service fails, a notification will show the generated temporary password. You can manually copy and share this with the user securely.',
+        text: 'Legacy documentation for maintenance and data archiving.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }

@@ -37,28 +37,33 @@ router.get('/all-types', authenticate, async (req, res) => {
   const { situational_report_id } = req.query;
   const user = req.user;
   
-  console.log('---------------------------------------------------------');
-  console.log(`[TRACE] /all-types | User: ${user.email} | Role: ${user.account_type}`);
-  console.log(`[TRACE] SitRep ID: ${situational_report_id}`);
-
   if (!situational_report_id) return res.status(400).json({ error: 'situational_report_id is required' });
 
-  const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
+  const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
   const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
   const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
 
-  // Check if report is approved if user is Regional/Super Admin
-  if (isRegional) {
+  console.log(`[Reports/all-types] User: ${user.email} (Type: ${user.account_type}), SR: ${situational_report_id}, isSuperAdmin: ${isSuperAdmin}`);
+
+  // Check if report is approved if user is a basic Regional viewer
+  if (user.account_type === 'Regional' && !isSuperAdmin) {
     try {
       const { rows: srRows } = await pool.query('SELECT status FROM situational_reports WHERE id = $1', [situational_report_id]);
       if (srRows.length > 0 && srRows[0].status !== 'Approved') {
-        return res.status(403).json({ error: 'This report has not been approved by the Province yet.' });
+        console.warn(`[Reports/all-types] Forbidden: Regional viewer ${user.email} accessing unapproved SR ${situational_report_id}`);
+        return res.status(403).json({ 
+          error: 'This report has not been approved by the Province yet.',
+          debug_reason: 'REGIONAL_VIEWER_UNAPPROVED_REPORT',
+          user: { email: user.email, account_type: user.account_type, isSuperAdmin }
+        });
       }
     } catch (err) {
       console.error('[Reports/all-types] Status check failed:', err);
     }
   }
 
+  const results = [];
   try {
     const tables = [
       { name: 'related_incidents', id: 'incidents' },
@@ -77,19 +82,17 @@ router.get('/all-types', authenticate, async (req, res) => {
       { name: 'work_suspension_reports', id: 'work' }
     ];
 
-    const results = [];
-
     await Promise.all(tables.map(async (table) => {
       let query = `SELECT t.* FROM ${table.name} t`;
       const conditions = [`t.situational_report_id = $1`];
       const params = [situational_report_id];
 
-      if (!isRegional) {
+      if (!isSuperAdmin) {
         if (isLgu && user.city) {
           const cleanCity = user.city.replace(/\s*\(.*\)\s*$/, '').trim();
           params.push(cleanCity);
           conditions.push(cityCondition('t', params.length));
-        } else if (user.province) {
+        } else if (user.province && !isRegional) {
           query += ` INNER JOIN situational_reports sr ON t.situational_report_id = sr.id`;
           params.push(user.province);
           // Allow seeing own province OR Regional reports
@@ -98,7 +101,6 @@ router.get('/all-types', authenticate, async (req, res) => {
       }
 
       const { rows } = await pool.query(`${query} WHERE ${conditions.join(' AND ')}`, params);
-      if (rows.length > 0) console.log(`[TRACE] Table ${table.name}: Found ${rows.length} rows`);
       
       rows.forEach(r => {
         results.push({
@@ -111,9 +113,7 @@ router.get('/all-types', authenticate, async (req, res) => {
     }));
 
     // Affected Population (reports -> report_rows)
-    console.log(`[TRACE] Checking 'reports' table for SitRep ${situational_report_id}...`);
     const { rows: reports } = await pool.query('SELECT id, created_at FROM reports WHERE situational_report_id = $1', [situational_report_id]);
-    console.log(`[TRACE] Found ${reports.length} parent reports`);
 
     if (reports.length > 0) {
       const reportIds = reports.map(r => r.id);
@@ -121,7 +121,7 @@ router.get('/all-types', authenticate, async (req, res) => {
       const rowsConditions = [`t.report_id = ANY($1::uuid[])`];
       const rowsParams = [reportIds];
 
-      if (!isRegional) {
+      if (!isSuperAdmin) {
         if (isLgu && user.city) {
           const cleanCity = user.city.replace(/\s*\(.*\)\s*$/, '').trim();
           rowsParams.push(cleanCity);
@@ -130,7 +130,6 @@ router.get('/all-types', authenticate, async (req, res) => {
       }
 
       const { rows: reportRows } = await pool.query(`${rowsQuery} WHERE ${rowsConditions.join(' AND ')}`, rowsParams);
-      console.log(`[TRACE] Found ${reportRows.length} report_rows`);
       
       reportRows.forEach(r => {
         results.push({
@@ -143,12 +142,10 @@ router.get('/all-types', authenticate, async (req, res) => {
       });
     }
 
-    console.log(`[TRACE] /all-types | Returning total ${results.length} items`);
-    console.log('---------------------------------------------------------');
     res.json(results);
   } catch (err) {
-    console.error('[TRACE] /all-types ERROR:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    console.error('[Reports/all-types] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -177,7 +174,8 @@ router.get('/consolidated', authenticate, async (req, res) => {
     }
 
     const user = req.user;
-    const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
+    const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+    const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
     const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
     const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
 
@@ -186,18 +184,18 @@ router.get('/consolidated', authenticate, async (req, res) => {
       const conditions = [`t.event_id = $1`];
       const params = [event_id];
 
-      if (!isRegional) {
+      if (!isSuperAdmin) {
         if (isLgu && user.city) {
           if (table !== 'reports') {
             params.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
             conditions.push(cityCondition('t', params.length));
           }
-        } else if (user.province) {
+        } else if (user.province && !isRegional) {
           params.push(user.province);
           conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
         }
 
-        if (!isLgu && !isProvincial && table !== 'reports') {
+        if (!isLgu && !isProvincial && table !== 'reports' && !isRegional) {
           conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
             SELECT 1 FROM lgu_submissions ls 
             WHERE ls.situational_report_id = t.situational_report_id 
@@ -219,15 +217,15 @@ router.get('/consolidated', authenticate, async (req, res) => {
         let rrQuery = `SELECT rr.*, r.situational_report_id FROM report_rows rr INNER JOIN reports r ON rr.report_id = r.id WHERE rr.report_id = ANY($1::uuid[])`;
         const rrParams = [reportIds];
         
-        if (!isRegional) {
+        if (!isSuperAdmin) {
           if (isLgu && user.city) {
             rrParams.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
             rrQuery += ` AND ${cityCondition('rr', rrParams.length)}`;
-          } else if (!isLgu && !isProvincial) {
+          } else if (!isLgu && !isProvincial && !isRegional) {
             rrQuery += ` AND (rr.city IS NULL OR rr.city = '' OR EXISTS (
               SELECT 1 FROM lgu_submissions ls 
               WHERE ls.situational_report_id = r.situational_report_id 
-                AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$', '') = REGEXP_REPLACE(rr.city, '\\s*\\(.*\\)\\s*$', '')
+                AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$/, '') = REGEXP_REPLACE(rr.city, '\\s*\\(.*\\)\\s*$', '')
                 AND ls.status = 'Approved'
             ))`;
           }
@@ -239,10 +237,48 @@ router.get('/consolidated', authenticate, async (req, res) => {
       }
     }));
 
-    res.json({ details: rawData });
+    // Logic to calculate categoryTotals and byCityCategory (matching lib/generateConsolidatedCsv.js logic)
+    const mappedDetails = {};
+    const categoryTotals = {};
+    const byCityCategory = {};
+
+    Object.entries(rawData).forEach(([table, rows]) => {
+      let catKey = table;
+      if (table === 'affected_population') catKey = 'affectedPopulation';
+      else if (table === 'related_incidents') catKey = 'relatedIncidents';
+      else if (table === 'roads_and_bridges') catKey = 'roadsAndBridges';
+      else if (table === 'power_reports') catKey = 'power';
+      else if (table === 'water_supply_reports') catKey = 'waterSupply';
+      else if (table === 'communication_lines_reports') catKey = 'communicationLines';
+      else if (table === 'damaged_houses_reports') catKey = 'damagedHouses';
+      else if (table === 'class_suspension_reports') catKey = 'classSuspension';
+      else if (table === 'work_suspension_reports') catKey = 'workSuspension';
+      else if (table === 'declaration_state_of_calamity_reports') catKey = 'stateOfCalamity';
+      else if (table === 'pre_emptive_evacuation_reports') catKey = 'preEmptiveEvacuation';
+      else if (table === 'assistance_provided_reports') catKey = 'assistanceProvided';
+      else if (table === 'assistance_lgus_agencies_reports') catKey = 'assistanceLgusAgencies';
+      else if (table === 'agriculture_damage_reports') catKey = 'agricultureDamage';
+      else if (table === 'infrastructure_damage_reports') catKey = 'infrastructureDamage';
+
+      mappedDetails[catKey] = rows;
+      categoryTotals[catKey] = rows.length;
+
+      rows.forEach(row => {
+        const city = row.city || 'Other';
+        if (!byCityCategory[city]) byCityCategory[city] = {};
+        byCityCategory[city][catKey] = (byCityCategory[city][catKey] || 0) + 1;
+      });
+    });
+
+    res.json({ 
+      details: mappedDetails, 
+      categoryTotals, 
+      byCityCategory,
+      summaryData: { categoryTotals, byCityCategory, details: mappedDetails }
+    });
   } catch (err) {
     console.error('[Reports/Consolidated] ERROR:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -254,7 +290,8 @@ router.get('/:table', authenticate, async (req, res) => {
 
   const { event_id, situational_report_id } = req.query;
   const user = req.user;
-  const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
+  const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
 
   let baseQuery = `SELECT t.*, sr.province FROM ${table} t `;
   if (table === 'report_rows') baseQuery += `INNER JOIN reports r ON t.report_id = r.id INNER JOIN situational_reports sr ON r.situational_report_id = sr.id`;
@@ -264,12 +301,12 @@ router.get('/:table', authenticate, async (req, res) => {
   const conditions = [];
   const params = [];
 
-  // Regional/Super Admin: Only see data from APPROVED situational reports
-  if (isRegional) {
+  // Check if report is approved if user is a basic Regional viewer
+  if (user.account_type === 'Regional' && !isSuperAdmin) {
     conditions.push("sr.status = 'Approved'");
   }
 
-  if (!isRegional) {
+  if (!isSuperAdmin) {
     const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
     const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
 
@@ -278,16 +315,16 @@ router.get('/:table', authenticate, async (req, res) => {
         params.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
         conditions.push(cityCondition('t', params.length));
       }
-    } else if (user.province) {
+    } else if (user.province && !isRegional) {
       params.push(user.province);
       conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
     }
 
-    if (!isLgu && !isProvincial && !['reports', 'report_rows', 'roads_and_bridges_sections'].includes(table)) {
+    if (!isLgu && !isProvincial && !isRegional && !['reports', 'report_rows', 'roads_and_bridges_sections'].includes(table)) {
        conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
         SELECT 1 FROM lgu_submissions ls 
         WHERE ls.situational_report_id = t.situational_report_id 
-          AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$', '') = REGEXP_REPLACE(t.city, '\\s*\\(.*\\)\\s*$', '')
+          AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$/, '') = REGEXP_REPLACE(t.city, '\\s*\\(.*\\)\\s*$', '')
           AND ls.status = 'Approved'
       ))`);
     }
@@ -304,7 +341,7 @@ router.get('/:table', authenticate, async (req, res) => {
     const { rows } = await pool.query(`${baseQuery} ${where} ORDER BY t.created_at DESC`, params);
     res.json(rows);
   } catch (err) {
-    console.error(`[Reports/GET/${table}]`, err);
+    console.error(`[Reports/GET/${table}] ERROR:`, err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -323,8 +360,8 @@ router.post('/:table', authenticate, async (req, res) => {
     if (req.app.locals.io) req.app.locals.io.emit(`${table}:created`, rows[0]);
     res.status(201).json(rows[0]);
   } catch (err) {
-    console.error(`[Reports/POST/${table}]`, err);
-    res.status(500).json({ error: 'Server error' });
+    console.error(`[Reports/POST/${table}] ERROR:`, err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -350,7 +387,8 @@ router.post('/:table/bulk', authenticate, async (req, res) => {
     res.status(201).json(results);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Server error' });
+    console.error(`[Reports/POST/${table}/bulk] ERROR:`, err.message);
+    res.status(500).json({ error: 'Server error', details: err.message, table: err.table, constraint: err.constraint });
   } finally { client.release(); }
 });
 
@@ -373,21 +411,78 @@ router.patch('/:table/bulk', authenticate, async (req, res) => {
     }
     await client.query('COMMIT');
     res.json(results);
-  } catch (err) { await client.query('ROLLBACK'); res.status(500).json({ error: 'Server error' }); }
-  finally { client.release(); }
-});
-
-router.delete('/:table/:id', authenticate, async (req, res) => {
-  const { table, id } = req.params;
-  try { await pool.query(`DELETE FROM ${table} WHERE id = $1`, [id]); res.json({ success: true }); }
-  catch (err) { res.status(500).json({ error: 'Server error' }); }
+  } catch (err) { 
+    await client.query('ROLLBACK'); 
+    console.error(`[Reports/PATCH/${table}/bulk] ERROR:`, err.message);
+    res.status(500).json({ error: 'Server error', details: err.message, table: err.table, constraint: err.constraint }); 
+  } finally { client.release(); }
 });
 
 router.delete('/:table/bulk', authenticate, async (req, res) => {
   const { table } = req.params;
   const { ids } = req.body;
-  try { const { rowCount } = await pool.query(`DELETE FROM ${table} WHERE id = ANY($1::uuid[])`, [ids]); res.json({ success: true, deleted: rowCount }); }
-  catch (err) { res.status(500).json({ error: 'Server error' }); }
+  
+  if (!ALLOWED_TABLES.has(table)) {
+    return res.status(400).json({ error: 'Unknown table', table });
+  }
+  
+  if (!ids || !Array.isArray(ids)) {
+    return res.status(400).json({ error: 'ids array required', received: typeof ids });
+  }
+  
+  const validIds = ids.filter(id => id && typeof id === 'string' && id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i));
+  if (validIds.length === 0) {
+    return res.status(400).json({ error: 'Invalid ID format', received: ids });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    if (table === 'reports') {
+      await client.query('DELETE FROM report_rows WHERE report_id = ANY($1::uuid[])', [validIds]);
+    } else if (table === 'roads_and_bridges') {
+      await client.query('DELETE FROM roads_and_bridges_sections WHERE report_id = ANY($1::uuid[])', [validIds]);
+    }
+    const { rowCount } = await client.query(`DELETE FROM ${table} WHERE id = ANY($1::uuid[])`, [validIds]);
+    await client.query('COMMIT');
+    res.json({ success: true, deleted: rowCount });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(`[Reports/DELETE/${table}/bulk] ERROR:`, err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  } finally { client.release(); }
+});
+
+router.delete('/:table/:id', authenticate, async (req, res) => {
+  const { table, id } = req.params;
+  console.log(`[Reports/DELETE] Table: ${table}, ID: ${id}`);
+  
+  if (!ALLOWED_TABLES.has(table)) {
+    return res.status(400).json({ error: 'Unknown table', table });
+  }
+  
+  if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    console.warn(`[Reports/DELETE] Invalid ID format: ${id}`);
+    return res.status(400).json({ error: 'Invalid ID format', received: id });
+  }
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    if (table === 'reports') {
+      await client.query('DELETE FROM report_rows WHERE report_id = $1', [id]);
+    } else if (table === 'roads_and_bridges') {
+      await client.query('DELETE FROM roads_and_bridges_sections WHERE report_id = $1', [id]);
+    }
+    const { rowCount } = await client.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+    await client.query('COMMIT');
+    console.log(`[Reports/DELETE] Successfully deleted row from ${table}. rowCount: ${rowCount}`);
+    res.json({ success: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(`[Reports/DELETE/${table}] ERROR:`, err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  } finally { client.release(); }
 });
 
 module.exports = router;
