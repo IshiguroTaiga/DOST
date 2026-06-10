@@ -620,7 +620,7 @@
   padding: 0.4rem 0.6rem;
   gap: 0.4rem;
   display: grid;
-  grid-template-columns: 105px 170px 190px 130px 140px;
+  grid-template-columns: 100px 170px 190px 130px 140px;
   /* display: flex; */
   flex-wrap: nowrap;
   align-items: center;
@@ -738,13 +738,18 @@
 
 /* Alert Status - condensed */
 .meta-item:nth-child(1) {
+	padding-right: 0.5rem;
 	padding-left: 0.7rem;
+	display: grid;
+	grid-template-columns: 1fr;
+	justify-items: center;
 	min-width: 0;
 	padding-bottom: 0.5rem;
 }
 
 /* Type - condensed */
 .meta-item:nth-child(2) {
+	border-left: 1px solid rgba(0, 0, 0, 0.2);
 	padding-left: 1rem;
 	padding-right: 0.5rem;
 	min-width: 0;
