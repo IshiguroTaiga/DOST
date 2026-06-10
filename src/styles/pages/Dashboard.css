@@ -586,7 +586,7 @@
 	padding: 0 1rem;
 	width: 100%;
 	min-width: 0;
-	flex-wrap: wrap; /* Allow wrapping for responsiveness */
+	flex-wrap: nowrap; /* Prevent wrapping to keep title and meta on same line */
 }
 
 .dash-hero-meta,
@@ -617,14 +617,16 @@
 /* Meta Section */
 .dash-hero-meta {
   margin-left: auto;
-  padding: 0.4rem 0.6rem;
-  gap: 0.4rem;
-  display: flex;
-  flex-wrap: nowrap;
+  margin-right: 1.5rem;
+  padding: 0.8rem 1.5rem; /* More vertical and horizontal padding */
+  display: grid;
+  grid-template-columns: 220px 180px 180px 180px 180px; /* Spacious columns */
   align-items: center;
-  justify-content: flex-start;
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
+  width: 940px; /* Locked total width */
+  height: 90px; /* Increased from 54px for a bigger look */
+  border-radius: 14px; /* Slightly more rounded to match size */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dash-hero-title-wrap {
@@ -730,46 +732,45 @@
 .meta-item {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	flex-shrink: 0;        /* don't shrink */
+	gap: 0.6rem;
+	flex-shrink:
 }
 
-/* Alert Status - condensed */
+/* Alert Status - first item */
 .meta-item:nth-child(1) {
-	padding-left: 0.7rem;
-	min-width: 0;
-	padding-bottom: 0.5rem;
-}
+	padding-left: 7.8rem;
+	min-width: 0;}
 
-/* Type - condensed */
+/* Type - locked column 2 */
 .meta-item:nth-child(2) {
-	padding-left: 1rem;
+	border-left: 1px solid rgba(0, 0, 0, 0.15);
+	padding-left: 1.25rem;
 	padding-right: 0.5rem;
 	min-width: 0;
 }
 
-/* Category - condensed */
+/* Category - locked column 3 */
 .meta-item:nth-child(3) {
-	border-left: 1px solid rgba(0, 0, 0, 0.2);
-	padding-left: 1rem;
+	border-left: 1px solid rgba(0, 0, 0, 0.15);
+	padding-left: 1.25rem;
 	padding-right: 0.5rem;
 	min-width: 0;
 }
 
-/* Weather - condensed */
+/* Weather - locked column 4 */
 .weather-item {
 	min-width: 0;
-	border-left: 1px solid rgba(0,0,0,0.2);
-	padding-left: 1rem;
+	border-left: 1px solid rgba(0, 0, 0, 0.15);
+	padding-left: 1.25rem;
 	padding-right: 0.5rem;
 
 }
 
-/* Date - condensed */
+/* Date - locked column 5 */
 .meta-item:last-child {
 	min-width: 0;
-	border-left: 1px solid rgba(0,0,0,0.2);
-	padding-left: 1rem;
+	border-left: 1px solid rgba(0, 0, 0, 0.15);
+	padding-left: 1.25rem;
 	padding-right: 0.5rem;
 }
 
@@ -783,10 +784,14 @@
 }
 
 .meta-value {
-	font-size: 1rem;
+	font-size: 0.95rem;
 	font-weight: 700;
 	color: var(--text-main);
 	white-space: nowrap;    /* prevent wrapping */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	width: 100%;
 }
 
 .meta-label {
@@ -795,6 +800,10 @@
 	color: var(--text-muted);
 	text-transform: capitalize;
 	white-space: nowrap;    /* prevent wrapping */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	width: 100%;
 }
 
 .meta-icon {
@@ -818,7 +827,9 @@
 .meta-content {
 	display: flex;
 	flex-direction: column;
+	width: 100%;
 }
+
 /* Summary Bar */
 .dash-summary-bar {
 	background: var(--bg-card);
@@ -1731,12 +1742,12 @@
 }
 
 .metric-card {
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-	-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	background: var(--bg-card);
+	backdrop-filter: blur(12px) saturate(160%);
+	-webkit-backdrop-filter: blur(12px) saturate(160%);
 	padding: 1.5rem;
 	border-radius: 22px;
-	border: 1px solid var(--glass-border);
+	border: 1px solid var(--border-color);
 	box-shadow: var(--shadow-premium);
 	display: flex;
 	flex-direction: column;
@@ -1746,7 +1757,7 @@
 
 .metric-card:hover {
 	transform: translateY(-4px);
-	background: rgba(255, 255, 255, 0.6);
+	background: rgba(255, 255, 255, 0.9);
 	box-shadow: var(--shadow-elevated);
 }
 
@@ -1844,12 +1855,12 @@
 .trend-card,
 .distribution-card,
 .full-width-card {
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-	-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	background: var(--bg-card);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
 	padding: 1.75rem;
 	border-radius: var(--glass-radius);
-	border: 1px solid var(--glass-border);
+	border: 1px solid var(--border-color);
 	box-shadow: var(--shadow-premium);
 	transition: all 0.3s ease;
 }
@@ -2903,21 +2914,20 @@
   }
 
   .dash-hero {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
   }
 
   .dash-hero-meta {
-    width: 100%;
-    min-width: 100;
+    margin-left: auto;
+    min-width: 0;
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 0.5rem;
   }
 
   .dash-hero-title-wrap {
-    width: 100%;
+    width: auto;
   }
 }
 
