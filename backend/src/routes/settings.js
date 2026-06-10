@@ -77,15 +77,14 @@ router.get('/smtp', authenticate, requireSuperAdmin, ensureSettingsTable, async 
 router.get('/ai', authenticate, ensureSettingsTable, async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT value FROM settings WHERE key = $1', ['ai_config']);
-    if (rows.length > 0) {
-      res.json(rows[0].value);
-    } else {
-      res.json({
-        activeModel: 'groq',
-        geminiKey: process.env.VITE_GEMINI_API_KEY || '',
-        groqKey: process.env.VITE_GROQ_API_KEY || ''
-      });
-    }
+    let config = rows.length > 0 ? rows[0].value : { activeModel: 'groq' };
+
+    // Aggressive fallback to .env if DB keys are missing/empty
+    if (!config.geminiKey) config.geminiKey = process.env.VITE_GEMINI_API_KEY || '';
+    if (!config.groqKey) config.groqKey = process.env.VITE_GROQ_API_KEY || '';
+    if (!config.activeModel) config.activeModel = 'groq';
+
+    res.json(config);
   } catch (err) {
     console.error('[Settings/GET ai]', err);
     res.status(500).json({ error: 'Server error: ' + err.message });
