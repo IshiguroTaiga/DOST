@@ -287,7 +287,7 @@ export default function Users() {
 
 // Notify relevant admins about the new user
            try {
-             const { data: admins } = await api.get('/api/users')
+             const { data: admins } = await api.get('/users')
              const adminsToNotify = admins.filter(u => 
                u.id !== currentUser.id && 
                (u.role === 'Super Admin' || u.account_type?.includes('Admin'))
@@ -301,7 +301,7 @@ export default function Users() {
                  message: `${form.firstName} ${form.lastName} has been added as ${form.accountType}.`,
                  data: { target_user_id: data.id, email: form.email }
                }))
-               await api.post('/api/notifications/bulk', notifications)
+               await api.post('/notifications/bulk', notifications)
              }
            } catch (notifErr) {
             console.error('Failed to send user creation notifications:', notifErr)
