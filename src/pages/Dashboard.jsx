@@ -1911,53 +1911,53 @@ CHRONOLOGY OF EVENTS`;
             </h2>
             {userSignal && currentEvent?.alertStatus !== 'white' ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
-                Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> assigned to your area
-              </p>
-            ) : currentEvent && currentEvent.id !== 'default-good-day' && currentEvent.alertLevel && currentEvent.alertStatus !== 'white' ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
-                Currently monitoring a <strong style={{ color: 'var(--text-main)' }}>{currentEvent.alertLevel}</strong> event in your area
+                Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> active in your area
               </p>
             ) : (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
-                All systems are normal. Routine monitoring active.
+                {(!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') 
+                  ? "All systems normal. Routine monitoring active."
+                  : "Monitoring active for this event."}
               </p>
             )}
           </div>
 
           <div className={`dash-hero-meta alert-status-${currentEvent?.alertStatus || 'white'}`}>
-            {currentEvent && currentEvent.id !== 'default-good-day' && currentEvent.alertStatus && (
             <div className="meta-item">
               <div className="meta-content" style={{ alignItems: 'center' }}>
                 <span className="meta-label">Alert Status</span>
                   <span className="meta-value">
                     <span style={{
-                      display: 'inline-block',
-                      padding: '8px 25px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '80px', /* Absolute fixed width */
+                      height: '35px', /* Absolute fixed height */
                       borderRadius: '10px',
                       border: '1px solid #000',
-                      fontSize: '1.00rem',
-                      fontWeight: 50,
-                      letterSpacing: '1.5px',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      letterSpacing: '1.2px',
                       textTransform: 'uppercase',
                       background:
-                        currentEvent.alertStatus === 'red' ? '#dc2626' :
-                        currentEvent.alertStatus === 'blue' ? '#2563eb' :
-                        currentEvent.alertStatus === 'yellow' ? '#d97706' :
-                        currentEvent.alertStatus === 'orange' ? '#ea580c' :
-                        currentEvent.alertStatus === 'purple' ? '#7c3aed' :
+                        currentEvent?.alertStatus === 'red' ? '#dc2626' :
+                        currentEvent?.alertStatus === 'blue' ? '#2563eb' :
+                        currentEvent?.alertStatus === 'yellow' ? '#d97706' :
+                        currentEvent?.alertStatus === 'orange' ? '#ea580c' :
+                        currentEvent?.alertStatus === 'purple' ? '#7c3aed' :
                         '#475569',
                       color: '#ffffff',
+                      boxSizing: 'border-box',
                     }}>
-                      {currentEvent.alertStatus === 'yellow' ? 'Yellow' :
-                      currentEvent.alertStatus === 'orange' ? 'Orange' :
-                      currentEvent.alertStatus === 'red' ? 'Red' :
-                      currentEvent.alertStatus === 'blue' ? 'Blue' :
-                      currentEvent.alertStatus === 'purple' ? 'Purple' : 'White'}
+                      {currentEvent?.alertStatus === 'yellow' ? 'Yellow' :
+                      currentEvent?.alertStatus === 'orange' ? 'Orange' :
+                      currentEvent?.alertStatus === 'red' ? 'Red' :
+                      currentEvent?.alertStatus === 'blue' ? 'Blue' :
+                      currentEvent?.alertStatus === 'purple' ? 'Purple' : 'White'}
                     </span>
                   </span>
                 </div>
               </div>
-            )}
 
             <div className="meta-item">
               <div className="meta-icon"><Warning size={18} /></div>
