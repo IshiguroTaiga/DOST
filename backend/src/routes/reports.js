@@ -100,8 +100,8 @@ router.get('/all-types', authenticate, async (req, res) => {
         }
       }
 
-      // Keep visibility check from remote: non-LGUs only see Approved data
-      if (!isLgu) {
+      // Keep visibility check: non-LGUs and non-Admins only see Approved data
+      if (!isLgu && !isSuperAdmin) {
         conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
           SELECT 1 FROM lgu_submissions ls 
           WHERE ls.situational_report_id = t.situational_report_id 
@@ -237,7 +237,7 @@ router.get('/consolidated', authenticate, async (req, res) => {
           if (isLgu && user.city) {
             rrParams.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
             rrQuery += ` AND ${cityCondition('rr', rrParams.length)}`;
-          } else if (!isLgu && !isProvincial && !isRegional) {
+          } else if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin) {
             rrQuery += ` AND (rr.city IS NULL OR rr.city = '' OR EXISTS (
               SELECT 1 FROM lgu_submissions ls 
               WHERE ls.situational_report_id = r.situational_report_id 
@@ -502,3 +502,4 @@ router.delete('/:table/:id', authenticate, async (req, res) => {
 });
 
 module.exports = router;
+;
