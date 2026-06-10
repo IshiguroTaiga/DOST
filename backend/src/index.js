@@ -68,11 +68,19 @@ app.use('/uploads', express.static(uploadDir));
 app.use('/api/uploads', express.static(uploadDir));
 
 // POST /upload
-app.post('/api/upload', upload.single('file'), (req, res) => {
+const uploadHandler = (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const url = `${process.env.VITE_API_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`;
+  
+  // Use VITE_API_URL or try to reconstruct from headers
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const baseUrl = process.env.VITE_API_URL ? process.env.VITE_API_URL.replace(/\/api$/, '') : `${protocol}://${host}`;
+  
+  const url = `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url, filename: req.file.filename });
-});
+};
+app.post('/api/upload', upload.single('file'), uploadHandler);
+app.post('/upload', upload.single('file'), uploadHandler);
 
 // --- Routes ---
 // Legacy/Redundant routes to handle stripped /api prefix in some production environments
