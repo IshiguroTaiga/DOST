@@ -43,7 +43,7 @@ export function generateRelatedIncidentsPdf({
       city: [240, 240, 240],       // gray
     }
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-    const margin = 16
+    const margin = 20 /* Increased margin for cleaner look */
     const pageW = doc.internal.pageSize.getWidth()
     const pageH = doc.internal.pageSize.getHeight()
     let y = margin
@@ -54,63 +54,72 @@ export function generateRelatedIncidentsPdf({
     // Title Header (simulating the image style)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(14)
-    doc.text("Regional Disaster Risk Reduction and Management Council 1", pageW / 2, y + 5, { align: 'center' })
+    doc.text("Regional Disaster Risk Reduction and Management Council 1", pageW / 2, y, { align: 'center' })
 
     doc.setFontSize(16)
-    doc.text(eventName?.toUpperCase() || "SITUATIONAL REPORT", pageW / 2, y + 13, { align: 'center' })
+    doc.text(eventName?.toUpperCase() || "SITUATIONAL REPORT", pageW / 2, y + 10, { align: 'center' })
 
     doc.setFontSize(12)
-    doc.text(province || "Region 1", pageW / 2, y + 21, { align: 'center' })
+    doc.text(province || "Region 1", pageW / 2, y + 18, { align: 'center' })
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(11)
     const titleText = reportTitle || `Situational Report for the Effects of ${eventName || 'the Event'}`
-    doc.text(titleText, pageW / 2, y + 29, { align: 'center' })
+    doc.text(titleText, pageW / 2, y + 26, { align: 'center' })
 
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(10)
-    doc.text(new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }), pageW / 2, y + 35, { align: 'center' })
+    doc.text(new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }), pageW / 2, y + 32, { align: 'center' })
 
-    y += 48
+    y += 45
 
     // Summary content - handling multi-line with page overflow check
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10.5)
+    doc.setFontSize(11)
     const splitSummary = doc.splitTextToSize(summaryText, pageW - margin * 2)
 
     for (let i = 0; i < splitSummary.length; i++) {
-      if (y > pageH - margin - 10) {
+      if (y > pageH - margin - 20) {
         doc.addPage()
         y = margin
       }
       doc.text(splitSummary[i], margin, y)
-      y += 5.5 // Line height reduced from 6
+      y += 6.5
     }
 
     // --- Signatories on the Summary Page ---
     if (signatories && (signatories.preparedBy?.length > 0 || signatories.notedBy || signatories.approvedBy)) {
-      y += 12 // Reduced from 20
+      y += 15
 
       const rightX = pageW - margin
-      doc.setFontSize(10)
+      doc.setFontSize(11)
 
       if (signatories.preparedBy?.length > 0) {
         const names = signatories.preparedBy.map(s => s?.name || '').join(' AND ')
+        doc.setFont('helvetica', 'bold')
+        doc.text("Prepared by:", rightX, y, { align: 'right' })
+        y += 6
         doc.setFont('helvetica', 'normal')
-        doc.text(`Prepared by: ${names}`, rightX, y, { align: 'right' })
-        y += 15
+        doc.text(names, rightX, y, { align: 'right' })
+        y += 12
       }
 
       if (signatories.notedBy?.name) {
+        doc.setFont('helvetica', 'bold')
+        doc.text("Noted by:", rightX, y, { align: 'right' })
+        y += 6
         doc.setFont('helvetica', 'normal')
-        doc.text(`Noted by: ${signatories.notedBy.name}`, rightX, y, { align: 'right' })
-        y += 15
+        doc.text(signatories.notedBy.name, rightX, y, { align: 'right' })
+        y += 12
       }
 
       if (signatories.approvedBy?.name) {
+        doc.setFont('helvetica', 'bold')
+        doc.text("Approved by:", rightX, y, { align: 'right' })
+        y += 6
         doc.setFont('helvetica', 'normal')
-        doc.text(`Approved by: ${signatories.approvedBy.name}`, rightX, y, { align: 'right' })
-        y += 15
+        doc.text(signatories.approvedBy.name, rightX, y, { align: 'right' })
+        y += 12
       }
     }
 
@@ -132,7 +141,7 @@ export function generateRelatedIncidentsPdf({
     y += 12
   }
 
-  const ensureSpace = (needed = 28) => {
+  const ensureSpace = (needed = 30) => {
     if (y + needed > pageH - margin) {
       doc.addPage()
       y = margin
@@ -143,18 +152,18 @@ export function generateRelatedIncidentsPdf({
     margin: { left: margin, right: margin },
     theme: 'grid',
     styles: {
-      fontSize: 9,
-      lineWidth: 0.3,
+      fontSize: 8.5,
+      lineWidth: 0.2,
       lineColor: [0, 0, 0],
-      cellPadding: 2.2,
+      cellPadding: 2,
       valign: 'middle',
       textColor: [0, 0, 0],
     },
     headStyles: {
-      fillColor: [255, 255, 255],
+      fillColor: [245, 245, 245],
       textColor: [0, 0, 0],
       fontStyle: 'bold',
-      lineWidth: 0.5,
+      lineWidth: 0.3,
       lineColor: [0, 0, 0],
     },
   }

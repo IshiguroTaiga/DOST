@@ -420,7 +420,7 @@ router.patch('/:table/bulk', authenticate, async (req, res) => {
     for (const row of data) {
       const { id, ...body } = row;
       const cols = Object.keys(body);
-      const vals = cols.map(c => typeof body[c] === 'object' && body[c] !== null ? JSON.stringify(body[c]) : body[col]);
+      const vals = cols.map(c => typeof body[c] === 'object' && body[c] !== null ? JSON.stringify(body[c]) : body[c]);
       vals.push(id);
       const { rows } = await client.query(`UPDATE ${table} SET ${cols.map((c, i) => `${c}=$${i+1}`).join(',')} WHERE id=$${vals.length} RETURNING *`, vals);
       if (rows.length > 0) results.push(rows[0]);

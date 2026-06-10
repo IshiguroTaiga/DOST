@@ -71,10 +71,17 @@ app.use('/api/uploads', express.static(uploadDir));
 const uploadHandler = (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   
-  // Use VITE_API_URL or try to reconstruct from headers
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-  const host = req.headers['x-forwarded-host'] || req.get('host');
-  const baseUrl = process.env.VITE_API_URL ? process.env.VITE_API_URL.replace(/\/api$/, '') : `${protocol}://${host}`;
+  // Force HTTPS for production links to avoid Mixed Content errors
+  let baseUrl = process.env.VITE_API_URL ? process.env.VITE_API_URL.replace(/\/api$/, '') : '';
+  
+  if (!baseUrl) {
+    const protocol = 'https'; // Force https for production
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    baseUrl = `${protocol}://${host}`;
+  } else {
+    // Ensure baseUrl itself uses https
+    baseUrl = baseUrl.replace(/^http:/, 'https');
+  }
   
   const url = `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url, filename: req.file.filename });
