@@ -1928,16 +1928,15 @@ CHRONOLOGY OF EVENTS`;
                 <span className="meta-label">Alert Status</span>
                   <span className="meta-value">
                     <span style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '80px', /* Absolute fixed width */
-                      height: '35px', /* Absolute fixed height */
+                      display: 'grid',
+                      placeItems: 'center',
+                      width: '80px',
+                      height: '35px',
                       borderRadius: '10px',
                       border: '1px solid #000',
-                      fontSize: '0.9rem',
+                      fontSize: '1.00rem',
                       fontWeight: 600,
-                      letterSpacing: '1.2px',
+                      letterSpacing: '1.5px',
                       textTransform: 'uppercase',
                       background:
                         currentEvent?.alertStatus === 'red' ? '#dc2626' :
