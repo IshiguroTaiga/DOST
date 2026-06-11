@@ -738,9 +738,11 @@
 
 /* Alert Status - condensed */
 .meta-item:nth-child(1) {
-	padding-left: 0.25rem;
 	padding-right: 0.5rem;
+	padding-left: 0.7rem;
 	display: grid;
+	grid-template-columns: 1fr;
+	justify-items: center;
 	min-width: 0;
 	padding-bottom: 0.5rem;
 }
@@ -748,7 +750,7 @@
 /* Type - condensed */
 .meta-item:nth-child(2) {
 	border-left: 1px solid rgba(0, 0, 0, 0.2);
-	padding-left: 0.75rem;
+	padding-left: 1rem;
 	padding-right: 0.5rem;
 	min-width: 0;
 }
