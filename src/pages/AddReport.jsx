@@ -584,6 +584,7 @@ export default function AddReport() {
   const [newSitRepTitle, setNewSitRepTitle] = useState('')
   const [pingedCategories, setPingedCategories] = useState([])
   const [shouldInheritData, setShouldInheritData] = useState(true)
+  const [selectedCloneSitRepId, setSelectedCloneSitRepId] = useState('')
 
   // Signatories State
   const [showSignatoriesModal, setShowSignatoriesModal] = useState(false)
@@ -1730,18 +1731,7 @@ useEffect(() => {
           // Determine if we should copy from the most recent SitRep
           console.log('[AddReport] situationalReports list:', situationalReports);
           
-          // Sort by report_number DESC, then by created_at DESC as fallback
-          const sortedSitReps = [...situationalReports].sort((a, b) => {
-            const numA = parseInt(a.report_number) || 0;
-            const numB = parseInt(b.report_number) || 0;
-            if (numB !== numA) return numB - numA;
-            return new Date(b.created_at) - new Date(a.created_at);
-          });
-          
-          const previousSitRep = sortedSitReps[0]
-          console.log('[AddReport] previousSitRep found for cloning:', previousSitRep);
-          
-          const copyFromId = shouldInheritData && previousSitRep ? previousSitRep.id : undefined
+          const copyFromId = shouldInheritData && selectedCloneSitRepId ? selectedCloneSitRepId : undefined
           console.log('[AddReport] shouldInheritData:', shouldInheritData);
           console.log('[AddReport] final copyFromId to send:', copyFromId);
 
@@ -2938,6 +2928,20 @@ useEffect(() => {
                         setPingedCategories(Object.keys(CATEGORY_LABELS))
                         setTargetLgus([])
                         setSelectedProvinces(userProvince ? [userProvince] : [])
+                        
+                        // Initialize clone source to the latest report
+                        if (situationalReports.length > 0) {
+                          const sorted = [...situationalReports].sort((a, b) => {
+                            const numA = parseInt(a.report_number) || 0;
+                            const numB = parseInt(b.report_number) || 0;
+                            if (numB !== numA) return numB - numA;
+                            return new Date(b.created_at) - new Date(a.created_at);
+                          });
+                          setSelectedCloneSitRepId(sorted[0].id);
+                        } else {
+                          setSelectedCloneSitRepId('');
+                        }
+                        
                         setShowNewSitRepModal(true)
                       } else {
                         setShowCategoryModal(true)
@@ -3725,6 +3729,7 @@ useEffect(() => {
 
           {/* Inherit data checkbox — only shown when a previous SitRep exists */}
           {situationalReports.length > 0 && (
+            <>
             <div style={{
               display: 'flex',
               alignItems: 'flex-start',
@@ -3762,12 +3767,51 @@ useEffect(() => {
                   Auto-clone data from previous report
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                  Automatically copies data from <strong style={{ color: '#475569' }}>
-                    {[...situationalReports].sort((a,b) => (b.report_number||0)-(a.report_number||0))[0]?.title || 'the latest report'}
-                  </strong> into this new report. Based on your role, only relevant data (e.g., your LGU or Province) will be cloned. You can edit what changed.
+                  Automatically copies data from a selected previous report. Based on your role, only relevant data will be cloned.
                 </div>
               </div>
             </div>
+
+            {shouldInheritData && (
+              <div style={{ marginTop: '0.75rem', paddingLeft: '2.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: '500', color: '#64748b', marginBottom: '0.4rem' }}>
+                  Source Report to Clone From:
+                </label>
+                <select
+                  className="modern-input"
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.625rem', 
+                    borderRadius: '8px', 
+                    border: '1px solid #e2e8f0',
+                    fontSize: '0.875rem',
+                    color: '#1e293b',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                  }}
+                  value={selectedCloneSitRepId}
+                  onChange={(e) => setSelectedCloneSitRepId(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {[...situationalReports]
+                    .sort((a, b) => {
+                      const numA = parseInt(a.report_number) || 0;
+                      const numB = parseInt(b.report_number) || 0;
+                      if (numB !== numA) return numB - numA;
+                      return new Date(b.created_at) - new Date(a.created_at);
+                    })
+                    .map(sr => (
+                      <option key={sr.id} value={sr.id}>
+                        {sr.title} (Report #{sr.report_number})
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+            )}
+            </>
           )}
 
           {(isSuperAdmin || isRegional) && (
