@@ -15,6 +15,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import HeaderFooterModal from '../components/HeaderFooterModal'
 import ConfirmationModal from '../components/ConfirmationModal'
 import { generateConsolidatedCsv } from '../lib/generateConsolidatedCsv'
+import { parseDromicExcel, transformDromicToProAct } from '../lib/dromicParser'
 import { generateAISummary } from '../openai/summaryService'
 import '../styles/pages/PageStyles.css'
 import '../styles/pages/ConsolidatedReport.css'
@@ -161,6 +162,52 @@ export default function ConsolidatedReport() {
   const [deletedRowIds, setDeletedRowIds] = useState([]) // IDs to delete from DB
   const [drillDownLoading, setDrillDownLoading] = useState(false)
   const [submittingDetails, setSubmittingDetails] = useState(false)
+  const [dromicImportData, setDromicImportData] = useState(null)
+
+  // --- DROMIC Import Handler ---
+  const handleDromicImport = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setLoadingActive(true)
+      showToast('Processing', 'Parsing DROMIC Excel file...', 'info')
+      
+      const dromicSheets = await parseDromicExcel(file)
+      const proActData = transformDromicToProAct(dromicSheets)
+
+      // Validate that we actually got some data
+      const hasData = proActData.affectedPopulationDetails.length > 0 || 
+                      proActData.damagedHousesDetails.length > 0 || 
+                      proActData.assistanceProvidedDetails.length > 0;
+
+      if (!hasData) {
+          throw new Error('No valid location data found. Ensure "Reg_Code_updated" column starts with "PH".')
+      }
+
+      // Store in state (optional, for UI persistence if needed)
+      setDromicImportData(proActData)
+
+      // Trigger the download strictly using the parsed object
+      // Spreading proActData ensures all keys (affectedPopulationDetails, damagedHousesDetails, etc.) 
+      // match what generateConsolidatedCsv expects.
+      generateConsolidatedCsv({
+        eventName: `DROMIC Import - ${file.name}`,
+        province: '', // Explicitly empty to rely entirely on DROMIC row data
+        ...proActData,
+        summaryText: `Auto-generated from DROMIC Master File: ${file.name}`
+      })
+
+      showSuccess('Import Success', `DROMIC file parsed and ZIP generated with ${proActData.affectedPopulationDetails.length} location rows.`)
+    } catch (err) {
+      console.error('DROMIC Import Error:', err)
+      showToast('Import Error', err.message || 'Failed to parse DROMIC file.', 'danger')
+    } finally {
+      setLoadingActive(false)
+      // Reset input
+      e.target.value = ''
+    }
+  }
 
 
   // Remarks Editor State
@@ -1827,13 +1874,25 @@ export default function ConsolidatedReport() {
     // If we're doing a specific sitrep, use its ID for processing state, else use a string
     setProcessingId(sitRepId || `csv-${event.id}`)
     try {
+      // If DROMIC data was imported, prioritize it over the backend fallback data
+      if (dromicImportData) {
+        generateConsolidatedCsv({
+          eventName: event?.name || 'Event',
+          province: province || '',
+          ...dromicImportData,
+          summaryText: `Auto-generated from DROMIC Master File`
+        })
+        showSuccess('Export Success', 'Consolidated report generated successfully from DROMIC data.')
+        return
+      }
+
       const { data: allData } = await api.get('/reports/all-types', {
         params: { situational_report_id: sitRepId }
       })
 
       const exportData = {
         eventName: event?.name || 'Event',
-        province: province || 'Region 1',
+        province: province || '',
         summaryText: sitrep?.title || sitrep?.summary || '',
         relatedIncidentsDetails: allData.filter(d => d.category === 'incidents'),
         affectedPopulationDetails: allData.filter(d => d.category === 'evacuation'),
@@ -1906,6 +1965,24 @@ export default function ConsolidatedReport() {
               suggestions={events.map(e => e.name)}
               className="consolidated-report-search-box"
             />
+            {/* DROMIC Import Button */}
+            <input
+              type="file"
+              id="dromic-upload"
+              style={{ display: 'none' }}
+              accept=".xlsx, .xls"
+              onChange={handleDromicImport}
+            />
+            <Button
+              variant="subtle"
+              color="secondary"
+              onClick={() => document.getElementById('dromic-upload').click()}
+              icon={<Upload size={16} />}
+              isLoading={loadingActive}
+            >
+              Import DROMIC
+            </Button>
+            
             {/* Status filters removed */}
             {view === 'lgus' && (
               <Button

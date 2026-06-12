@@ -29,7 +29,8 @@ export function generateConsolidatedCsv({
     signatories = {},
 }) {
     const files = {};
-    const provinceName = province || 'Region 1';
+    // Removed 'Region 1' fallback as requested
+    const provinceName = province || '';
 
     // Helper: escape CSV cell value
     const esc = (v) => {
@@ -59,11 +60,16 @@ export function generateConsolidatedCsv({
         return s;
     };
 
-    const n = (v) => Number(v || 0);
+    const n = (v) => {
+        if (typeof v === 'number') return v;
+        if (!v) return 0;
+        const parsed = Number(String(v).replace(/,/g, ''));
+        return isNaN(parsed) ? 0 : parsed;
+    };
 
     const createCsv = (headers, rows) => {
         const content = [
-            headers.join(','),
+            headers.map(esc).join(','),
             ...rows.map(row => row.map(esc).join(','))
         ].join('\r\n');
         return strToU8('\uFEFF' + content); // Add BOM
@@ -81,112 +87,118 @@ export function generateConsolidatedCsv({
     }
 
     // 1.5 Related Incidents
-    if (relatedIncidentsDetails && relatedIncidentsDetails.length > 0) {
+    if (relatedIncidentsDetails) {
         const riHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE OF INCIDENT', 'DATE OF OCCURRENCE [m/d/Y]', 'TIME OF OCCURRENCE [24:00]', 'DESCRIPTION', 'ACTIONS TAKEN', 'STATUS', 'REMARKS'];
         const riRows = relatedIncidentsDetails.map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type_of_incident || r.type || '',
-            formatDate(r.date_of_occurrence || r.date),
-            formatTime(r.time_of_occurrence || r.time),
-            r.description || '',
-            r.actions_taken || '',
-            r.status || '',
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE OF INCIDENT'] || r.type_of_incident || r.type || '',
+            formatDate(r['DATE OF OCCURRENCE [m/d/Y]'] || r.date_of_occurrence || r.date),
+            formatTime(r['TIME OF OCCURRENCE [24:00]'] || r.time_of_occurrence || r.time),
+            r['DESCRIPTION'] || r.description || '',
+            r['ACTIONS TAKEN'] || r.actions_taken || '',
+            r['STATUS'] || r.status || '',
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Related Incidents-Template.csv'] = createCsv(riHeaders, riRows);
     }
 
     // 2. Roads and Bridges
-    if (roadsAndBridgesDetails && roadsAndBridgesDetails.length > 0) {
+    if (roadsAndBridgesDetails) {
         const rbHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'CLASSIFICATION', 'ROAD SECTION/BRIDGE', 'STATUS', 'DATE PASSABLE [m/d/Y]', 'TIME PASSABLE [24:00]', 'DATE NOT PASSABLE [m/d/Y]', 'TIME NOT PASSABLE [24:00]', 'REMARKS'];
         const rbRows = (roadsAndBridgesDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type || '',
-            r.classification || '',
-            r.road_bridge_name || r.road_section_bridge || r.road_section || r.name || '',
-            r.status || '',
-            formatDate(r.date_passable || r.date_reported_passable),
-            formatTime(r.time_passable || r.time_reported_passable),
-            formatDate(r.date_not_passable || r.date_reported_not_passable),
-            formatTime(r.time_not_passable || r.time_reported_not_passable),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.type || '',
+            r['CLASSIFICATION'] || r.classification || '',
+            r['ROAD SECTION/BRIDGE'] || r.road_bridge_name || r.road_section_bridge || r.road_section || r.name || '',
+            r['STATUS'] || r.status || '',
+            formatDate(r['DATE PASSABLE [m/d/Y]'] || r.date_passable || r.date_reported_passable),
+            formatTime(r['TIME PASSABLE [24:00]'] || r.time_passable || r.time_reported_passable),
+            formatDate(r['DATE NOT PASSABLE [m/d/Y]'] || r.date_not_passable || r.date_reported_not_passable),
+            formatTime(r['TIME NOT PASSABLE [24:00]'] || r.time_not_passable || r.time_reported_not_passable),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Roads and Bridges-Template.csv'] = createCsv(rbHeaders, rbRows);
     }
 
     // 3. Power
-    if (powerDetails && powerDetails.length > 0) {
+    if (powerDetails) {
         const powerHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'SERVICE PROVIDER', 'DATE OF INTERRUPTION/ OUTAGE [m/d/Y]', 'TIME OF INTERRUPTION/ OUTAGE [24:00]', 'DATE RESTORED [m/d/Y]', 'TIME RESTORED [24:00]', 'REMARKS'];
         const powerRows = (powerDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type || 'Interruption',
-            r.service_provider || '',
-            formatDate(r.date_interruption || r.date_of_interruption),
-            formatTime(r.time_interruption || r.time_of_interruption),
-            formatDate(r.date_restored),
-            formatTime(r.time_restored),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.type || 'Interruption',
+            r['SERVICE PROVIDER'] || r.service_provider || '',
+            formatDate(r['DATE OF INTERRUPTION/ OUTAGE [m/d/Y]'] || r.date_interruption || r.date_of_interruption),
+            formatTime(r['TIME OF INTERRUPTION/ OUTAGE [24:00]'] || r.time_interruption || r.time_of_interruption),
+            formatDate(r['DATE RESTORED [m/d/Y]'] || r.date_restored),
+            formatTime(r['TIME RESTORED [24:00]'] || r.time_restored),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Power-Template.csv'] = createCsv(powerHeaders, powerRows);
     }
 
     // 4. Water Supply
-    if (waterSupplyDetails && waterSupplyDetails.length > 0) {
+    if (waterSupplyDetails) {
         const waterHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'SERVICE PROVIDER', 'DATE OF INTERRUPTION/ OUTAGE [m/d/Y]', 'TIME OF INTERRUPTION/ OUTAGE [24:00]', 'DATE RESTORED', 'TIME RESTORED', 'REMARKS'];
         const waterRows = (waterSupplyDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type || '',
-            r.service_provider || '',
-            formatDate(r.date_interruption),
-            formatTime(r.time_interruption),
-            formatDate(r.date_restored),
-            formatTime(r.time_restored),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.type || '',
+            r['SERVICE PROVIDER'] || r.service_provider || '',
+            formatDate(r['DATE OF INTERRUPTION/ OUTAGE [m/d/Y]'] || r.date_interruption),
+            formatTime(r['TIME OF INTERRUPTION/ OUTAGE [24:00]'] || r.time_interruption),
+            formatDate(r['DATE RESTORED'] || r.date_restored),
+            formatTime(r['TIME RESTORED'] || r.time_restored),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Water Supply-Template.csv'] = createCsv(waterHeaders, waterRows);
     }
 
     // 5. Communication Lines
-    if (communicationLinesDetails && communicationLinesDetails.length > 0) {
+    if (communicationLinesDetails) {
         const commHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TELECOMPANY', 'STATUS OF COMMUNICATION', 'DATE INTERRUPTION [m/d/Y]', 'TIME INTERRUPTION [24:00]', 'DATE RESTORATION [m/d/Y]', 'TIME RESTORATION [24:00]', '2G SITE COUNT', '2G WITH COVERAGE', '2G % OF COVERAGE', '3G SITE COUNT', '3G WITH COVERAGE', '3G % OF COVERAGE', '4G SITE COUNT', '4G WITH COVERAGE', '4G % OF COVERAGE', 'REMARKS'];
         const commRows = (communicationLinesDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.telecompany || '',
-            r.status_of_communication || r.status || '',
-            formatDate(r.date_interruption),
-            formatTime(r.time_interruption),
-            formatDate(r.date_restoration || r.date_restored),
-            formatTime(r.time_restoration || r.time_restored),
-            r.site_count_2g || '', r.with_coverage_2g || '', r.pct_coverage_2g || '',
-            r.site_count_3g || '', r.with_coverage_3g || '', r.pct_coverage_3g || '',
-            r.site_count_4g || '', r.with_coverage_4g || '', r.pct_coverage_4g || '',
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TELECOMPANY'] || r.telecompany || '',
+            r['STATUS OF COMMUNICATION'] || r.status_of_communication || r.status || '',
+            formatDate(r['DATE INTERRUPTION [m/d/Y]'] || r.date_interruption),
+            formatTime(r['TIME INTERRUPTION [24:00]'] || r.time_interruption),
+            formatDate(r['DATE RESTORATION [m/d/Y]'] || r.date_restoration || r.date_restored),
+            formatTime(r['TIME RESTORATION [24:00]'] || r.time_restoration || r.time_restored),
+            r['2G SITE COUNT'] || r.site_count_2g || '', 
+            r['2G WITH COVERAGE'] || r.with_coverage_2g || '', 
+            r['2G % OF COVERAGE'] || r.pct_coverage_2g || '',
+            r['3G SITE COUNT'] || r.site_count_3g || '', 
+            r['3G WITH COVERAGE'] || r.with_coverage_3g || '', 
+            r['3G % OF COVERAGE'] || r.pct_coverage_3g || '',
+            r['4G SITE COUNT'] || r.site_count_4g || '', 
+            r['4G WITH COVERAGE'] || r.with_coverage_4g || '', 
+            r['4G % OF COVERAGE'] || r.pct_coverage_4g || '',
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Communication Lines-Template.csv'] = createCsv(commHeaders, commRows);
     }
 
     // 6. Damaged Houses
-    if (damagedHousesDetails && damagedHousesDetails.length > 0) {
+    if (damagedHousesDetails) {
         const houseHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TOTALLY [number]', 'PARTIALLY [number]', 'GRAND TOTAL [number]', 'AMOUNT [number]', 'REMARKS'];
         const houseRows = (damagedHousesDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            n(r.totally_damaged),
-            n(r.partially_damaged),
-            n(r.totally_damaged) + n(r.partially_damaged),
-            n(r.amount_php || r.amount),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            n(r['TOTALLY [number]'] ?? r.totally_damaged),
+            n(r['PARTIALLY [number]'] ?? r.partially_damaged),
+            n(r['TOTALLY [number]'] ?? r.totally_damaged) + n(r['PARTIALLY [number]'] ?? r.partially_damaged),
+            n(r['AMOUNT [number]'] ?? (r.amount_php ?? r.amount)),
+            r['REMARKS'] || r.remarks || ''
         ]);
         const houseContent = [
             ',,,"NO. OF DAMAGED HOUSES",,,,',
@@ -197,59 +209,59 @@ export function generateConsolidatedCsv({
     }
 
     // 7. Class Suspension
-    if (classSuspensionDetails && classSuspensionDetails.length > 0) {
+    if (classSuspensionDetails) {
         const classHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'LEVEL FROM', 'LEVEL TO', 'TYPE', 'DATE OF SUSPENSION [m/d/Y]', 'TIME OF SUSPENSION [24:00]', 'DATE RESUMED [m/d/Y]', 'TIME RESUMED [24:00]', 'REMARKS'];
         const classRows = (classSuspensionDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.level_from || '',
-            r.level_to || '',
-            r.type || '',
-            formatDate(r.date_of_suspension),
-            formatTime(r.time_of_suspension),
-            formatDate(r.date_resumed),
-            formatTime(r.time_resumed),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['LEVEL FROM'] || r.level_from || '',
+            r['LEVEL TO'] || r.level_to || '',
+            r['TYPE'] || r.type || '',
+            formatDate(r['DATE OF SUSPENSION [m/d/Y]'] || r.date_of_suspension),
+            formatTime(r['TIME OF SUSPENSION [24:00]'] || r.time_of_suspension),
+            formatDate(r['DATE RESUMED [m/d/Y]'] || r.date_resumed),
+            formatTime(r['TIME RESUMED [24:00]'] || r.time_resumed),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Class Suspension-Template.csv'] = createCsv(classHeaders, classRows);
     }
 
     // 8. Work Suspension
-    if (workSuspensionDetails && workSuspensionDetails.length > 0) {
+    if (workSuspensionDetails) {
         const workHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'DATE OF SUSPENSION [m/d/Y]', 'TIME OF SUSPENSION [24:00]', 'DATE RESUMED [m/d/Y]', 'TIME RESUMED [24:00]', 'REMARKS'];
         const workRows = (workSuspensionDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type || '',
-            formatDate(r.date_of_suspension),
-            formatTime(r.time_of_suspension),
-            formatDate(r.date_resumed),
-            formatTime(r.time_resumed),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.type || '',
+            formatDate(r['DATE OF SUSPENSION [m/d/Y]'] || r.date_of_suspension),
+            formatTime(r['TIME OF SUSPENSION [24:00]'] || r.time_of_suspension),
+            formatDate(r['DATE RESUMED [m/d/Y]'] || r.date_resumed),
+            formatTime(r['TIME RESUMED [24:00]'] || r.time_resumed),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Work Suspension-Template.csv'] = createCsv(workHeaders, workRows);
     }
 
     // 9. Damage and Losses to Agriculture
-    if (agricultureDamageDetails && agricultureDamageDetails.length > 0) {
+    if (agricultureDamageDetails) {
         const agriHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'CLASSIFICATION', 'TYPE', 'NO. OF FARMERS/ FISHERFOLK AFFECTED [number]', 'WITH NO CHANCE OF RECOVERY (TOTALLY DAMAGED) [number]', 'WITH CHANCE OF RECOVERY (PARTIALLY DAMAGED) [number]', 'TOTAL [number]', 'TOTALLY DAMAGED [number]', 'PARTIALLY DAMAGED [number]', 'TOTAL [number]', 'PRODUCTION LOSS IN VOLUME (MT) [number]', 'PRODUCTION LOSS / COST OF DAMAGE IN VALUE (PHP) [number]'];
         const agriRows = (agricultureDamageDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.classification || '',
-            r.commodity_type || r.type || '',
-            n(r.farmers_affected),
-            n(r.area_totally_damaged || r.area_totally),
-            n(r.area_partially_damaged || r.area_partially),
-            n(r.area_total || (n(r.area_totally || r.area_totally_damaged) + n(r.area_partially || r.area_partially_damaged))),
-            n(r.infra_totally_damaged || r.infra_totally),
-            n(r.infra_partially_damaged || r.infra_partially),
-            n(r.infra_total || (n(r.infra_totally || r.infra_totally_damaged) + n(r.infra_partially || r.infra_partially_damaged))),
-            n(r.production_loss_volume || r.volume_loss),
-            n(r.value_loss || r.production_loss_value)
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['CLASSIFICATION'] || r.classification || '',
+            r['TYPE'] || r.commodity_type || r.type || '',
+            n(r['NO. OF FARMERS/ FISHERFOLK AFFECTED [number]'] ?? r.farmers_affected),
+            n(r['WITH NO CHANCE OF RECOVERY (TOTALLY DAMAGED) [number]'] ?? (r.area_totally_damaged || r.area_totally)),
+            n(r['WITH CHANCE OF RECOVERY (PARTIALLY DAMAGED) [number]'] ?? (r.area_partially_damaged || r.area_partially)),
+            n(r['TOTAL [number]'] ?? (r.area_total || (n(r.area_totally || r.area_totally_damaged) + n(r.area_partially || r.area_partially_damaged)))),
+            n(r['TOTALLY DAMAGED [number]'] ?? (r.infra_totally_damaged || r.infra_totally)),
+            n(r['PARTIALLY DAMAGED [number]'] ?? (r.infra_partially_damaged || r.infra_partially)),
+            n(r['TOTAL [number]_1'] ?? (r.infra_total || (n(r.infra_totally || r.infra_totally_damaged) + n(r.infra_partially || r.infra_partially_damaged)))),
+            n(r['PRODUCTION LOSS IN VOLUME (MT) [number]'] ?? (r.production_loss_volume || r.volume_loss)),
+            n(r['PRODUCTION LOSS / COST OF DAMAGE IN VALUE (PHP) [number]'] ?? (r.value_loss || r.production_loss_value))
         ]);
         const agriContent = [
             ',,,,,,"AFFECTED CROP AREA (HA)",,,"NUMBER OF DAMAGED INFRASTRUCTURE, MACHINERIES, EQUIPMENT",,,,',
@@ -260,59 +272,59 @@ export function generateConsolidatedCsv({
     }
 
     // 10. Damage to Infrastructure
-    if (infrastructureDamageDetails && infrastructureDamageDetails.length > 0) {
+    if (infrastructureDamageDetails) {
         const infraHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'CLASSIFICATION', 'INFRASTRUCTURE', 'NUMBER OF DAMAGED', 'UNIT', 'QUANTITY [number]', 'STATUS', 'COST(PHP) [number]', 'REMARKS'];
         const infraRows = (infrastructureDamageDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.infra_type || r.type || '',
-            r.classification || '',
-            r.infrastructure_name || r.infrastructure || '',
-            n(r.number_of_damaged || 1),
-            r.unit || '',
-            n(r.quantity),
-            r.status || '',
-            n(r.cost || r.estimated_cost),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.infra_type || r.type || '',
+            r['CLASSIFICATION'] || r.classification || '',
+            r['INFRASTRUCTURE'] || r.infrastructure_name || r.infrastructure || '',
+            n(r['NUMBER OF DAMAGED'] ?? (r.number_of_damaged || 1)),
+            r['UNIT'] || r.unit || '',
+            n(r['QUANTITY [number]'] ?? r.quantity),
+            r['STATUS'] || r.status || '',
+            n(r['COST(PHP) [number]'] ?? (r.cost || r.estimated_cost)),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Damage to Infrastructure-Template.csv'] = createCsv(infraHeaders, infraRows);
     }
 
     // 11. Pre-emptive Evacuation
-    if (preEmptiveEvacuationDetails && preEmptiveEvacuationDetails.length > 0) {
+    if (preEmptiveEvacuationDetails) {
         const peHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'FAMILIES [number]', 'MALE [number]', 'FEMALE [number]', 'TOTAL (Note: If the available data is "Total Persons", please input/encode in this column) [number]', 'REMARKS'];
         const peRows = (preEmptiveEvacuationDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            n(r.families),
-            n(r.male_count || 0),
-            n(r.female_count || 0),
-            n(r.persons || r.total || (n(r.families) * 5)),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            n(r['FAMILIES [number]'] ?? r.families),
+            n(r['MALE [number]'] ?? (r.male_count || 0)),
+            n(r['FEMALE [number]'] ?? (r.female_count || 0)),
+            n(r['TOTAL (Note: If the available data is "Total Persons", please input/encode in this column) [number]'] ?? (r.persons || r.total || (n(r.families) * 5))),
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Pre-emptive Evacuation-Template.csv'] = createCsv(peHeaders, peRows);
     }
 
     // 12. Assistance Provided to Affected Families
-    if (assistanceProvidedDetails && assistanceProvidedDetails.length > 0) {
+    if (assistanceProvidedDetails) {
         const assistHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'NO. OF FAMILIES AFFECTED [number]', 'NEEDS', 'NO. OF FAMILIES REQUIRING ASSISTANCE [number]', 'QTY [number]', 'UNIT', 'COST PER UNIT [number]', 'AMOUNT [number]', 'SOURCE', 'NO. OF FAMILIES ASSISTED [number]', '% OF FAMILIES ASSISTED [number]', 'REMARKS'];
         const assistRows = (assistanceProvidedDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            n(r.no_families_affected),
-            r.needs || '',
-            n(r.no_families_requiring_assistance),
-            n(r.qty || r.quantity),
-            r.unit || '',
-            n(r.cost_per_unit || r.costPerUnit),
-            n(r.amount || r.fnfi_amount),
-            r.source || '',
-            n(r.no_families_assisted),
-            n(r.pct_families_assisted),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            n(r['NO. OF FAMILIES AFFECTED [number]'] ?? r.no_families_affected),
+            r['NEEDS'] || r.needs || '',
+            n(r['NO. OF FAMILIES REQUIRING ASSISTANCE [number]'] ?? r.no_families_requiring_assistance),
+            n(r['QTY [number]'] ?? (r.qty || r.quantity)),
+            r['UNIT'] || r.unit || '',
+            n(r['COST PER UNIT [number]'] ?? (r.cost_per_unit || r.costPerUnit)),
+            n(r['AMOUNT [number]'] ?? (r.amount || r.fnfi_amount)),
+            r['SOURCE'] || r.source || '',
+            n(r['NO. OF FAMILIES ASSISTED [number]'] ?? r.no_families_assisted),
+            n(r['% OF FAMILIES ASSISTED [number]'] ?? r.pct_families_assisted),
+            r['REMARKS'] || r.remarks || ''
         ]);
         const assistContent = [
             ',,,,,,"F/NFIs PROVIDED",,,,,,,',
@@ -323,61 +335,61 @@ export function generateConsolidatedCsv({
     }
 
     // 13. Assistance Provided to LGUs and Regional Agencies
-    if (assistanceLgusDetails && assistanceLgusDetails.length > 0) {
+    if (assistanceLgusDetails) {
         const assistLguHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'SOURCE', 'TYPE', 'QTY [number]', 'UNIT', 'COST PER UNIT [number]', 'AMOUNT [number]', 'STATUS', 'REMARKS'];
         const assistLguRows = (assistanceLgusDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.source || '',
-            r.type || '',
-            n(r.qty),
-            r.unit || '',
-            n(r.cost_per_unit || r.costPerUnit),
-            n(r.amount),
-            r.status || 'Ongoing',
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['SOURCE'] || r.source || '',
+            r['TYPE'] || r.type || '',
+            n(r['QTY [number]'] ?? r.qty),
+            r['UNIT'] || r.unit || '',
+            n(r['COST PER UNIT [number]'] ?? (r.cost_per_unit || r.costPerUnit)),
+            n(r['AMOUNT [number]'] ?? r.amount),
+            r['STATUS'] || r.status || 'Ongoing',
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Assistance Provided to LGUs and Regional Agencies-Template.csv'] = createCsv(assistLguHeaders, assistLguRows);
     }
 
     // 14. Declaration of State of Calamity
-    if (stateOfCalamityDetails && stateOfCalamityDetails.length > 0) {
+    if (stateOfCalamityDetails) {
         const socHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'TYPE', 'COUNT [number]', 'RESOLUTION NO', 'RESOLUTION DATE [m/d/Y]', 'STATUS', 'REMARKS'];
         const socRows = (stateOfCalamityDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            r.type || '',
-            n(r.count_soc || r.countSoc),
-            r.resolution_number || r.resolutionNo || '',
-            formatDate(r.resolution_date || r.resolutionDate),
-            r.status || 'Declared',
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            r['TYPE'] || r.type || '',
+            n(r['COUNT [number]'] ?? (r.count_soc || r.countSoc)),
+            r['RESOLUTION NO'] || r.resolution_number || r.resolutionNo || '',
+            formatDate(r['RESOLUTION DATE [m/d/Y]'] || r.resolution_date || r.resolutionDate),
+            r['STATUS'] || r.status || 'Declared',
+            r['REMARKS'] || r.remarks || ''
         ]);
         files['Declaration of State of Calamity-Template.csv'] = createCsv(socHeaders, socRows);
     }
 
     // 15. Affected Population
-    if (affectedPopulationDetails && affectedPopulationDetails.length > 0) {
+    if (affectedPopulationDetails) {
         const apHeaders = ['PROVINCE', 'CITY/ MUNICIPALITY', 'BARANGAY', 'Families [number]', 'Persons [number]', 'CUM [number]', 'NOW [number]', 'Fam. CUM [number]', 'Fam. NOW [number]', 'Per. CUM [number]', 'Per. NOW [number]', 'Fam. CUM [number]', 'Fam. NOW [number]', 'Per. CUM [number]', 'Per. NOW [number]', 'Remarks'];
         const apRows = (affectedPopulationDetails || []).map(r => [
-            provinceName,
-            r.city || 'none',
-            r.barangay || 'none',
-            n(r.affected_families ?? r.families),
-            n(r.affected_persons ?? r.persons),
-            n(r.ecs_cum),
-            n(r.ecs_now),
-            n(r.inside_families_cum),
-            n(r.inside_families_now),
-            n(r.inside_persons_cum),
-            n(r.inside_persons_now),
-            n(r.outside_families_cum),
-            n(r.outside_families_now),
-            n(r.outside_persons_cum),
-            n(r.outside_persons_now),
-            r.remarks || ''
+            r['PROVINCE'] || provinceName,
+            r['CITY/ MUNICIPALITY'] || r.city || '',
+            r['BARANGAY'] || r.barangay || '',
+            n(r['Families [number]'] ?? (r.affected_families ?? r.families)),
+            n(r['Persons [number]'] ?? (r.affected_persons ?? r.persons)),
+            n(r['CUM [number]'] ?? r.ecs_cum),
+            n(r['NOW [number]'] ?? r.ecs_now),
+            n(r['Fam. CUM [number]'] ?? r.inside_families_cum),
+            n(r['Fam. NOW [number]'] ?? r.inside_families_now),
+            n(r['Per. CUM [number]'] ?? r.inside_persons_cum),
+            n(r['Per. NOW [number]'] ?? r.inside_persons_now),
+            n(r['Fam. CUM [number]_1'] ?? r.outside_families_cum),
+            n(r['Fam. NOW [number]_1'] ?? r.outside_families_now),
+            n(r['Per. CUM [number]_1'] ?? r.outside_persons_cum),
+            n(r['Per. NOW [number]_1'] ?? r.outside_persons_now),
+            r['Remarks'] || r.remarks || ''
         ]);
         const apContent = [
             ',,,NO. OF AFFECTED,,NO. OF ECs,,INSIDE EVACUATION CENTERS,,,,OUTSIDE EVACUATION CENTERS,,,,',
