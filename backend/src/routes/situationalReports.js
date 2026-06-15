@@ -104,8 +104,10 @@ async function cloneTable(client, tableName, sourceSitRepId, newSitRepId, eventI
 }
 
 async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId, user, client) {
-  const scope = getCloneScope(user);
-  const scopeFilter = buildScopeFilter(scope);
+  // Always clone all data from the previous SitRep, regardless of the user's scope.
+  // Data visibility (province isolation) is handled at the presentation/UI layer,
+  // ensuring the SitRep itself acts as a comprehensive historical record.
+  const scopeFilter = null; 
   let totalCloned = 0;
 
   const simpleTables = [
@@ -304,18 +306,11 @@ router.post('/', authenticate, async (req, res) => {
     try {
       await client.query('BEGIN');
 
-      // Get next report number - scoped by event AND province
-      let countQuery = 'SELECT COALESCE(MAX(report_number), 0) AS max_num FROM situational_reports WHERE event_id = $1';
-      const countParams = [event_id];
-      
-      if (reportProvince) {
-        countQuery += ' AND province = $2';
-        countParams.push(reportProvince);
-      } else {
-        countQuery += ' AND province IS NULL';
-      }
-
-      const countRes = await client.query(countQuery, countParams);
+      // Get next report number - Global for the event
+      const countRes = await client.query(
+        'SELECT COALESCE(MAX(report_number), 0) AS max_num FROM situational_reports WHERE event_id = $1',
+        [event_id]
+      );
       const nextNumber = parseInt(countRes.rows[0].max_num) + 1;
       const finalTitle = title || `Situational Report No. ${nextNumber}`;
 
@@ -340,21 +335,13 @@ router.post('/', authenticate, async (req, res) => {
       let totalCloned = 0;
 
       if (!sourceToClone && req.body.skip_auto_clone !== true) {
-        // Auto-detect latest SitRep - scoped by province
-        let latestQuery = `SELECT id FROM situational_reports 
-           WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2`;
-        const latestParams = [event_id, sitRep.id];
-
-        if (reportProvince) {
-          latestQuery += ' AND province = $3';
-          latestParams.push(reportProvince);
-        } else {
-          latestQuery += ' AND province IS NULL';
-        }
-
-        latestQuery += ' ORDER BY created_at DESC LIMIT 1';
-        
-        const latestRes = await client.query(latestQuery, latestParams);
+        // Auto-detect latest SitRep - Global for the event
+        const latestRes = await client.query(
+          `SELECT id FROM situational_reports 
+           WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2
+           ORDER BY created_at DESC LIMIT 1`,
+          [event_id, sitRep.id]
+        );
         sourceToClone = latestRes.rows[0]?.id || null;
       }
 
@@ -460,6 +447,9 @@ router.patch('/:id', authenticate, async (req, res) => {
 router.get('/:id/report-data', authenticate, async (req, res) => {
   const sitRepId = req.params.id;
   const event_id = req.query.event_id;
+  const scope = getCloneScope(req.user);
+  const scopeFilter = buildScopeFilter(scope);
+
   try {
     const tables = [
       'related_incidents', 'agriculture_damage_reports', 'assistance_lgus_agencies_reports',
@@ -472,9 +462,30 @@ router.get('/:id/report-data', authenticate, async (req, res) => {
 
     const results = {};
     await Promise.all(tables.map(async (table) => {
+      // Check if table has the column used in scopeFilter
+      let currentScopeFilter = null;
+      if (scopeFilter) {
+        const columnsQuery = `SELECT column_name FROM information_schema.columns WHERE table_name = $1`;
+        const columnsResult = await pool.query(columnsQuery, [table]);
+        const columns = columnsResult.rows.map(r => r.column_name);
+        const filterCol = scopeFilter.condition.split(' ')[0];
+        if (columns.includes(filterCol)) {
+          currentScopeFilter = scopeFilter;
+        }
+      }
+
       let q = `SELECT * FROM ${table} WHERE situational_report_id = $1`;
       const params = [sitRepId];
-      if (event_id) { q += ' AND event_id = $2'; params.push(event_id); }
+      if (event_id) { 
+        q += ` AND event_id = $${params.length + 1}`; 
+        params.push(event_id); 
+      }
+
+      if (currentScopeFilter) {
+        q += ` AND ${currentScopeFilter.condition.replace('$3', `$${params.length + 1}`)}`;
+        params.push(currentScopeFilter.values[0]);
+      }
+
       const { rows } = await pool.query(q, params);
       results[table] = rows;
     }));

@@ -747,12 +747,23 @@ const handleNotificationClick = (notif) => {
     let approvedIdsCsv = ''
     let approvedIds = []
     if (selectedDashboardSitRepId) {
-      approvedIdsCsv = selectedDashboardSitRepId
-      approvedIds = [selectedDashboardSitRepId]
+      if (selectedDashboardSitRepId === 'COMBINED') {
+        const allApproved = (allSitreps || []).filter(sr => sr.status === 'Approved')
+        approvedIds = allApproved.map(sr => sr.id)
+        approvedIdsCsv = approvedIds.join(',') || '00000000-0000-0000-0000-000000000000'
+      } else {
+        approvedIdsCsv = selectedDashboardSitRepId
+        approvedIds = [selectedDashboardSitRepId]
+      }
     } else {
       approvedIds = Object.values(latestApprovedPerProvince).map(s => s.id)
       approvedIdsCsv = approvedIds.join(',') || '00000000-0000-0000-0000-000000000000'
     }
+
+    const sitRepMap = (allSitreps || []).reduce((acc, sr) => {
+      acc[sr.id] = sr.title
+      return acc
+    }, {})
 
     if (approvedIds.length === 0) {
       console.warn('[Dashboard] No situational reports with "Approved" status found for event:', currentEventId)
@@ -921,7 +932,18 @@ const handleNotificationClick = (notif) => {
 
         // Populate specific logs for the "Deep Integration" views
         if (category === 'relatedIncidents') {
-          details.incidents.push({ type: row.type_of_incident, loc: brgy, city, status: row.status, date: row.date_of_occurrence, time: row.time_of_occurrence, description: row.description, created_at: row.created_at });
+          details.incidents.push({ 
+            type: row.type_of_incident, 
+            loc: brgy, 
+            city, 
+            status: row.status, 
+            date: row.date_of_occurrence, 
+            time: row.time_of_occurrence, 
+            description: row.description, 
+            created_at: row.created_at,
+            situational_report_id: row.situational_report_id,
+            sitRepTitle: sitRepMap[row.situational_report_id] || 'Unknown SitRep'
+          });
         }
         if (category === 'power') {
           const key = `power-${city}-${brgy}`;
@@ -2108,6 +2130,10 @@ CHRONOLOGY OF EVENTS`;
                 .filter(sr => isProvincialUser && user?.province ? sr.province === user.province : true)
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
               const selectedSr = approvedSitReps.find(sr => sr.id === selectedDashboardSitRepId);
+              const displayTitle = selectedDashboardSitRepId === 'COMBINED' 
+                ? 'Combined SitReps' 
+                : (selectedSr ? selectedSr.title : 'Latest Approved');
+
               return (
                 <div className="dash-custom-dropdown" ref={sitRepDropdownRef} style={{ position: 'relative' }}>
                   <button
@@ -2116,7 +2142,7 @@ CHRONOLOGY OF EVENTS`;
                   >
                     <span className="dash-dropdown-label">
                       <span className="dash-dropdown-prefix">SitRep</span>
-                      <span className="dash-dropdown-value">{selectedSr ? selectedSr.title : 'Latest Approved'}</span>
+                      <span className="dash-dropdown-value">{displayTitle}</span>
                     </span>
                     <CaretRight className={`dash-dropdown-caret ${sitRepDropdownOpen ? 'rotated' : ''}`} size={12} weight="bold" />
                   </button>
@@ -2129,6 +2155,15 @@ CHRONOLOGY OF EVENTS`;
                         <span className="dash-dropdown-item-dot" />
                         Latest Approved (All)
                       </button>
+                      {/*
+                      <button
+                        className={`dash-dropdown-item ${selectedDashboardSitRepId === 'COMBINED' ? 'active' : ''}`}
+                        onClick={() => { setSelectedDashboardSitRepId('COMBINED'); setSitRepDropdownOpen(false); }}
+                      >
+                        <span className="dash-dropdown-item-dot" />
+                        Combined SitReps
+                      </button>
+                      */}
                       {approvedSitReps.map(sr => (
                         <button
                           key={sr.id}
@@ -2782,6 +2817,7 @@ CHRONOLOGY OF EVENTS`;
                             {isRegionalUser && (
                               <th>Province</th>
                             )}
+                            <th>Source SitRep</th>
                             <th>Status</th>
                             <th>Occurred</th>
                           </tr>
@@ -2800,6 +2836,7 @@ CHRONOLOGY OF EVENTS`;
                                     {getProvinceForCity(inc.city) || '-'}
                                   </td>
                                 )}
+                                <td style={{ fontSize: '10px', color: '#64748b' }}>{inc.sitRepTitle}</td>
                                 <td>
                                   <span style={{
                                     fontSize: '9px',
