@@ -342,6 +342,7 @@ export default function Dashboard() {
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
   const [sitRepDropdownOpen, setSitRepDropdownOpen] = useState(false)
   const [showAffectedPersonsModal, setShowAffectedPersonsModal] = useState(false)
+  const [showCityBarChartModal, setShowCityBarChartModal] = useState(false)
   const [expandedCity, setExpandedCity] = useState(null)
   const eventDropdownRef = useRef(null)
   const sitRepDropdownRef = useRef(null)
@@ -2353,11 +2354,34 @@ CHRONOLOGY OF EVENTS`;
                         {sortedCityData.length > 0 ? (
                           <div style={{ height: Math.max(300, sortedCityData.length * 60), width: '100%' }}>
                             <ResponsiveContainer width="100%" height="100%">
-                              <BarChart key={currentEventId} layout="vertical" data={sortedCityData} margin={{ top: 25, right: 10, left: 0, bottom: 5 }}>
+                                <BarChart 
+                                key={currentEventId} 
+                                layout="vertical" 
+                                data={sortedCityData} 
+                                margin={{ top: 25, right: 10, left: 0, bottom: 5 }}
+                                style={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                  if (e && e.activeLabel) {
+                                    setExpandedCity(e.activeLabel);
+                                    setShowCityBarChartModal(true);
+                                  }
+                                }}
+                              >
                                 <XAxis type="number" hide height={0} padding={{ left: 0, right: 0 }} />
                                 <YAxis dataKey="name" type="category" hide width={0} padding={{ top: 0, bottom: 0 }} />
-                                <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                <Bar dataKey="persons" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false}>
+                                <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} cursor={{ fill: 'rgba(99,102,241,0.05)' }} />
+                                
+                                {/* Invisible background bar for full row click area */}
+                                <Bar dataKey={() => Math.max(...sortedCityData.map(d => d.persons || 0)) * 1.1} fill="transparent" barSize={40} isAnimationActive={false} />
+                                
+                                {/* Actual data bar overlaid on top */}
+                                <Bar
+                                  dataKey="persons"
+                                  radius={[0, 4, 4, 0]}
+                                  barSize={20}
+                                  isAnimationActive={false}
+                                  style={{ pointerEvents: 'none' }}
+                                >
                                   <LabelList
                                     dataKey="persons"
                                     content={(props) => {
@@ -3435,7 +3459,7 @@ CHRONOLOGY OF EVENTS`;
             </div>
             <div>
               <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Edit Event</div>
-              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400 }}>Modify event details.</div>
+              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400 }}>Modify Event Details.</div>
             </div>
           </div>
         }
@@ -3914,8 +3938,8 @@ CHRONOLOGY OF EVENTS`;
             </div>
             <div>
               <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Affected Persons</div>
-              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400 }}>
-                Who and where — click a city to view barangays
+              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400, letterSpacing: '0.1px' }}>
+                Click A City / Municipality To View Their Respective Barangays
               </div>
             </div>
           </div>
@@ -4071,7 +4095,124 @@ CHRONOLOGY OF EVENTS`;
           )
         })()}
       </HeaderFooterModal>
+      <HeaderFooterModal
+        isOpen={showCityBarChartModal && !!expandedCity}
+        onClose={() => {
+          setShowCityBarChartModal(false)
+          setExpandedCity(null)
+        }}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', padding: '10px', borderRadius: '10px' }}>
+              <BarChartIcon size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>{expandedCity}</div>
+              <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 400, letterSpacing: '0.1px' }}>
+                Affected Persons by Barangay
+              </div>
+            </div>
+          </div>
+        }
+        maxWidth="620px"
+        footer={
+          <button className="btn-secondary" onClick={() => {
+            setShowCityBarChartModal(false)
+            setExpandedCity(null)
+          }} style={{ height: '42px', padding: '0 20px' }}>
+            Close
+          </button>
+        }
+      >
+        {(() => {
+          const barangayData = Object.entries(result?.details?.byBarangay || {})
+            .filter(([key]) => key.startsWith(`${expandedCity}|`))
+            .map(([key, bStats]) => ({
+              name: key.split('|')[1],
+              persons: bStats.persons,
+              families: bStats.families
+            }))
+            .sort((a, b) => b.persons - a.persons);
+
+          if (barangayData.length === 0) {
+            return (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                <Warning size={36} style={{ marginBottom: '0.75rem', opacity: 0.4 }} />
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.25rem' }}>No Data Available</div>
+                <div style={{ fontSize: '0.8125rem' }}>No affected persons reported for barangays in {expandedCity}.</div>
+              </div>
+            );
+          }
+
+          return (
+            <div style={{ height: Math.max(300, barangayData.length * 60), width: '100%', paddingRight: '10px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={barangayData}
+                  margin={{ top: 25, right: 10, left: 0, bottom: 5 }}
+                >
+                  <XAxis type="number" hide height={0} padding={{ left: 0, right: 0 }} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    hide
+                    width={0}
+                    padding={{ top: 0, bottom: 0 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(99,102,241,0.05)' }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div style={{ background: '#fff', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '12px' }}>
+                            <div style={{ fontWeight: 800, marginBottom: '6px', color: '#1e293b' }}>{label}</div>
+                            {payload.map((entry, index) => (
+                              <div key={index} style={{ color: entry.color, display: 'flex', justifyContent: 'space-between', gap: '12px', margin: '2px 0' }}>
+                                <span>{entry.name}:</span>
+                                <span style={{ fontWeight: 700, fontFamily: 'monospace' }}>{entry.value.toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  
+                  {/* Invisible background bar for row highlighting */}
+                  <Bar dataKey={() => Math.max(...barangayData.map(d => d.persons || 0)) * 1.1} fill="transparent" barSize={50} isAnimationActive={false} />
+
+                  <Bar dataKey="persons" name="Persons" fill={T.blue} radius={[0, 4, 4, 0]} barSize={12} isAnimationActive={false}>
+                     <LabelList
+                        dataKey="persons"
+                        content={(props) => {
+                          const { y, index } = props;
+                          const data = barangayData[index];
+                          if (!data) return null;
+                          return (
+                            <g key={`label-${index}`} style={{ pointerEvents: 'none' }}>
+                              <text x="1" y={y - 5} fill="var(--text-main)" fontSize="10px" fontWeight={700} textAnchor="start">
+                                {data.name}
+                              </text>
+                              <text x="98%" y={y - 12} fill="var(--text-muted)" fontSize="10px" fontWeight={500} textAnchor="end">
+                                <tspan fill={T.blue} fontWeight={700}>Persons: {data.persons.toLocaleString()}</tspan>
+                                <tspan dx="8" fill={T.indigo} fontWeight={700}>Families: {data.families.toLocaleString()}</tspan>
+                              </text>
+                            </g>
+                          );
+                        }}
+                      />
+                  </Bar>
+                  <Bar dataKey="families" name="Families" fill={T.indigo} radius={[0, 4, 4, 0]} barSize={12} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          );
+        })()}
+      </HeaderFooterModal>
       </div >
     </>
   );
+  
 }
