@@ -106,7 +106,8 @@ router.patch('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   const { 
     first_name, last_name, phone, city, province, 
-    account_type, role, status, theme, password 
+    account_type, role, status, theme, password,
+    currentPassword
   } = req.body;
 
   console.log(`[Users/PATCH] Updating user ${id}...`);
@@ -114,6 +115,22 @@ router.patch('/:id', authenticate, async (req, res) => {
   try {
     let passwordHash = null;
     if (password) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required to update passwords' });
+      }
+
+      // Verify the requester's password to authorize this action
+      const { rows: reqUserRows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+      if (reqUserRows.length === 0) {
+        return res.status(404).json({ error: 'Authenticated user not found' });
+      }
+
+      const isRequesterValid = await bcrypt.compare(currentPassword, reqUserRows[0].password_hash);
+      if (!isRequesterValid) {
+        console.warn(`[Users/PATCH] Unauthorized password update attempt by ${req.user.email}`);
+        return res.status(401).json({ error: 'Invalid current password. Authorization failed.' });
+      }
+
       passwordHash = await bcrypt.hash(password, 12);
     }
 
