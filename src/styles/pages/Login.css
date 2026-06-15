@@ -26,6 +26,16 @@
 	font-weight: 700;
 }
 
+.footer-link {
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.7;
+}
+
 .login-card {
 	width: 100%;
 	max-width: 440px;
