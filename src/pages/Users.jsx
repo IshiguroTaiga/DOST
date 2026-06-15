@@ -381,6 +381,7 @@ export default function Users() {
       }
       if (form.password) {
         payload.password = form.password
+        payload.currentPassword = form.currentPassword
       }
       
       // 1. Perform the update

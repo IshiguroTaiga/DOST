@@ -292,6 +292,7 @@ router.get('/:id', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
   const { event_id, title, target_lgus, pinged_report_types, province, copy_from_id } = req.body;
   const user = req.user;
+  const reportProvince = province || user.province || null;
   
   try {
     const eventRes = await pool.query('SELECT * FROM events WHERE id = $1', [event_id]);
@@ -303,18 +304,25 @@ router.post('/', authenticate, async (req, res) => {
     try {
       await client.query('BEGIN');
 
-      // Get next report number
-      const countRes = await client.query(
-        'SELECT COALESCE(MAX(report_number), 0) AS max_num FROM situational_reports WHERE event_id = $1',
-        [event_id]
-      );
+      // Get next report number - scoped by event AND province
+      let countQuery = 'SELECT COALESCE(MAX(report_number), 0) AS max_num FROM situational_reports WHERE event_id = $1';
+      const countParams = [event_id];
+      
+      if (reportProvince) {
+        countQuery += ' AND province = $2';
+        countParams.push(reportProvince);
+      } else {
+        countQuery += ' AND province IS NULL';
+      }
+
+      const countRes = await client.query(countQuery, countParams);
       const nextNumber = parseInt(countRes.rows[0].max_num) + 1;
       const finalTitle = title || `Situational Report No. ${nextNumber}`;
 
       const { rows } = await client.query(
         `INSERT INTO situational_reports (event_id, report_number, title, target_lgus, province, created_by)
          VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [event_id, nextNumber, finalTitle, target_lgus || [], province || user.province || null, user.id]
+        [event_id, nextNumber, finalTitle, target_lgus || [], reportProvince, user.id]
       );
 
       const sitRep = rows[0];
@@ -332,18 +340,26 @@ router.post('/', authenticate, async (req, res) => {
       let totalCloned = 0;
 
       if (!sourceToClone && req.body.skip_auto_clone !== true) {
-        // Auto-detect latest SitRep
-        const latestRes = await client.query(
-          `SELECT id FROM situational_reports 
-           WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2
-           ORDER BY created_at DESC LIMIT 1`,
-          [event_id, sitRep.id]
-        );
+        // Auto-detect latest SitRep - scoped by province
+        let latestQuery = `SELECT id FROM situational_reports 
+           WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2`;
+        const latestParams = [event_id, sitRep.id];
+
+        if (reportProvince) {
+          latestQuery += ' AND province = $3';
+          latestParams.push(reportProvince);
+        } else {
+          latestQuery += ' AND province IS NULL';
+        }
+
+        latestQuery += ' ORDER BY created_at DESC LIMIT 1';
+        
+        const latestRes = await client.query(latestQuery, latestParams);
         sourceToClone = latestRes.rows[0]?.id || null;
       }
 
       if (sourceToClone) {
-        console.log(`[SitReps/POST] Auto-cloning from ${sourceToClone} to ${sitRep.id}`);
+        console.log(`[SitReps/POST] Auto-cloning from ${sourceToClone} to ${sitRep.id} (Province: ${reportProvince})`);
         totalCloned = await cloneAllDataTablesWithClient(sourceToClone, sitRep.id, event_id, req.user, client);
         
         // Update the new sitrep to mark it as cloned
@@ -355,12 +371,12 @@ router.post('/', authenticate, async (req, res) => {
         );
       }
 
-      // Notify targeted LGU users (after cloning so we don't break transaction if it fails)
+      // Notify targeted LGU users
       if (target_lgus && target_lgus.length > 0) {
         const normalizedCities = target_lgus.map(c => c.includes(' (') ? c.split(' (')[0] : c);
         const lguUsersRes = await client.query(
           `SELECT id, city, province FROM users WHERE account_type = 'LGU' AND city = ANY($1::text[]) AND province = $2`,
-          [normalizedCities, user.province]
+          [normalizedCities, reportProvince]
         );
 
         if (lguUsersRes.rows.length > 0) {
