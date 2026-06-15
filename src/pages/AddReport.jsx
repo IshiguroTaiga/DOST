@@ -16,6 +16,7 @@ import { generateAISummary, generateSummary } from '../openai/summaryService'
 import { createPortal } from 'react-dom'
 import HeaderFooterModal from '../components/HeaderFooterModal'
 import ConfirmationModal from '../components/ConfirmationModal'
+import * as XLSX from 'xlsx'
 import '../styles/pages/PageStyles.css'
 import '../styles/pages/AddReport.css'
 import '../styles/components/DownloadModals.css'
@@ -1614,6 +1615,70 @@ useEffect(() => {
       })
     )
   }
+
+  const fileInputRef = useRef(null)
+
+  const handleImportEvacuationCSV = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target.result
+        const wb = XLSX.read(bstr, { type: 'binary' })
+        const wsname = wb.SheetNames[0]
+        const ws = wb.Sheets[wsname]
+        const data = XLSX.utils.sheet_to_json(ws)
+
+        if (data && data.length > 0) {
+          const importedRows = data.map(d => ({
+            city: d['City/Municipality'] || '',
+            barangay: d['Barangay'] || '',
+            affectedFamilies: d['Affected Families']?.toString() || '',
+            affectedPersons: d['Affected Persons']?.toString() || '',
+            ecsCum: d['No. of ECs CUM']?.toString() || '',
+            ecsNow: d['No. of ECs NOW']?.toString() || '',
+            insideFamiliesCum: d['Inside ECs Fam CUM']?.toString() || '',
+            insideFamiliesNow: d['Inside ECs Fam NOW']?.toString() || '',
+            insidePersonsCum: d['Inside ECs Pers CUM']?.toString() || '',
+            insidePersonsNow: d['Inside ECs Pers NOW']?.toString() || '',
+            outsideFamiliesCum: d['Outside ECs Fam CUM']?.toString() || '',
+            outsideFamiliesNow: d['Outside ECs Fam NOW']?.toString() || '',
+            outsidePersonsCum: d['Outside ECs Pers CUM']?.toString() || '',
+            outsidePersonsNow: d['Outside ECs Pers NOW']?.toString() || '',
+            remarks: d['Remarks'] || '',
+            status: 'Ongoing'
+          }))
+          setRows(importedRows)
+          showSuccess('Import Successful', `Imported ${importedRows.length} rows. Please verify the data.`)
+        } else {
+          showToast('Import Error', 'The file appears to be empty or improperly formatted.', 'warning')
+        }
+      } catch (err) {
+        console.error('Error parsing file:', err)
+        showToast('Import Error', 'Failed to read the file. Ensure it is a valid Excel or CSV.', 'danger')
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    }
+    reader.readAsBinaryString(file)
+  }
+
+  const downloadEvacuationTemplate = () => {
+    const headers = [
+      'City/Municipality', 'Barangay', 'Affected Families', 'Affected Persons', 
+      'No. of ECs CUM', 'No. of ECs NOW', 
+      'Inside ECs Fam CUM', 'Inside ECs Fam NOW', 'Inside ECs Pers CUM', 'Inside ECs Pers NOW',
+      'Outside ECs Fam CUM', 'Outside ECs Fam NOW', 'Outside ECs Pers CUM', 'Outside ECs Pers NOW',
+      'Remarks'
+    ]
+    const ws = XLSX.utils.aoa_to_sheet([headers])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Affected_Populations")
+    XLSX.writeFile(wb, "Affected_Populations_Template.xlsx")
+  }
+
 
   const handleDateTimeChange = (rowIndex, dateField, timeField, value) => {
     // value is in format YYYY-MM-DDTHH:mm
@@ -3388,6 +3453,22 @@ useEffect(() => {
         }
       >
         <div className="report-table-card modern-report-container">
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+              style={{ display: 'none' }} 
+              onChange={handleImportEvacuationCSV} 
+            />
+            <Button variant="outline" size="sm" onClick={downloadEvacuationTemplate}>
+              Download Template
+            </Button>
+            <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+              Import from Excel/CSV
+            </Button>
+          </div>
 
           <div className="consolidated-report-table-wrapper">
             <table className="consolidated-report-table">
