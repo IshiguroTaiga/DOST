@@ -3604,6 +3604,39 @@ CHRONOLOGY OF EVENTS`;
             </div>
           </div>
 
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Mandatory Report Categories (Red Dots)</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                <label key={key} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  fontSize: '0.75rem', 
+                  padding: '8px', 
+                  background: '#f8fafc', 
+                  borderRadius: '6px', 
+                  border: '1px solid #e2e8f0',
+                  cursor: 'pointer'
+                }}>
+                  <input 
+                    type="checkbox"
+                    checked={editForm.pingedReportTypes?.includes(key)}
+                    onChange={() => {
+                      setEditForm(f => ({
+                        ...f,
+                        pingedReportTypes: f.pingedReportTypes?.includes(key)
+                          ? f.pingedReportTypes.filter(x => x !== key)
+                          : [...(f.pingedReportTypes || []), key]
+                      }))
+                    }}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <ModernDateTimePicker
               label="Event Start"

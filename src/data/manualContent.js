@@ -230,19 +230,40 @@ export const MANUAL_SECTIONS = [
   {
     id: 'logs-v2-summary',
     category: 'logs_v2',
-    title: 'System Improvements & Features (v2.0)',
+    title: 'PROACT System Development Logs',
     roles: ['All'],
-    description: 'Overview of the latest updates and improved reporting features.',
+    description: 'Chronological track of system updates, bug fixes, and feature implementations.',
     steps: [
       {
-        title: 'Intelligent Auto-Clone',
-        text: 'New automated data inheritance system for Situational Reports.',
+        title: 'Week 1: Introduction and Initial UI Changes',
+        text: 'Day 1: Oriented with SIREN project; rebranding to PROACT; clickable dashboard category buttons.\nDay 2: Fixed event assignment "apply to all" bug; Affected Persons modal; SOLIDO link integration.\nDay 3: File structure orientation; dashboard header refinements.\nDay 4: Hardware and networking support at Ynads Hotel.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
-        title: 'Enhanced Administration',
-        text: 'Consolidated admin tools and improved role-based scoping.',
+        title: 'Week 2: Backend Logic and System Optimization',
+        text: 'Day 5: Real-time local weather tracking via Geolocation API; self-approval workflow for LGUs.\nDay 6: AI report summary generator (Groq/Gemini); hardware maintenance.\nDay 7: Vercel deployment testing; fixed login fetching and Super Admin privilege bugs.\nDay 8: Fixed PDF preview bugs; AI summary history schema implementation.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: 'Week 3: Final Features and Debugging',
+        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; completed documentation handover.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
+  {
+    id: 'about-me',
+    category: 'logs_v2',
+    title: 'About Me',
+    roles: ['All'],
+    description: 'Information about the developer/contributor.',
+    steps: [
+      {
+        title: 'Developer Profile',
+        text: '[Placeholder for About Me content. To be updated by the developer.]',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
