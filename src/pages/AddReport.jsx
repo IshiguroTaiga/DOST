@@ -1967,7 +1967,7 @@ useEffect(() => {
     
     // Create named range for LGUs
     const lguCount = lgus.length
-    workbook.addName('LGUList', `Data!$A$2:$A$${lguCount + 1}`)
+    workbook.definedNames.add(`Data!$A$2:$A$${lguCount + 1}`, 'LGUList')
 
     // Add barangays for each LGU in subsequent columns
     lgus.forEach((lgu, index) => {
@@ -1983,7 +1983,7 @@ useEffect(() => {
       
       if (barangays.length > 0) {
         const colLetter = dataSheet.getColumn(colIndex).letter
-        workbook.addName(sanitizedName, `Data!$${colLetter}$2:$${colLetter}$${barangays.length + 1}`)
+        workbook.definedNames.add(`Data!$${colLetter}$2:$${colLetter}$${barangays.length + 1}`, sanitizedName)
       }
     })
 

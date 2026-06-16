@@ -16,6 +16,8 @@ PROACT is a multi-level disaster situational reporting platform designed for the
 - **Hierarchical Reporting:** Role-based data entry (LGU → Provincial → Regional).
 - **Automated Consolidation:** Real-time aggregation of local data into provincial and regional views.
 - **Smart Data Inheritance:** Intelligent auto-cloning of historical report data.
+- **Advanced Excel Templates:** Native Excel dropdowns and dependent location selection using ExcelJS.
+- **Mobile-Responsive Design:** Full support for smartphones and tablets with a hamburger navigation menu.
 - **AI-Powered Analysis:** Automated executive summary generation using LLMs.
 - **Formal Approval Workflow:** Document-based approval pipeline mimicking government workflows.
 
@@ -26,7 +28,7 @@ PROACT is a multi-level disaster situational reporting platform designed for the
 The PROACT system is built on a modern, containerized stack optimized for real-time performance and reliability.
 
 ### 2.1 Technical Stack:
-- **Frontend:** React 19 (Vite), Context API, Socket.io-client.
+- **Frontend:** React 19 (Vite), Context API, Socket.io-client, ExcelJS.
 - **Backend:** Node.js/Express, Socket.IO (for real-time updates).
 - **Database:** PostgreSQL (normalized schema with 15+ specialized sub-tables).
 - **Infrastructure:** Docker & Docker Compose, Nginx (Reverse Proxy).

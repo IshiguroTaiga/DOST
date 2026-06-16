@@ -42,10 +42,21 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Inventory & Tech Support:** Performed hardware inventory (RSTL/Microlab), cable management (RJ45), and network debugging alongside software tasks.
 - **Bug Fixes:** Resolved numerous issues including currency abbreviation logic (supporting Millions/Billions), PDF preview mismatches, and data leaking between LGU reports.
 
+## 7. New System Enhancements (June 16-17, 2026)
+- **Advanced Excel Templates:**
+    - Integrated **ExcelJS** to replace standard CSV/XLSX exports.
+    - Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay.
+    - Implemented **Dependent Dropdowns**: Selecting a City automatically filters the available Barangays in the Excel file.
+- **Mobile Compatibility & UI Optimization:**
+    - Implemented a **Hamburger Menu** and mobile header for navigation on small screens.
+    - Optimized the **Dashboard** and **Add Report** pages for mobile viewports using responsive CSS grids.
+    - Added **Horizontal Table Scrolling** to ensure data accessibility on mobile devices.
+    - Enhanced **Modal Responsiveness** for phone and tablet users.
+
 ---
 **Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities and AI-assisted reporting.
 
-## 7. System Flow Comparison (Old vs. New)
+## 8. System Flow Comparison (Old vs. New)
 
 | Feature | Legacy Flow (SIREN) | New Flow (PROACT) |
 | :--- | :--- | :--- |
