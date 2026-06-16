@@ -354,6 +354,10 @@ export default function Users() {
         showToast('Validation Error', 'New password and Confirm password do not match.', 'warning')
         return
       }
+      if (!form.currentPassword) {
+        showToast('Validation Error', 'Current password is required to update passwords.', 'warning')
+        return
+      }
     }
 
     showConfirm({
@@ -980,7 +984,7 @@ export default function Users() {
                 <input
                   id="edit-user-currentPassword"
                   type={showCurrentPassword ? 'text' : 'password'}
-                  placeholder="Enter current password to verify"
+                  placeholder={editingUser?.id === currentUser?.id ? "Enter your current password" : "Enter user's current password"}
                   value={form.currentPassword}
                   onChange={(e) => handleChange('currentPassword', e.target.value)}
                   autoComplete="current-password"
