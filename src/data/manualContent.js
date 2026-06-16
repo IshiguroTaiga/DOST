@@ -177,7 +177,7 @@ export const MANUAL_SECTIONS = [
     ]
   },
 
-  // --- REVIEW & APPROVALS (CURRENT) ---
+  // --- REVIEW & ANALYSIS (CURRENT) ---
   {
     id: 'review-workflow',
     category: 'review',
