@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { ClockCounterClockwise, CaretDown, CaretUp, Upload } from '@phosphor-icons/react'
+import { useEvents } from '../contexts/EventContext'
 import SearchInput from '../components/SearchInput'
 import LoadingSpinner from '../components/LoadingSpinner'
 import api from '../lib/api'
