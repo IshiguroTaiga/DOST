@@ -235,14 +235,14 @@ export const MANUAL_SECTIONS = [
     description: 'Information about the developer/contributor.',
     steps: [
       {
-        title: 'Developer Profile',
+        title: 'Developers Profile',
         text: '[Placeholder for About Me content. To be updated by the developer.]',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
         title: 'Developer Showcase',
-        text: 'A video showcase of the developer\'s work and contributions to the PROACT system.',
+        text: '[Placeholder for showcasing developer\'s work, projects, or portfolio. To be updated by the developer.]',
         visual: 'https://drive.google.com/file/d/1ClYQS7zonb3TaSaM-Stnb2j7MZ9a1sHl/view?usp=drive_link',
         type: 'iframe'
       }
