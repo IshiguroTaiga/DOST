@@ -3,7 +3,7 @@ export const MANUAL_CATEGORIES = [
   { id: 'events', title: 'Events & Tracking', icon: 'CalendarCheck' },
   { id: 'reporting', title: 'Reporting & Data', icon: 'FilePlus' },
   { id: 'review', title: 'Review & Analysis', icon: 'CheckCircle' },
-  { id: 'developer', title: 'Developer Profile', icon: 'User' },
+  { id: 'developer', title: 'Developers Profile', icon: 'User' },
   { id: 'logs_v2', title: 'Update Logs V2 (Current)', icon: 'ClipboardText' },
   { id: 'logs_v1', title: 'Update Logs V1 (Legacy)', icon: 'History' }
 ];
