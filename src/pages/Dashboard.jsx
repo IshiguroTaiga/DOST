@@ -328,15 +328,15 @@ export default function Dashboard() {
 
   const getWeatherIcon = (code, desc) => {
     const d = (desc || '').toLowerCase()
-    if (d.includes('rain') || d.includes('drizzle')) return <CloudRain size={18} weight="duotone" color={T.blue} />
-    if (d.includes('thunder') || d.includes('lightning')) return <CloudLightning size={18} weight="duotone" color={T.purple} />
-    if (d.includes('snow')) return <CloudSnow size={18} weight="duotone" color="#94a3b8" />
+    if (d.includes('rain') || d.includes('drizzle')) return <CloudRain size={18} weight="duotone" color="black" />
+    if (d.includes('thunder') || d.includes('lightning')) return <CloudLightning size={18} weight="duotone" color="black" />
+    if (d.includes('snow')) return <CloudSnow size={18} weight="duotone" color="black" />
     if (d.includes('cloud')) {
-      if (d.includes('partly') || d.includes('sun')) return <CloudSun size={18} weight="duotone" color={T.amber} />
-      return <Cloud size={18} weight="duotone" color="#94a3b8" />
+      if (d.includes('partly') || d.includes('sun')) return <CloudSun size={18} weight="duotone" color="black" />
+      return <Cloud size={18} weight="duotone" color="black" />
     }
-    if (d.includes('clear') || d.includes('sun')) return <Sun size={18} weight="duotone" color={T.amber} />
-    return <Thermometer size={18} weight="duotone" color={T.orange} />
+    if (d.includes('clear') || d.includes('sun')) return <Sun size={18} weight="duotone" color="black" />
+    return <Thermometer size={18} weight="duotone" color="black" />
   }
   const [selectedDashboardSitRepId, setSelectedDashboardSitRepId] = useState('')
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
