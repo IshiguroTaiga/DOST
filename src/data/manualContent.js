@@ -271,7 +271,7 @@ export const MANUAL_SECTIONS = [
       },
       {
         title: 'Week 3: Final Features and Debugging',
-        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover.',
+        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover.\nDay 11: Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }

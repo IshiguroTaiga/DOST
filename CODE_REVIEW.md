@@ -55,7 +55,24 @@ The following features were added to the base system and follow current best pra
 1. **AI Summarizer Service:** Integrates OpenAI/LLM logic to generate human-readable summaries. Well-implemented with a dedicated service layer (`summaryService.js`).
 2. **Geolocation Weather:** Modernized the dashboard by adding browser-level Geolocation API integration with a fallback to user profile data.
 3. **Email Notification Engine:** Fixed legacy SMTP issues and implemented Brevo integration with secure "App Password" support.
-4. **DROMIC Excel Parser:** Significantly reduced manual entry time by allowing bulk imports from standardized templates.
+5. **DROMIC Excel Parser:** Significantly reduced manual entry time by allowing bulk imports from standardized templates.
+    - **Advanced Dropdowns (New):** Integrated `exceljs` to generate templates with native Excel Data Validation. This ensures LGUs select valid Cities and Barangays directly in the spreadsheet, reducing parsing errors.
+
+    ```javascript
+    // Example: Implementing dependent dropdowns in ExcelJS
+    const indirectFormula = `=INDIRECT("LGU_" & SUBSTITUTE(SUBSTITUTE(${cityCell}," ","_"),"-","_"))`
+    templateSheet.getCell(i, barangayCol).dataValidation = {
+      type: 'list',
+      allowBlank: true,
+      formulae: [indirectFormula],
+      error: 'Please select a valid Barangay. Ensure City is selected first.'
+    };
+    ```
+
+6. **Mobile UI & Responsiveness (New):**
+    - **Hamburger Navigation:** Refactored the layout to include a mobile-first navigation menu and overlay.
+    - **CSS Grid Stacking:** Utilized media queries to transform multi-column dashboard grids into single-column stacks for better readability on smartphones.
+    - **Responsive Tables:** Wrapped all data tables in scrollable containers (`overflow-x: auto`) to prevent layout breaking on narrow viewports.
 
 ---
 
