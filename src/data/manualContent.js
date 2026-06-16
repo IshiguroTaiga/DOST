@@ -230,7 +230,7 @@ export const MANUAL_SECTIONS = [
   {
     id: 'about-me',
     category: 'developer',
-    title: 'Developer Profile',
+    title: 'Developers Profile',
     roles: ['All'],
     description: 'Information about the developer/contributor.',
     steps: [
