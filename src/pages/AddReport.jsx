@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom'
 import HeaderFooterModal from '../components/HeaderFooterModal'
 import ConfirmationModal from '../components/ConfirmationModal'
 import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import '../styles/pages/PageStyles.css'
 import '../styles/pages/AddReport.css'
 import '../styles/components/DownloadModals.css'
@@ -1933,14 +1934,110 @@ useEffect(() => {
     reader.readAsBinaryString(file)
   }
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
     const config = CATEGORY_IMPORT_CONFIG[activeCategoryModal]
     if (!config) return
 
-    const ws = XLSX.utils.aoa_to_sheet([config.headers])
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Template")
-    XLSX.writeFile(wb, `${config.filename}_Template.xlsx`)
+    const workbook = new ExcelJS.Workbook()
+    const templateSheet = workbook.addWorksheet('Template')
+    const dataSheet = workbook.addWorksheet('Data')
+    dataSheet.state = 'hidden'
+
+    // Set headers and formatting
+    const headerRow = templateSheet.addRow(config.headers)
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4F46E5' }
+      }
+      cell.alignment = { horizontal: 'center' }
+    })
+
+    // Set column widths
+    templateSheet.columns = config.headers.map(h => ({
+      header: h,
+      width: h.length < 15 ? 20 : h.length + 5
+    }))
+
+    // Add LGU data to hidden sheet
+    const lgus = LGU_NAMES
+    dataSheet.getColumn(1).values = ['LGUs', ...lgus]
+    
+    // Create named range for LGUs
+    const lguCount = lgus.length
+    workbook.addName('LGUList', `Data!$A$2:$A$${lguCount + 1}`)
+
+    // Add barangays for each LGU in subsequent columns
+    lgus.forEach((lgu, index) => {
+      const colIndex = index + 2
+      const barangays = getBarangaysForCity(lgu)
+      const col = dataSheet.getColumn(colIndex)
+      
+      // Sanitize LGU name for Named Range (no spaces, no special chars)
+      // Excel named ranges must start with a letter or underscore and contain only letters, numbers, dots, and underscores.
+      const sanitizedName = 'LGU_' + lgu.replace(/[^a-zA-Z0-9]/g, '_')
+      
+      col.values = [lgu, ...barangays]
+      
+      if (barangays.length > 0) {
+        const colLetter = dataSheet.getColumn(colIndex).letter
+        workbook.addName(sanitizedName, `Data!$${colLetter}$2:$${colLetter}$${barangays.length + 1}`)
+      }
+    })
+
+    // Apply data validation to Template sheet (for 100 rows - keep it light but usable)
+    const cityColIndex = config.headers.indexOf('City/Municipality') + 1
+    const barangayColIndex = config.headers.indexOf('Barangay') + 1
+
+    if (cityColIndex > 0) {
+      for (let i = 2; i <= 101; i++) {
+        templateSheet.getCell(i, cityColIndex).dataValidation = {
+          type: 'list',
+          allowBlank: true,
+          formulae: ['=LGUList'],
+          showErrorMessage: true,
+          errorTitle: 'Invalid Selection',
+          error: 'Please select a valid City/Municipality from the list.'
+        }
+      }
+    }
+
+    if (barangayColIndex > 0 && cityColIndex > 0) {
+      const cityLetter = templateSheet.getColumn(cityColIndex).letter
+      for (let i = 2; i <= 101; i++) {
+        // Formula to match sanitization: "LGU_" & REPLACE chars
+        // Nested SUBSTITUTE to replace common special chars in LGU names
+        const indirectFormula = `=INDIRECT("LGU_" & SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(${cityLetter}${i}," ","_"),"(","_"),")","_"),"-","_"))`
+        
+        templateSheet.getCell(i, barangayColIndex).dataValidation = {
+          type: 'list',
+          allowBlank: true,
+          formulae: [indirectFormula],
+          showErrorMessage: true,
+          errorTitle: 'Invalid Selection',
+          error: 'Please select a valid Barangay from the list. Ensure the City/Municipality is selected first.'
+        }
+      }
+    }
+
+    // Export and download
+    try {
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `${config.filename}_Template.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+      showToast('Success', 'Template downloaded with dropdowns.', 'success')
+    } catch (err) {
+      console.error('Template generation failed:', err)
+      showToast('Error', 'Failed to generate enhanced template.', 'danger')
+    }
   }
 
 

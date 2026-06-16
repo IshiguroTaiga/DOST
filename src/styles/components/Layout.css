@@ -21,3 +21,74 @@
 	overflow: hidden;
 	background: transparent;
 }
+
+.mobile-header {
+  display: none;
+  height: 60px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1rem;
+  align-items: center;
+  gap: 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+.mobile-hamburger-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.mobile-hamburger-btn:hover {
+  background: var(--glass-bg-hover);
+}
+
+.mobile-branding {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-logo-image {
+  height: 32px;
+  object-fit: contain;
+}
+
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    margin-top: 60px;
+    height: calc(100vh - 60px);
+  }
+}

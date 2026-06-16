@@ -4,6 +4,40 @@
 	margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+    padding-top: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .consolidated-report-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    width: calc(100% + 2rem);
+  }
+
+  .modern-report-container {
+    padding: 1rem !important;
+  }
+}
+
+
 .page-header {
 	display: flex;
 	justify-content: space-between;
