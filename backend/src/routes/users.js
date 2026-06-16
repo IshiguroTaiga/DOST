@@ -110,31 +110,76 @@ router.patch('/:id', authenticate, async (req, res) => {
     currentPassword
   } = req.body;
 
-  console.log(`[Users/PATCH] Updating user ${id}...`);
+  const requester = req.user;
+  const isSuperAdmin = requester.role === 'Super Admin' || requester.account_type === 'Super Admin';
+  const isRegionalAdmin = requester.account_type === 'Regional Admin';
+  const isProvincialAdmin = requester.account_type === 'Provincial Admin';
+  const isLguAdmin = requester.account_type === 'LGU Admin';
+
+  console.log(`[Users/PATCH] Requester ${requester.email} updating user ${id}...`);
   
   try {
+    // 1. Fetch target user to check permissions
+    const { rows: targetRows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    if (targetRows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const targetUser = targetRows[0];
+
+    // 2. RBAC: Who can edit whom?
+    const isSelf = requester.id === id;
+    let canEdit = isSuperAdmin || isRegionalAdmin || isSelf;
+
+    if (!canEdit) {
+      if (isProvincialAdmin) {
+        // Provincial Admin can edit users in their province, except Regional/Super Admins
+        const restrictedTypes = ['Super Admin', 'Regional Admin', 'Regional'];
+        if (targetUser.province === requester.province && !restrictedTypes.includes(targetUser.account_type)) {
+          canEdit = true;
+        }
+      } else if (isLguAdmin) {
+        // LGU Admin can edit users in their city
+        if (targetUser.city === requester.city && targetUser.account_type === 'LGU') {
+          canEdit = true;
+        }
+      }
+    }
+
+    if (!canEdit) {
+      console.warn(`[Users/PATCH] Forbidden update attempt by ${requester.email} on ${targetUser.email}`);
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to edit this user' });
+    }
+
+    // 3. Password logic
     let passwordHash = null;
-    if (password) {
-      if (!currentPassword) {
+    if (password && typeof password === 'string' && password.length > 0) {
+      console.log(`[Users/PATCH] Password change requested for: ${targetUser.email}`);
+      console.log(`[Users/PATCH] currentPassword length: ${currentPassword ? currentPassword.length : 0}`);
+      
+      if (!currentPassword || typeof currentPassword !== 'string' || currentPassword.length === 0) {
+        console.warn(`[Users/PATCH] Password change REJECTED: Missing currentPassword for ${targetUser.email}`);
         return res.status(400).json({ error: 'Current password is required to update passwords' });
       }
 
-      // Verify the requester's password to authorize this action
-      const { rows: reqUserRows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
-      if (reqUserRows.length === 0) {
-        return res.status(404).json({ error: 'Authenticated user not found' });
+      if (!targetUser.password_hash) {
+        console.error(`[Users/PATCH] CRITICAL: User ${targetUser.email} has NO password_hash in database!`);
+        return res.status(500).json({ error: 'Database integrity error: Target user has no stored password hash.' });
       }
 
-      const isRequesterValid = await bcrypt.compare(currentPassword, reqUserRows[0].password_hash);
-      if (!isRequesterValid) {
-        console.warn(`[Users/PATCH] Unauthorized password update attempt by ${req.user.email}`);
-        return res.status(401).json({ error: 'Invalid current password. Authorization failed.' });
+      // Verify the TARGET user's current password
+      console.log(`[Users/PATCH] Verifying current password against stored hash...`);
+      const isCurrentValid = await bcrypt.compare(currentPassword, targetUser.password_hash);
+      
+      if (isCurrentValid !== true) {
+        console.warn(`[Users/PATCH] Password change REJECTED: Incorrect currentPassword for ${targetUser.email}`);
+        return res.status(401).json({ error: 'Incorrect current password for the user being edited. Changes not saved.' });
       }
 
+      console.log(`[Users/PATCH] Password verified successfully for ${targetUser.email}. Hashing new password...`);
       passwordHash = await bcrypt.hash(password, 12);
     }
 
-    // Simpler, safer update query
+    // 4. Build update query
     const fields = [];
     const values = [];
 
@@ -143,9 +188,14 @@ router.patch('/:id', authenticate, async (req, res) => {
     if (phone) { fields.push(`phone = $${fields.length + 1}`); values.push(phone); }
     if (city) { fields.push(`city = $${fields.length + 1}`); values.push(city); }
     if (province) { fields.push(`province = $${fields.length + 1}`); values.push(province); }
-    if (account_type) { fields.push(`account_type = $${fields.length + 1}`); values.push(account_type); }
-    if (role) { fields.push(`role = $${fields.length + 1}`); values.push(role); }
-    if (status) { fields.push(`status = $${fields.length + 1}`); values.push(status); }
+    
+    // Only admins can change account_type/role/status
+    if (isSuperAdmin || isRegionalAdmin || isProvincialAdmin || isLguAdmin) {
+      if (account_type) { fields.push(`account_type = $${fields.length + 1}`); values.push(account_type); }
+      if (role) { fields.push(`role = $${fields.length + 1}`); values.push(role); }
+      if (status) { fields.push(`status = $${fields.length + 1}`); values.push(status); }
+    }
+    
     if (theme) { fields.push(`theme = $${fields.length + 1}`); values.push(theme); }
     if (passwordHash) { fields.push(`password_hash = $${fields.length + 1}`); values.push(passwordHash); }
 
@@ -159,15 +209,10 @@ router.patch('/:id', authenticate, async (req, res) => {
     console.log('[Users/PATCH] Executing query...');
     const { rows } = await pool.query(query, values);
     
-    if (rows.length === 0) {
-      console.warn(`[Users/PATCH] No user found with ID: ${id}`);
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
     console.log(`[Users/PATCH] Successfully updated user ${id}`);
     res.status(200).json(rows[0]);
   } catch (err) {
-    console.error('[Users/PATCH] DATABASE ERROR:', err.message);
+    console.error('[Users/PATCH] ERROR:', err.message);
     res.status(500).json({ error: 'Update failed: ' + err.message });
   }
 });
