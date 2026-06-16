@@ -325,16 +325,18 @@
 }
 
 .sidebar.collapsed .sidebar-submenu {
-  position: absolute;
-  left: 72px;
-  top: 0;
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem;
-  min-width: 200px;
-  box-shadow: var(--shadow-premium);
-  z-index: 100;
+  position: static;
+  margin-left: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  width: 100%;
+}
+
+.sidebar.collapsed .sidebar-sub-link {
+  justify-content: center;
+  padding: 0.5rem 0;
+  margin: 0 auto;
 }
 
 .logout-btn:hover {
@@ -436,7 +438,6 @@
 }
 
 /* Sidebar footer handles positioning of logout button. Modal styles are now shared in PageStyles.css */
-
 .sidebar-user-profile {
 	padding: 0.5rem 0.875rem;
 	margin-bottom: 0.5rem;
@@ -493,47 +494,57 @@
 .sidebar-solido-icon,
 .sidebar-DOSTPAGASA-icon,
 .sidebar-DOSTPHIVOLCS-icon {
-  width: 33px !important;
-  height: 33px !important;
-  min-width: 33px !important;
-  max-width: 33x !important;
-  max-height: 33px !important;
-  object-fit: contain;
-  flex-shrink: 0;
-  border-radius: 4px;
-  display: inline-block;
-  vertical-align: middle;
+  	width: 33px !important;
+  	height: 33px !important;
+  	min-width: 33px !important;
+  	max-width: 33px !important;
+  	max-height: 33px !important;
+  	object-fit: contain;
+  	flex-shrink: 0;
+  	border-radius: 4px;
+  	display: inline-block;
+  	vertical-align: middle;
+}
+
+.sidebar.collapsed .sidebar-solido-icon,
+.sidebar.collapsed .sidebar-DOSTPAGASA-icon,
+.sidebar.collapsed .sidebar-DOSTPHIVOLCS-icon {
+  	width: 24px !important;
+  	height: 24px !important;
+  	min-width: 24px !important;
+  	max-width: 24px !important;
+  	max-height: 24px !important;
 }
 .sidebar-solido-text,
 .sidebar-DOSTPAGASA-text,
 .sidebar-DOSTPHIVOLCS-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-  min-width: 0;
-  align-self: center;
-  justify-content: center;
+  	display: flex;
+  	flex-direction: column;
+  	line-height: 1.15;
+  	min-width: 0;
+  	align-self: center;
+  	justify-content: center;
 }
 
 .sidebar-solido-name,
 .sidebar-DOSTPAGASA-name,
 .sidebar-DOSTPHIVOLCS-name {
-  font-size: 1.00rem;
-  font-weight: 800;
-  color: #1a1a1a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  	font-size: 1.00rem;
+  	font-weight: 800;
+  	color: #1a1a1a;
+  	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	letter-spacing: -0.01em;
 }
 
 .sidebar-solido-sub,
 .sidebar-DOSTPAGASA-sub,
 .sidebar-DOSTPHIVOLCS-sub {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: ellipsis;
+  	font-size: 0.75rem;
+  	font-weight: 500;
+  	color: var(--text-muted);
+  	white-space: nowrap;
+  	overflow: visible;
+  	text-overflow: ellipsis;
 }
