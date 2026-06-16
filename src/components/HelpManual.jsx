@@ -74,6 +74,13 @@ export default function HelpManual({ user }) {
                         muted 
                         playsInline
                       />
+                    ) : step.type === 'iframe' ? (
+                      <iframe
+                        className="help-visual-iframe"
+                        src={step.visual.includes('drive.google.com') ? step.visual.replace('/view?usp=drive_link', '/preview') : step.visual}
+                        style={{ width: '100%', height: '100%', border: 'none' }}
+                        allow="autoplay"
+                      />
                     ) : (
                       <img 
                         className="help-visual-img" 
