@@ -243,7 +243,7 @@ export const MANUAL_SECTIONS = [
       {
         title: 'Developer Showcase',
         text: '[Placeholder for showcasing developer\'s work, projects, or portfolio. To be updated by the developer.]',
-        visual: 'https://drive.google.com/file/d/1ClYQS7zonb3TaSaM-Stnb2j7MZ9a1sHl/view?usp=drive_link',
+        visual: 'https://drive.google.com/file/d/1ClYQS7zonb3TaSaM-Stnb2j7MZ9a1sHl/view',
         type: 'iframe'
       }
     ]
