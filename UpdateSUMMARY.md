@@ -1,0 +1,67 @@
+# PROACT System Update Summary (June 1 - June 15, 2026)
+
+This document summarizes the development, refactoring, and feature implementation performed during the initial 15-day period of the PROACT (formerly SIREN) system overhaul.
+
+## 1. Rebranding & Core UI/UX
+- **System Rebranding:** Successfully transitioned the system identity from **SIREN** (Situation Intelligence & Rapid Emergency Network) to **PROACT** (Proactive Reporting, Operation, Analysis, Communication and Tracking System).
+- **Interactive Dashboard:** 
+    - Overview buttons are now functional, redirecting users to specific report categories.
+    - Implemented an "Affected Persons" popup to display detailed demographic and location data.
+    - Integrated redirection to the **SOLIDO DRRM Knowledge Hub**.
+- **Responsive Improvements:** Enabled "Show/Hide" toggles for PDF previews and implemented auto-refresh logic for real-time responsiveness across all users.
+
+## 2. Role & Workflow Refactoring
+- **Simplified Authorization:** Removed redundant "Approver" roles (Provincial/LGU Approver). The system now utilizes a streamlined self-approval and submission flow.
+- **LGU Autonomy:** LGUs can now independently create Situational Reports (SitReps) and "Send to Prov" for review.
+- **Provincial Workflow:** Provinces can now consolidate reports, review LGU submissions (Approve/Reject with remarks), and upload signed PDFs to finalize reports for Regional visibility.
+- **Data Scoping:** Implemented strict backend filtering to ensure Regional/Super Admins only see "Approved" data, while Provincial/LGU users can monitor their respective drafts and pending reports.
+
+## 3. SITREP & Data Management
+- **Global Numbering:** Reverted to a global SitRep numbering sequence to maintain a consistent historical record across the entire event.
+- **Auto-Cloning with Isolation:**
+    - Implemented "Auto-Cloning" that carries over data from previous SitReps.
+    - **Data Security:** Refined backend routes to ensure provinces only see their own data within a shared SitRep, while Regional users see the consolidated view.
+- **DROMIC Integration:** Added functionality to download templates and import data directly from Excel, streamlining the reporting process.
+- **User Management:** Enhanced user creation/editing modals to dynamically hide/show fields (like City/Municipality) based on account type.
+
+## 4. Real-Time Features & Notifications
+- **Location-Aware Weather:** Integrated the browser Geolocation API for real-time local weather updates, with a fallback to the user's profile location.
+- **Manual Weather Override:** Added an interface for Super Admins to manually set weather conditions when needed.
+- **Notification System:**
+    - Fixed and enhanced email notifications for event creation and deployments.
+    - Implemented **Global System Notifications** visible across the dashboard.
+    - Resolved SMTP issues by implementing Google App Password configurations.
+
+## 5. AI Integration
+- **AI Report Summarizer:** Developed a feature to automatically generate executive summaries from report data.
+- **Model Flexibility:** Implemented a settings interface to switch between different AI models and manage API keys.
+- **Summary History:** Created a database structure to store and manage a history of generated executive summaries.
+
+## 6. Technical Support & Infrastructure
+- **Deployment:** Managed Vercel deployment and coordinated with IT (Sir Ray) for Docker rebuilding and main domain (`proact.dost1.ph`) synchronization.
+- **Inventory & Tech Support:** Performed hardware inventory (RSTL/Microlab), cable management (RJ45), and network debugging alongside software tasks.
+- **Bug Fixes:** Resolved numerous issues including currency abbreviation logic (supporting Millions/Billions), PDF preview mismatches, and data leaking between LGU reports.
+
+---
+**Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities and AI-assisted reporting.
+
+## 7. System Flow Comparison (Old vs. New)
+
+| Feature | Legacy Flow (SIREN) | New Flow (PROACT) |
+| :--- | :--- | :--- |
+| **Event Creation** | Manual creation with limited alert range. | Automated alerts via Email & Global System Notifications for affected provinces. |
+| **LGU Role** | Purely data entry into Provincial-led reports. | **LGU Autonomy:** Can create own reports, sign PDFs, and submit directly for Provincial review. |
+| **Approver Roles** | Required dedicated "Approver" accounts (Provincial/LGU Approver). | **Streamlined Roles:** Removed redundant Approver roles; Provincial/LGU admins handle signatures and uploads directly. |
+| **SitRep Numbering** | Often localized or manually managed per province. | **Global Sequencing:** SitRep numbers are sequential across the entire event (e.g., SN1 Norte -> SN2 Sur). |
+| **Data Cloning** | Manual or limited to same province. | **Auto-Cloning with Isolation:** Clones all historical data from previous SN; backend strictly filters visibility so provinces only see their relevant data. |
+| **Approval Cycle** | Draft -> Pending -> Approved (Local to Province). | **Multi-Tier Review:** LGU (Draft) -> Pending Prov Review -> Approved (Visible to Region). |
+| **Regional Visibility** | Often saw incomplete or draft data. | **Strict Verified Visibility:** Regional/Super Admin dashboards only display data from officially Approved/Signed reports. |
+| **Weather Integration** | Manual text entry or static values. | **Real-Time Geolocation:** Uses browser API for local accuracy with manual Super Admin override for crisis management. |
+| **Reporting** | Manual data compilation for summaries. | **AI-Powered:** One-click Executive Summary generation with historical tracking and model selection. |
+
+### New Operational Workflow Summary:
+1. **Regional Admin** creates an Event (Notifications sent).
+2. **LGU** creates a Report -> Adds data -> Uploads signed PDF -> **Sends to Province**.
+3. **Province** reviews LGU submission -> Consolidates all LGU data -> Uploads Provincial signed PDF -> Marks as **Approved**.
+4. **Regional Dashboard** automatically populates with verified data from all Approved provincial reports.
+5. **Auto-Cloning** ensures that each subsequent SitRep (e.g., No. 2, No. 3) carries the full event history while maintaining strict data privacy between provinces.
