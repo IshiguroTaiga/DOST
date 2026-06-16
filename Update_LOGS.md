@@ -47,4 +47,8 @@
 ### Day 10 (June 16)
 - Conducted a final security audit.
 - Fixed a password bypass flaw in the "Edit User" modal.
+- Fixed temperature range gaps in `weatherClassifications.json` to ensure consistent labeling (e.g., exactly 30°C).
+- Implemented "Mandatory Report Categories" (Red Dots) feature in `Dashboard.jsx` and `AddReport.jsx`.
+- Reorganized Help Manual categories and added a "Developer Profile" section.
+- Added iframe/video embed support to the manual for developer showcases.
 - Completed the Update Summary and Code Review documentation for final system hand-over.
