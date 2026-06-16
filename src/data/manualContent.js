@@ -2,9 +2,10 @@ export const MANUAL_CATEGORIES = [
   { id: 'admin', title: 'Administration', icon: 'Users' },
   { id: 'events', title: 'Events & Tracking', icon: 'CalendarCheck' },
   { id: 'reporting', title: 'Reporting & Data', icon: 'FilePlus' },
-  { id: 'review', title: 'Review & Approvals', icon: 'CheckCircle' },
-  { id: 'logs_v2', title: 'Update Logs v2 (Current)', icon: 'ClipboardText' },
-  { id: 'logs_v1', title: 'Update Logs v1 (Legacy)', icon: 'History' }
+  { id: 'review', title: 'Review & Analysis', icon: 'CheckCircle' },
+  { id: 'developer', title: 'Developer Profile', icon: 'User' },
+  { id: 'logs_v2', title: 'Update Logs V2 (Current)', icon: 'ClipboardText' },
+  { id: 'logs_v1', title: 'Update Logs V1 (Legacy)', icon: 'History' }
 ];
 
 export const MANUAL_SECTIONS = [
@@ -226,6 +227,22 @@ export const MANUAL_SECTIONS = [
     ]
   },
 
+  {
+    id: 'about-me',
+    category: 'developer',
+    title: 'Developer Profile',
+    roles: ['All'],
+    description: 'Information about the developer/contributor.',
+    steps: [
+      {
+        title: 'Developer Profile',
+        text: '[Placeholder for About Me content. To be updated by the developer.]',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
+
   // --- UPDATE LOGS V2 (CURRENT SUMMARY) ---
   {
     id: 'logs-v2-summary',
@@ -249,21 +266,6 @@ export const MANUAL_SECTIONS = [
       {
         title: 'Week 3: Final Features and Debugging',
         text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; completed documentation handover.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
-      }
-    ]
-  },
-  {
-    id: 'about-me',
-    category: 'logs_v2',
-    title: 'About Me',
-    roles: ['All'],
-    description: 'Information about the developer/contributor.',
-    steps: [
-      {
-        title: 'Developer Profile',
-        text: '[Placeholder for About Me content. To be updated by the developer.]',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
