@@ -1618,9 +1618,294 @@ useEffect(() => {
 
   const fileInputRef = useRef(null)
 
-  const handleImportEvacuationCSV = (e) => {
+  const CATEGORY_IMPORT_CONFIG = {
+    evacuation: {
+      filename: 'Affected_Populations',
+      headers: ['City/Municipality', 'Barangay', 'Affected Families', 'Affected Persons', 'No. of ECs CUM', 'No. of ECs NOW', 'Inside ECs Fam CUM', 'Inside ECs Fam NOW', 'Inside ECs Pers CUM', 'Inside ECs Pers NOW', 'Outside ECs Fam CUM', 'Outside ECs Fam NOW', 'Outside ECs Pers CUM', 'Outside ECs Pers NOW', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        affectedFamilies: d['Affected Families']?.toString() || '',
+        affectedPersons: d['Affected Persons']?.toString() || '',
+        ecsCum: d['No. of ECs CUM']?.toString() || '',
+        ecsNow: d['No. of ECs NOW']?.toString() || '',
+        insideFamiliesCum: d['Inside ECs Fam CUM']?.toString() || '',
+        insideFamiliesNow: d['Inside ECs Fam NOW']?.toString() || '',
+        insidePersonsCum: d['Inside ECs Pers CUM']?.toString() || '',
+        insidePersonsNow: d['Inside ECs Pers NOW']?.toString() || '',
+        outsideFamiliesCum: d['Outside ECs Fam CUM']?.toString() || '',
+        outsideFamiliesNow: d['Outside ECs Fam NOW']?.toString() || '',
+        outsidePersonsCum: d['Outside ECs Pers CUM']?.toString() || '',
+        outsidePersonsNow: d['Outside ECs Pers NOW']?.toString() || '',
+        remarks: d['Remarks'] || '',
+        status: 'Ongoing'
+      })
+    },
+    power: {
+      filename: 'Power_Status',
+      headers: ['City/Municipality', 'Barangay', 'Status', 'Type', 'Service Provider', 'Date Interruption', 'Time Interruption', 'Date Restored', 'Time Restored', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        status: d['Status'] || 'Ongoing',
+        type: d['Type'] || 'Total',
+        serviceProvider: d['Service Provider'] || '',
+        dateInterruption: d['Date Interruption'] || '',
+        timeInterruption: d['Time Interruption'] || '',
+        dateRestored: d['Date Restored'] || '',
+        timeRestored: d['Time Restored'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    water: {
+      filename: 'Water_Status',
+      headers: ['City/Municipality', 'Barangay', 'Status', 'Type', 'Service Provider', 'Date Interruption', 'Time Interruption', 'Date Restored', 'Time Restored', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        status: d['Status'] || 'Ongoing',
+        type: d['Type'] || 'Total',
+        serviceProvider: d['Service Provider'] || '',
+        dateInterruption: d['Date Interruption'] || '',
+        timeInterruption: d['Time Interruption'] || '',
+        dateRestored: d['Date Restored'] || '',
+        timeRestored: d['Time Restored'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    roads: {
+      filename: 'Roads_and_Bridges',
+      headers: ['City/Municipality', 'Barangay', 'Road Section/Bridge', 'Classification', 'Status', 'Date Not Passable', 'Time Not Passable', 'Date Passable', 'Time Passable', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        roadBridgeName: d['Road Section/Bridge'] || '',
+        classification: d['Classification'] || 'National',
+        status: d['Status'] || 'Not Passable',
+        dateNotPassable: d['Date Not Passable'] || '',
+        timeNotPassable: d['Time Not Passable'] || '',
+        datePassable: d['Date Passable'] || '',
+        timePassable: d['Time Passable'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    incidents: {
+      filename: 'Related_Incidents',
+      headers: ['City/Municipality', 'Barangay', 'Type of Incident', 'Date of Occurrence', 'Time of Occurrence', 'Description', 'Actions Taken', 'Status', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        typeOfIncident: d['Type of Incident'] || '',
+        dateOfOccurrence: d['Date of Occurrence'] || '',
+        timeOfOccurrence: d['Time of Occurrence'] || '',
+        description: d['Description'] || '',
+        actionsTaken: d['Actions Taken'] || '',
+        status: d['Status'] || 'Ongoing',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    houses: {
+      filename: 'Damaged_Houses',
+      headers: ['City/Municipality', 'Barangay', 'Totally Damaged', 'Partially Damaged', 'Amount (PHP)', 'Remarks'],
+      map: (d) => {
+        const totally = parseInt(d['Totally Damaged']) || 0
+        const partially = parseInt(d['Partially Damaged']) || 0
+        return {
+          city: d['City/Municipality'] || '',
+          barangay: d['Barangay'] || '',
+          totallyDamaged: totally.toString(),
+          partiallyDamaged: partially.toString(),
+          grandTotal: totally + partially,
+          amountPhp: d['Amount (PHP)']?.toString() || '',
+          remarks: d['Remarks'] || ''
+        }
+      }
+    },
+    class: {
+      filename: 'Class_Suspension',
+      headers: ['City/Municipality', 'Barangay', 'Education Level', 'Type of Suspension', 'Date of Suspension', 'Time of Suspension', 'Date of Resumption', 'Time of Resumption', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        level: d['Education Level'] || 'All Levels',
+        typeOfSuspension: d['Type of Suspension'] || '',
+        dateOfSuspension: d['Date of Suspension'] || '',
+        timeOfSuspension: d['Time of Suspension'] || '',
+        dateOfResumption: d['Date of Resumption'] || '',
+        timeOfResumption: d['Time of Resumption'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    work: {
+      filename: 'Work_Suspension',
+      headers: ['City/Municipality', 'Barangay', 'Type of Suspension', 'Date of Suspension', 'Time of Suspension', 'Date of Resumption', 'Time of Resumption', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        level: '',
+        typeOfSuspension: d['Type of Suspension'] || '',
+        dateOfSuspension: d['Date of Suspension'] || '',
+        timeOfSuspension: d['Time of Suspension'] || '',
+        dateOfResumption: d['Date of Resumption'] || '',
+        timeOfResumption: d['Time of Resumption'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    calamity: {
+      filename: 'State_of_Calamity',
+      headers: ['City/Municipality', 'Barangay', 'Type of Calamity', 'Count SOC', 'Resolution No.', 'Date of Resolution', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        type: d['Type of Calamity'] || '',
+        countSoc: d['Count SOC']?.toString() || '',
+        resolutionNo: d['Resolution No.'] || '',
+        resolutionDate: d['Date of Resolution'] || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    preemptive: {
+      filename: 'Preemptive_Evacuation',
+      headers: ['City/Municipality', 'Barangay', 'Families', 'Male Count', 'Female Count', 'Remarks'],
+      map: (d) => {
+        const male = parseInt(d['Male Count']) || 0
+        const female = parseInt(d['Female Count']) || 0
+        return {
+          city: d['City/Municipality'] || '',
+          barangay: d['Barangay'] || '',
+          families: d['Families']?.toString() || '',
+          maleCount: male.toString(),
+          femaleCount: female.toString(),
+          total: male + female,
+          remarks: d['Remarks'] || ''
+        }
+      }
+    },
+    assistance: {
+      filename: 'Assistance_Provided',
+      headers: ['City/Municipality', 'Barangay', 'No. Families Affected', 'Families Req. Asst.', 'Needs', 'Qty', 'Unit', 'Cost/Unit', 'Amount', 'Source', 'Fam. Assisted', 'Remarks'],
+      map: (d) => {
+        const requiring = parseInt(d['Families Req. Asst.']) || 0
+        const assisted = parseInt(d['Fam. Assisted']) || 0
+        return {
+          city: d['City/Municipality'] || '',
+          barangay: d['Barangay'] || '',
+          noFamiliesAffected: d['No. Families Affected']?.toString() || '',
+          noFamiliesRequiringAssistance: requiring.toString(),
+          needs: d['Needs'] || '',
+          fnfiQty: d['Qty']?.toString() || '',
+          fnfiUnit: d['Unit'] || '',
+          fnfiCostPerUnit: d['Cost/Unit']?.toString() || '',
+          fnfiAmount: d['Amount']?.toString() || '',
+          fnfiSource: d['Source'] || '',
+          noFamiliesAssisted: assisted.toString(),
+          pctFamiliesAssisted: requiring > 0 ? Math.min(100, Math.round((assisted / requiring) * 10000) / 100) : 0,
+          remarks: d['Remarks'] || ''
+        }
+      }
+    },
+    communication: {
+      filename: 'Communication_Status',
+      headers: ['City/Municipality', 'Barangay', 'Telecompany', 'Status', 'Date Interrupted', 'Time Interrupted', 'Date Restored', 'Time Restored', '2G Op/Tot', '3G Op/Tot', '4G Op/Tot', 'Remarks'],
+      map: (d) => {
+        const parseOpTot = (val) => {
+          const parts = (val || '').toString().split('/')
+          const op = parts[0] ? parts[0].trim() : ''
+          const tot = parts[1] ? parts[1].trim() : ''
+          const operational = parseInt(op) || 0
+          const total = parseInt(tot) || 0
+          const pct = total > 0 ? Math.round((operational / total) * 100) : 0
+          return { op, tot, pct }
+        }
+        const g2 = parseOpTot(d['2G Op/Tot'])
+        const g3 = parseOpTot(d['3G Op/Tot'])
+        const g4 = parseOpTot(d['4G Op/Tot'])
+        return {
+          city: d['City/Municipality'] || '',
+          barangay: d['Barangay'] || '',
+          telecompany: d['Telecompany'] || '',
+          statusOfCommunication: d['Status'] || '',
+          dateInterruption: d['Date Interrupted'] || '',
+          timeInterruption: d['Time Interrupted'] || '',
+          dateRestoration: d['Date Restored'] || '',
+          timeRestoration: d['Time Restored'] || '',
+          displayCoverage2g: d['2G Op/Tot'] || '',
+          withCoverage2g: g2.op,
+          siteCount2g: g2.tot,
+          pctCoverage2g: g2.pct,
+          displayCoverage3g: d['3G Op/Tot'] || '',
+          withCoverage3g: g3.op,
+          siteCount3g: g3.tot,
+          pctCoverage3g: g3.pct,
+          displayCoverage4g: d['4G Op/Tot'] || '',
+          withCoverage4g: g4.op,
+          siteCount4g: g4.tot,
+          pctCoverage4g: g4.pct,
+          remarks: d['Remarks'] || ''
+        }
+      }
+    },
+    assistance_lgus: {
+      filename: 'Assistance_to_LGUs',
+      headers: ['City/Municipality', 'Barangay', 'Source', 'Relief Type', 'Qty', 'Unit', 'Cost/Unit', 'Amount', 'Status', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        source: d['Source'] || '',
+        type: d['Relief Type'] || '',
+        qty: d['Qty']?.toString() || '',
+        unit: d['Unit'] || '',
+        costPerUnit: d['Cost/Unit']?.toString() || '',
+        amount: d['Amount']?.toString() || '',
+        status: d['Status'] || 'Ongoing',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    agriculture: {
+      filename: 'Agriculture_Damage',
+      headers: ['City/Municipality', 'Barangay', 'Classification', 'Commodity/Type', 'Farmers Affected', 'Area Totally (ha)', 'Area Partially (ha)', 'Area Total (ha)', 'Infra Totally', 'Infra Partially', 'Volume Loss (MT)', 'Value Loss (PHP)', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        classification: d['Classification'] || 'Crop',
+        type: d['Commodity/Type'] || '',
+        farmersAffected: d['Farmers Affected']?.toString() || '',
+        areaTotally: d['Area Totally (ha)']?.toString() || '',
+        areaPartially: d['Area Partially (ha)']?.toString() || '',
+        areaTotal: d['Area Total (ha)']?.toString() || '',
+        infraTotally: d['Infra Totally']?.toString() || '',
+        infraPartially: d['Infra Partially']?.toString() || '',
+        infraTotal: '',
+        volumeLoss: d['Volume Loss (MT)']?.toString() || '',
+        valueLoss: d['Value Loss (PHP)']?.toString() || '',
+        remarks: d['Remarks'] || ''
+      })
+    },
+    infrastructure: {
+      filename: 'Infrastructure_Damage',
+      headers: ['City/Municipality', 'Barangay', 'Infra Type', 'Infra Classification', 'Infrastructure Name', 'Num Damaged', 'Qty', 'Unit', 'Cost (PHP)', 'Status', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        type: d['Infra Type'] || '',
+        classification: d['Infra Classification'] || 'National',
+        infrastructureName: d['Infrastructure Name'] || '',
+        numberDamaged: d['Num Damaged']?.toString() || '',
+        quantity: d['Qty']?.toString() || '',
+        unit: d['Unit'] || '',
+        cost: d['Cost (PHP)']?.toString() || '',
+        status: d['Status'] || 'Ongoing',
+        remarks: d['Remarks'] || ''
+      })
+    }
+  }
+
+  const handleImportCSV = (e) => {
     const file = e.target.files[0]
     if (!file) return
+
+    const config = CATEGORY_IMPORT_CONFIG[activeCategoryModal]
+    if (!config) return
 
     const reader = new FileReader()
     reader.onload = (evt) => {
@@ -1632,24 +1917,7 @@ useEffect(() => {
         const data = XLSX.utils.sheet_to_json(ws)
 
         if (data && data.length > 0) {
-          const importedRows = data.map(d => ({
-            city: d['City/Municipality'] || '',
-            barangay: d['Barangay'] || '',
-            affectedFamilies: d['Affected Families']?.toString() || '',
-            affectedPersons: d['Affected Persons']?.toString() || '',
-            ecsCum: d['No. of ECs CUM']?.toString() || '',
-            ecsNow: d['No. of ECs NOW']?.toString() || '',
-            insideFamiliesCum: d['Inside ECs Fam CUM']?.toString() || '',
-            insideFamiliesNow: d['Inside ECs Fam NOW']?.toString() || '',
-            insidePersonsCum: d['Inside ECs Pers CUM']?.toString() || '',
-            insidePersonsNow: d['Inside ECs Pers NOW']?.toString() || '',
-            outsideFamiliesCum: d['Outside ECs Fam CUM']?.toString() || '',
-            outsideFamiliesNow: d['Outside ECs Fam NOW']?.toString() || '',
-            outsidePersonsCum: d['Outside ECs Pers CUM']?.toString() || '',
-            outsidePersonsNow: d['Outside ECs Pers NOW']?.toString() || '',
-            remarks: d['Remarks'] || '',
-            status: 'Ongoing'
-          }))
+          const importedRows = data.map(config.map)
           setRows(importedRows)
           showSuccess('Import Successful', `Imported ${importedRows.length} rows. Please verify the data.`)
         } else {
@@ -1665,18 +1933,14 @@ useEffect(() => {
     reader.readAsBinaryString(file)
   }
 
-  const downloadEvacuationTemplate = () => {
-    const headers = [
-      'City/Municipality', 'Barangay', 'Affected Families', 'Affected Persons', 
-      'No. of ECs CUM', 'No. of ECs NOW', 
-      'Inside ECs Fam CUM', 'Inside ECs Fam NOW', 'Inside ECs Pers CUM', 'Inside ECs Pers NOW',
-      'Outside ECs Fam CUM', 'Outside ECs Fam NOW', 'Outside ECs Pers CUM', 'Outside ECs Pers NOW',
-      'Remarks'
-    ]
-    const ws = XLSX.utils.aoa_to_sheet([headers])
+  const downloadTemplate = () => {
+    const config = CATEGORY_IMPORT_CONFIG[activeCategoryModal]
+    if (!config) return
+
+    const ws = XLSX.utils.aoa_to_sheet([config.headers])
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Affected_Populations")
-    XLSX.writeFile(wb, "Affected_Populations_Template.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Template")
+    XLSX.writeFile(wb, `${config.filename}_Template.xlsx`)
   }
 
 
@@ -2839,6 +3103,21 @@ useEffect(() => {
     
     return (
       <div className="report-table-card modern-report-container">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            style={{ display: 'none' }}
+            onChange={handleImportCSV}
+          />
+          <Button variant="outline" size="sm" onClick={downloadTemplate}>
+            Download Template
+          </Button>
+          <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+            Import from Excel/CSV
+          </Button>
+        </div>
         <div className="consolidated-report-table-wrapper">
           <table className="consolidated-report-table">
             <thead>{tableHeader()}</thead>
@@ -3455,14 +3734,14 @@ useEffect(() => {
         <div className="report-table-card modern-report-container">
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
-              style={{ display: 'none' }} 
-              onChange={handleImportEvacuationCSV} 
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              style={{ display: 'none' }}
+              onChange={handleImportCSV}
             />
-            <Button variant="outline" size="sm" onClick={downloadEvacuationTemplate}>
+            <Button variant="outline" size="sm" onClick={downloadTemplate}>
               Download Template
             </Button>
             <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
