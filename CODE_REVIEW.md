@@ -52,27 +52,101 @@ The PROACT system is a robust, full-stack disaster reporting platform. While ori
 ## 5. The "OJT Improvements" Review
 
 The following features were added to the base system and follow current best practices:
-1. **AI Summarizer Service:** Integrates OpenAI/LLM logic to generate human-readable summaries. Well-implemented with a dedicated service layer (`summaryService.js`).
-2. **Geolocation Weather:** Modernized the dashboard by adding browser-level Geolocation API integration with a fallback to user profile data.
-3. **Email Notification Engine:** Fixed legacy SMTP issues and implemented Brevo integration with secure "App Password" support.
-5. **DROMIC Excel Parser:** Significantly reduced manual entry time by allowing bulk imports from standardized templates.
-    - **Advanced Dropdowns (New):** Integrated `exceljs` to generate templates with native Excel Data Validation. This ensures LGUs select valid Cities and Barangays directly in the spreadsheet, reducing parsing errors.
 
-    ```javascript
-    // Example: Implementing dependent dropdowns in ExcelJS
-    const indirectFormula = `=INDIRECT("LGU_" & SUBSTITUTE(SUBSTITUTE(${cityCell}," ","_"),"-","_"))`
-    templateSheet.getCell(i, barangayCol).dataValidation = {
-      type: 'list',
-      allowBlank: true,
-      formulae: [indirectFormula],
-      error: 'Please select a valid Barangay. Ensure City is selected first.'
-    };
-    ```
+### 5.1 Rebranding & Dashboard Interactive Elements (Day 1-3)
+Transitioned from SIREN to PROACT and added interactive category filtering on the dashboard.
+```javascript
+// Example: Category redirection from Dashboard
+const CATEGORY_LABELS = {
+  relatedIncidents: 'Related Incidents',
+  affectedPopulation: 'Affected Population',
+  // ... 15 other categories
+};
 
-6. **Mobile UI & Responsiveness (New):**
-    - **Hamburger Navigation:** Refactored the layout to include a mobile-first navigation menu and overlay.
-    - **CSS Grid Stacking:** Utilized media queries to transform multi-column dashboard grids into single-column stacks for better readability on smartphones.
-    - **Responsive Tables:** Wrapped all data tables in scrollable containers (`overflow-x: auto`) to prevent layout breaking on narrow viewports.
+// Redirection logic for dashboard "Overview" buttons
+const handleCategoryClick = (category) => {
+  navigate(`/add-report?category=${category}`);
+};
+```
+
+### 5.2 AI Summarizer Service (Day 6-8)
+Developed a modular service to generate executive summaries using Llama 3 (via Groq) or Gemini 2.0.
+```javascript
+// src/openai/summaryService.js
+export async function generateAISummary(data, event) {
+  const prompt = buildPromptPayload(data, event);
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${groqKey}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  return (await response.json()).choices[0].message.content;
+}
+```
+
+### 5.3 Geolocation-Based Weather (Day 5)
+Integrated browser Geolocation API to fetch real-time weather for the user's specific location.
+```javascript
+// src/pages/Dashboard.jsx
+const fetchLocalWeather = useCallback(() => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}...`);
+      setWeather(await response.json());
+    });
+  }
+}, []);
+```
+
+### 5.4 Email Notification Engine (Day 7)
+Fixed legacy SMTP issues using secure Google App Passwords and implemented Brevo for reliable delivery.
+```javascript
+// backend/src/utils/mailer.js (Conceptual)
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  auth: {
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_API_KEY
+  }
+});
+```
+
+### 5.5 Advanced Excel Templates & Mobile UI (Day 11)
+Implemented native Excel dropdowns with dependent validation logic and a mobile-first responsive layout.
+
+**ExcelJS Dependent List:**
+```javascript
+// src/pages/AddReport.jsx
+const indirectFormula = `=INDIRECT("LGU_" & SUBSTITUTE(SUBSTITUTE(${cityCell}," ","_"),"-","_"))`
+templateSheet.getCell(i, barangayCol).dataValidation = {
+  type: 'list',
+  allowBlank: true,
+  formulae: [indirectFormula],
+  error: 'Please select a valid Barangay. Ensure City is selected first.'
+};
+```
+
+**Mobile Navigation Logic:**
+```javascript
+// src/components/Layout.jsx
+return (
+  <div className={`layout ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+    <header className="mobile-header">
+      <button onClick={() => setIsMobileMenuOpen(true)}>
+        <List size={24} />
+      </button>
+    </header>
+    {isMobileMenuOpen && <div className="mobile-overlay" onClick={() => setIsMobileMenuOpen(false)} />}
+    <Sidebar isMobileOpen={isMobileMenuOpen} />
+    {/* ... main content */}
+  </div>
+);
+```
 
 ---
 
