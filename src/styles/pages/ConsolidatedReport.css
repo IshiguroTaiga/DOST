@@ -4,6 +4,36 @@
   padding: 1.5rem;
 }
 
+@media (max-width: 768px) {
+  .consolidated-report-page {
+    padding: 1rem;
+  }
+
+  .consolidated-report-toolbar {
+    flex-direction: column;
+    align-items: stretch !important;
+    padding: 1.5rem 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .consolidated-report-title {
+    font-size: 1.5rem !important;
+    white-space: normal !important;
+  }
+
+  .consolidated-report-toolbar-controls {
+    flex-direction: column;
+    align-items: stretch !important;
+    width: 100%;
+    gap: 0.75rem !important;
+  }
+
+  .consolidated-report-search-box {
+    max-width: 100% !important;
+  }
+}
+
+
 .consolidated-report-card {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));

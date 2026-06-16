@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
 import '../styles/components/Sidebar.css'
 
-export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onToggle }) {
+export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onToggle, isMobileOpen, onCloseMobile }) {
   const accountType = user?.account_type || ''
   const isRegional = accountType === 'Regional' || accountType === 'Regional Admin'
   const isProvincial = accountType === 'Provincial' || accountType === 'Provincial Admin'
@@ -70,11 +70,14 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   }, [showLogoutModal])
 
   return (
-    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-branding" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
           <img src={isCollapsed ? '/P.png' : '/proactLogo.png'} alt="PROACT Logo" className="sidebar-logo-image" />
         </div>
+        <button className="mobile-close-btn" onClick={onCloseMobile}>
+          <X size={20} weight="bold" />
+        </button>
         <button 
           className="sidebar-toggle-btn" 
           onClick={onToggle}
