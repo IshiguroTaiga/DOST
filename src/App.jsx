@@ -11,6 +11,7 @@ import EventLogs from './pages/EventLogs'
 import ManageEvents from './pages/ManageEvents'
 import ForApproval from './pages/ForApproval'
 import Manual from './pages/Manual'
+import InteractiveMap from './pages/InteractiveMap'
 import { EventProvider } from './contexts/EventContext'
 import MeshBackground from './components/MeshGradient'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -117,6 +118,7 @@ function App() {
             <Route path="manage-events" element={<ManageEvents />} />
             <Route path="for-approval" element={<ForApproval />} />
             <Route path="manual" element={<Manual />} />
+            <Route path="map" element={<InteractiveMap />} />
           </Route>
           <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
         </Routes>

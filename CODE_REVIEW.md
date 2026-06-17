@@ -148,6 +148,23 @@ return (
 );
 ```
 
+### 5.6 Interactive Map (New)
+Integrated Leaflet to visualize monitoring and warning stations across the region.
+```javascript
+// src/pages/InteractiveMap.jsx
+<MapContainer center={[16.8, 120.5]} zoom={8}>
+  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+  {filteredStations.map(station => (
+    <Marker key={station.id} position={[station.latitude, station.longitude]}>
+      <Popup>
+        <h3>{station.lgu}</h3>
+        <p>{station.address}</p>
+      </Popup>
+    </Marker>
+  ))}
+</MapContainer>
+```
+
 ---
 
 ## 6. Technical Debt & Maintenance (Recommendations)

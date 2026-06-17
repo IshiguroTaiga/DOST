@@ -1,0 +1,589 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, LayersControl, Polygon, Tooltip, useMapEvents } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { Plus, X, MapPin, CheckCircle, Warning, MagnifyingGlass, Info, Stack, Eye, EyeSlash, Globe, Pencil, Trash, Camera, UploadSimple, ImageSquare, Tag, Package } from '@phosphor-icons/react'
+import { useOutletContext } from 'react-router-dom'
+import api from '../lib/api'
+import LoadingSpinner from '../components/LoadingSpinner'
+import SearchInput from '../components/SearchInput'
+import SearchableSelect from '../components/SearchableSelect'
+import Button from '../components/Button'
+import '../styles/pages/InteractiveMap.css'
+
+const PROVINCES = ['Ilocos Norte', 'Ilocos Sur', 'La Union', 'Pangasinan']
+const PH_OUTER_BOUNDS = [[4.0, 116.0], [21.5, 127.5]]
+const WORLD_MASK = [
+  [[-90, -180], [-90, 180], [90, 180], [90, -180]], 
+  [[4.0, 116.0], [4.0, 127.5], [21.5, 127.5], [21.5, 116.0]]
+]
+
+const EQUIPMENT_TYPES = [
+  { id: 'aws', label: 'AWS', full: 'Automated Weather Station' },
+  { id: 'arg', label: 'ARG', full: 'Automated Rain Gauge' },
+  { id: 'wlms', label: 'WLMS', full: 'Water Level Monitoring' },
+  { id: 'peimnet', label: 'PEIMNET', full: 'Earthquake Monitoring' },
+  { id: 'ctas', label: 'CTAS', full: 'Tsunami Alert' },
+  { id: 'alerting', label: 'SIREN', full: 'Alerting Station' },
+  { id: 'slms', label: 'SLMS', full: 'Sea Level Monitoring' },
+]
+
+function MapClickHandler({ onMapClick, isMarking }) {
+  useMapEvents({
+    click: (e) => {
+      if (isMarking) onMapClick(e.latlng)
+    }
+  })
+  return null
+}
+
+export default function InteractiveMap() {
+  const { user } = useOutletContext()
+  const fileInputRef = useRef(null)
+  
+  const [stations, setStations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [searchQuery, setSearchSearchQuery] = useState('')
+  const [selectedProvince, setSelectedProvince] = useState('All')
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isMarking, setIsMarking] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [activeEquipmentDetail, setActiveEquipmentDetail] = useState(null)
+  const [isEditingDetail, setIsEditingDetail] = useState(false)
+  const [detailEditData, setDetailEditData] = useState({ brand: '', model: '', specs: '', coverage: '', officer: '', contact: '' })
+  
+  const [modalPos, setModalPos] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartPos = useRef({ x: 0, y: 0 })
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0 || isEditingDetail) return; // Only left click and not while editing inputs
+    setIsDragging(true);
+    dragStartPos.current = {
+      x: e.clientX - modalPos.x,
+      y: e.clientY - modalPos.y
+    };
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    if (activeEquipmentDetail) {
+      setDetailEditData({
+        brand: activeEquipmentDetail.val.brand || '',
+        model: activeEquipmentDetail.val.model || '',
+        specs: activeEquipmentDetail.val.specs || `Standard ${activeEquipmentDetail.type.label} Unit`,
+        coverage: activeEquipmentDetail.val.coverage || `${activeEquipmentDetail.station.lgu}, ${activeEquipmentDetail.station.province}`,
+        officer: activeEquipmentDetail.val.officer || `LDRRMO ${activeEquipmentDetail.station.lgu}`,
+        contact: activeEquipmentDetail.val.contact || '09XX XXX XXXX'
+      });
+    } else {
+      setIsEditingDetail(false);
+    }
+  }, [activeEquipmentDetail]);
+
+  const handleSaveDetail = async () => {
+    try {
+      const station = activeEquipmentDetail.station;
+      const typeId = activeEquipmentDetail.type.id;
+      
+      const updatedEquipmentDetails = {
+        ...station.equipment_details,
+        [typeId]: {
+          ...station.equipment_details[typeId],
+          brand: detailEditData.brand,
+          model: detailEditData.model,
+          specs: detailEditData.specs,
+          coverage: detailEditData.coverage,
+          officer: detailEditData.officer,
+          contact: detailEditData.contact,
+          manual: true
+        }
+      };
+
+      await api.patch(`/stations/${station.id}`, {
+        equipment_details: updatedEquipmentDetails
+      });
+
+      // Update local state
+      setStations(prev => prev.map(s => s.id === station.id ? { ...s, equipment_details: updatedEquipmentDetails } : s));
+      setActiveEquipmentDetail(prev => ({
+        ...prev,
+        val: updatedEquipmentDetails[typeId],
+        station: { ...prev.station, equipment_details: updatedEquipmentDetails }
+      }));
+      setIsEditingDetail(false);
+    } catch (err) {
+      alert('Failed to update equipment details.');
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      setModalPos({
+        x: e.clientX - dragStartPos.current.x,
+        y: e.clientY - dragStartPos.current.y
+      });
+    };
+    const handleMouseUp = () => setIsDragging(false);
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  useEffect(() => {
+    if (!activeEquipmentDetail) setModalPos({ x: 0, y: 0 });
+  }, [activeEquipmentDetail]);
+  
+  const [formData, setFormData] = useState({
+    province: 'Ilocos Norte', lgu: '', address: '', latitude: '', longitude: '', photo_url: '',
+    equipment: {
+      aws: { active: false, brand: '', model: '' },
+      arg: { active: false, brand: '', model: '' },
+      wlms: { active: false, brand: '', model: '' },
+      peimnet: { active: false, brand: '', model: '' },
+      ctas: { active: false, brand: '', model: '' },
+      alerting: { active: false, brand: '', model: '' },
+      slms: { active: false, brand: '', model: '' },
+    }
+  })
+  const [uploading, setUploading] = useState(false)
+
+  const CustomStationIcon = useMemo(() => {
+    try {
+      return L.divIcon({
+        className: 'custom-station-icon',
+        html: '<div class="marker-pin-circle"><div class="marker-pin-inner"></div></div>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      })
+    } catch (e) { return null; }
+  }, []);
+
+  useEffect(() => {
+    fetchStations()
+  }, [])
+
+  // Auto Province Detection
+  useEffect(() => {
+    const lat = parseFloat(formData.latitude);
+    if (!isNaN(lat) && lat > 0) {
+      let autoProvince = 'Pangasinan';
+      if (lat > 17.85) autoProvince = 'Ilocos Norte';
+      else if (lat > 16.95) autoProvince = 'Ilocos Sur';
+      else if (lat > 16.25) autoProvince = 'La Union';
+      if (formData.province !== autoProvince) {
+        setFormData(prev => ({ ...prev, province: autoProvince }));
+      }
+    }
+  }, [formData.latitude]);
+
+  const fetchStations = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/stations')
+      setStations(Array.isArray(response.data) ? response.data : [])
+      setError(null)
+    } catch (err) {
+      console.error('Map Fetch Error:', err)
+      setError('Could not load station data.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEdit = (station) => {
+    setEditingId(station.id)
+    const eq = {}
+    EQUIPMENT_TYPES.forEach(t => {
+      const detail = station.equipment_details?.[t.id];
+      eq[t.id] = {
+        active: !!detail,
+        brand: detail?.brand || '',
+        model: detail?.model || '',
+      }
+    })
+    setFormData({
+      province: station.province,
+      lgu: station.lgu,
+      address: station.address || '',
+      latitude: station.latitude,
+      longitude: station.longitude,
+      photo_url: station.photo_url || '',
+      equipment: eq
+    })
+    setIsDrawerOpen(true)
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this monitoring station?')) return
+    try {
+      await api.delete(`/stations/${id}`)
+      fetchStations()
+    } catch (err) { alert('Failed to delete.') }
+  }
+
+  const handleMapClick = (latlng) => {
+    setFormData(prev => ({ ...prev, latitude: latlng.lat.toFixed(6), longitude: latlng.lng.toFixed(6) }))
+    setIsMarking(false)
+  }
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const formDataUpload = new FormData()
+    formDataUpload.append('file', file)
+    try {
+      setUploading(true)
+      const res = await api.post('/upload', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setFormData(prev => ({ ...prev, photo_url: res.data.url }))
+    } catch (err) { alert('Photo upload failed.') } finally { setUploading(false) }
+  }
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const payload = {
+        ...formData,
+        equipment_details: Object.keys(formData.equipment).reduce((acc, key) => {
+           const eq = formData.equipment[key];
+           if (eq.active) {
+             acc[key] = { manual: true, brand: eq.brand, model: eq.model };
+           } else {
+             acc[key] = null;
+           }
+           return acc;
+        }, {})
+      }
+      if (editingId) await api.patch(`/stations/${editingId}`, payload)
+      else await api.post('/stations', payload)
+      
+      fetchStations()
+      resetForm()
+      setIsDrawerOpen(false)
+    } catch (err) { alert('Error saving station.') }
+  }
+
+  const resetForm = () => {
+    setEditingId(null)
+    const eq = {}
+    EQUIPMENT_TYPES.forEach(t => eq[t.id] = { active: false, brand: '', model: '' })
+    setFormData({
+      province: 'Ilocos Norte', lgu: '', address: '', latitude: '', longitude: '', photo_url: '',
+      equipment: eq
+    })
+  }
+
+  const filteredStations = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    const selProv = (typeof selectedProvince === 'string' ? selectedProvince : (selectedProvince?.target?.value || 'All')).toLowerCase().trim();
+    return stations.filter(station => {
+      const lat = parseFloat(station.latitude);
+      const lng = parseFloat(station.longitude);
+      if (isNaN(lat) || isNaN(lng)) return false;
+      const p = (station.province || '').toLowerCase().trim();
+      const matchesProvince = selProv === 'all' || p === selProv;
+      const matchesSearch = !q || (station.lgu || '').toLowerCase().includes(q) || (station.address || '').toLowerCase().includes(q);
+      return matchesProvince && matchesSearch;
+    });
+  }, [stations, searchQuery, selectedProvince])
+
+  if (loading) return <LoadingSpinner fullPage message="Plotting Regional Ready Map..." />
+
+  return (
+    <div className="interactive-map-page">
+      <div className="map-container-wrapper">
+        <MapContainer 
+          center={[16.8, 120.5]} zoom={8} minZoom={6} zoomControl={false}
+          maxBounds={PH_OUTER_BOUNDS} maxBoundsViscosity={1.0} attributionControl={false}
+          style={{ height: '100%', width: '100%', background: '#0f172a' }}
+        >
+          <MapClickHandler onMapClick={handleMapClick} isMarking={isMarking} />
+          <ZoomControl position="bottomright" />
+          <LayersControl position="bottomright">
+            <LayersControl.BaseLayer checked name="Standard">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
+          <Polygon positions={WORLD_MASK} pathOptions={{ fillColor: '#0f172a', fillOpacity: 0.85, color: '#1e293b', weight: 1, pointerEvents: 'none' }} />
+
+          {filteredStations.map(station => (
+            <Marker key={station.id} position={[parseFloat(station.latitude), parseFloat(station.longitude)]} icon={CustomStationIcon || undefined}>
+              <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+                <div style={{ fontWeight: 'bold' }}>{station.lgu}</div>
+                <div style={{ fontSize: '0.7rem' }}>{station.province}</div>
+              </Tooltip>
+              <Popup className="custom-station-popup">
+                {station.photo_url && (
+                  <div className="popup-photo-container">
+                    <img src={station.photo_url} alt={station.lgu} className="popup-photo" />
+                  </div>
+                )}
+                <div className="station-popup-header">
+                   <h3>{station.lgu}</h3>
+                   <div style={{ display: 'flex', gap: '0.5rem' }}>
+                     <button onClick={() => handleEdit(station)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }} title="Edit"><Pencil size={14} /></button>
+                     <button onClick={() => handleDelete(station.id)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }} title="Delete"><Trash size={14} /></button>
+                   </div>
+                </div>
+                <div className="station-popup-body">
+                  <div className="station-info-row">
+                    <span className="station-info-label">Province</span>
+                    <span className="station-info-value">{station.province}</span>
+                  </div>
+                  {station.address && (
+                    <div className="station-info-row">
+                      <span className="station-info-label">Address</span>
+                      <span className="station-info-value">{station.address}</span>
+                    </div>
+                  )}
+                  <div className="equipment-list">
+                    <span className="station-info-label">Inventory Details</span>
+                    <div className="equipment-grid">
+                      {EQUIPMENT_TYPES.map(type => {
+                        const val = station.equipment_details?.[type.id];
+                        return val ? (
+                          <div key={type.id} className="equipment-card" onClick={() => setActiveEquipmentDetail({ type, val, station })}>
+                            <div className="equipment-card-header">
+                              <div className="equipment-card-dot"></div>
+                              <span className="equipment-card-label">{type.label}</span>
+                            </div>
+                            {(val.brand || val.model) && (
+                              <div className="equipment-card-details">
+                                {val.brand && <div className="equipment-detail-text"><Tag size={8} style={{ marginRight: '2px' }} /> {val.brand}</div>}
+                                {val.model && <div className="equipment-detail-text"><Package size={8} style={{ marginRight: '2px' }} /> {val.model}</div>}
+                              </div>
+                            )}
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+
+      <div className="map-overlay-title-card">
+        <h2>Region I Ready Map</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+          <Globe size={14} color="#3b82f6" weight="bold" />
+          <p style={{ margin: 0 }}>{filteredStations.length} Stations Active</p>
+        </div>
+      </div>
+
+      <div className="map-overlay-controls">
+        <div className="map-controls-row">
+          <div className="map-province-filter">
+            <SearchableSelect options={['All', ...PROVINCES]} value={selectedProvince} onChange={(e) => setSelectedProvince(e?.target?.value || e)} placeholder="Filter Province" />
+          </div>
+          <div className="map-search-box">
+            <SearchInput placeholder="Search stations..." value={searchQuery} onChange={(val) => setSearchSearchQuery(val)} />
+          </div>
+        </div>
+        <button className="map-add-btn" onClick={() => { resetForm(); setIsDrawerOpen(true); }}><Plus size={28} weight="bold" /></button>
+      </div>
+
+      <div className="map-overlay-legend">
+        <span className="legend-title">System Legend</span>
+        <div className="legend-item"><div className="legend-dot" style={{ background: '#3b82f6' }}></div><span>Active Station</span></div>
+        <div className="legend-item"><Stack size={14} weight="bold" color="#1e293b" /><span>Multi-Device Node</span></div>
+      </div>
+
+      <aside className={`map-entry-drawer ${!isDrawerOpen ? 'closed' : ''}`}>
+        <div className="drawer-header">
+          <h3 className="drawer-title">{editingId ? 'Update Station' : 'New Monitoring Station'}</h3>
+          <button className="drawer-close-btn" onClick={() => { resetForm(); setIsDrawerOpen(false); }}><X size={20} weight="bold" /></button>
+        </div>
+        <div className="drawer-content">
+          <form className="manual-add-form" onSubmit={handleFormSubmit}>
+            <div className="form-group">
+              <label className="form-label">Province</label>
+              <select className="drawer-input" value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})}>
+                {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">LGU Name</label>
+              <input className="drawer-input" placeholder="e.g. LGU Adams" value={formData.lgu} required onChange={e => setFormData({...formData, lgu: e.target.value})} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Station Photo</label>
+              <div className="photo-upload-zone" onClick={() => fileInputRef.current.click()}>
+                {formData.photo_url ? (
+                  <img src={formData.photo_url} alt="Preview" className="photo-preview-img" />
+                ) : (
+                  <>
+                    {uploading ? <LoadingSpinner size="sm" /> : <Camera size={32} color="#94a3b8" />}
+                    <span className="photo-upload-label">{uploading ? 'Uploading...' : 'Click to Upload Photo'}</span>
+                  </>
+                )}
+                <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handlePhotoUpload} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Coordinates</label>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <input className="drawer-input" placeholder="Lat" value={formData.latitude} required onChange={e => setFormData({...formData, latitude: e.target.value})} />
+                <input className="drawer-input" placeholder="Lng" value={formData.longitude} required onChange={e => setFormData({...formData, longitude: e.target.value})} />
+              </div>
+              <Button type="button" size="sm" variant={isMarking ? 'primary' : 'outline'} onClick={() => setIsMarking(!isMarking)} leftIcon={<MapPin />} style={{ marginTop: '0.75rem', width: '100%', borderRadius: '12px' }}>
+                {isMarking ? 'Click on map...' : 'Pick from map'}
+              </Button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Equipment Inventory</label>
+              <div className="inventory-grid">
+                {EQUIPMENT_TYPES.map(type => (
+                  <div key={type.id} className={`inventory-item ${formData.equipment[type.id].active ? 'active' : ''}`}>
+                    <label className="pill-toggle" style={{ marginBottom: formData.equipment[type.id].active ? '1rem' : '0' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={formData.equipment[type.id].active} 
+                        onChange={e => setFormData({
+                          ...formData, 
+                          equipment: {
+                            ...formData.equipment, 
+                            [type.id]: { ...formData.equipment[type.id], active: e.target.checked }
+                          }
+                        })} 
+                      />
+                      <div className="pill-label">{type.label}</div>
+                    </label>
+                    
+                    {formData.equipment[type.id].active && (
+                      <div className="inventory-details-container">
+                        <div className="inventory-detail-field">
+                          <label style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Brand</label>
+                          <input 
+                            className="drawer-input" 
+                            style={{ padding: '0.4rem 0.6rem', fontSize: '0.75rem' }}
+                            placeholder="Brand" 
+                            value={formData.equipment[type.id].brand}
+                            onChange={e => setFormData({
+                              ...formData,
+                              equipment: {
+                                ...formData.equipment,
+                                [type.id]: { ...formData.equipment[type.id], brand: e.target.value }
+                              }
+                            })}
+                          />
+                        </div>
+                        <div className="inventory-detail-field">
+                          <label style={{ fontSize: '0.6rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Model</label>
+                          <input 
+                            className="drawer-input" 
+                            style={{ padding: '0.4rem 0.6rem', fontSize: '0.75rem' }}
+                            placeholder="Model" 
+                            value={formData.equipment[type.id].model}
+                            onChange={e => setFormData({
+                              ...formData,
+                              equipment: {
+                                ...formData.equipment,
+                                [type.id]: { ...formData.equipment[type.id], model: e.target.value }
+                              }
+                            })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Button type="submit" variant="primary" style={{ marginTop: '1.5rem', height: '54px', borderRadius: '16px' }}>{editingId ? 'Update Station' : 'Save Station'}</Button>
+          </form>
+        </div>
+      </aside>
+
+      {activeEquipmentDetail && (
+        <div 
+          className="equipment-detail-overlay"
+          style={{ 
+            transform: `translate(calc(-50% + ${modalPos.x}px), calc(-50% + ${modalPos.y}px))`,
+            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
+        >
+          <div className="equipment-detail-header" onMouseDown={handleMouseDown} style={{ cursor: isDragging ? 'grabbing' : 'grab' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <h4>{activeEquipmentDetail.type.label}</h4>
+              <button 
+                onClick={() => setIsEditingDetail(!isEditingDetail)} 
+                onMouseDown={e => e.stopPropagation()}
+                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '4px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                {isEditingDetail ? 'Cancel' : 'Edit'}
+              </button>
+            </div>
+            <button className="equipment-detail-close" onClick={() => setActiveEquipmentDetail(null)} onMouseDown={e => e.stopPropagation()}><X size={16} weight="bold" /></button>
+          </div>
+          <div className="equipment-detail-body">
+            {[
+              { label: 'Model', key: 'model' },
+              { label: 'Brand', key: 'brand' },
+              { label: 'Specs', key: 'specs' },
+              { label: 'Coverage', key: 'coverage' },
+              { label: 'Coordinates', key: 'coordinates', disabled: true },
+              { label: 'Local DRRM Officer', key: 'officer' },
+              { label: 'Contact Number', key: 'contact' }
+            ].map(field => (
+              <div className="detail-row" key={field.key}>
+                <span className="detail-label">{field.label}</span>
+                {isEditingDetail && !field.disabled ? (
+                  <input 
+                    className="drawer-input"
+                    style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', marginTop: '0.25rem' }}
+                    value={field.key === 'coordinates' ? `${activeEquipmentDetail.station.latitude}, ${activeEquipmentDetail.station.longitude}` : detailEditData[field.key]}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (field.key === 'contact') {
+                        // Allow only numbers and limit to 11 digits (standard PH mobile)
+                        const numericVal = val.replace(/[^0-9]/g, '').slice(0, 11);
+                        setDetailEditData({ ...detailEditData, [field.key]: numericVal });
+                      } else {
+                        setDetailEditData({ ...detailEditData, [field.key]: val });
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="detail-value">
+                    {field.key === 'coordinates' 
+                      ? `${activeEquipmentDetail.station.latitude}, ${activeEquipmentDetail.station.longitude}` 
+                      : (activeEquipmentDetail.val[field.key] || detailEditData[field.key] || 'N/A')}
+                  </span>
+                )}
+              </div>
+            ))}
+            
+            {isEditingDetail && (
+              <Button 
+                onClick={handleSaveDetail} 
+                variant="primary" 
+                size="sm" 
+                style={{ marginTop: '0.5rem', width: '100%', borderRadius: '10px' }}
+                leftIcon={<CheckCircle size={16} />}
+              >
+                Save Changes
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

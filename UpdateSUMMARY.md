@@ -47,6 +47,11 @@ This document summarizes the development, refactoring, and feature implementatio
     - Integrated **ExcelJS** to replace standard CSV/XLSX exports.
     - Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay.
     - Implemented **Dependent Dropdowns**: Selecting a City automatically filters the available Barangays in the Excel file.
+- **Interactive Map Feature:**
+    - Developed a new module to visualize **Monitoring and Warning Stations** across Region I.
+    - Integrated **Leaflet** for geospatial data plotting with OpenStreetMap.
+    - Created a database migration script to import station inventories from Excel.
+    - Added real-time filtering by Province and LGU searching on the map.
 - **Mobile Compatibility & UI Optimization:**
     - Implemented a **Hamburger Menu** and mobile header for navigation on small screens.
     - Optimized the **Dashboard** and **Add Report** pages for mobile viewports using responsive CSS grids.
