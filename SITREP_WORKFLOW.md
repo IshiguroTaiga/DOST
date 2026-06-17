@@ -106,6 +106,7 @@ Once LGUs have inputted their data, Provincial users view the consolidated outpu
 - **PDF Generation**: Handled on the frontend via `generateRelatedIncidentsPdf.js` using `jspdf` and `jspdf-autotable`. It requires Signatories (Prepared By, Noted By, Approved By).
 - **Excel/CSV Generation**: Handled via `generateConsolidatedCsv.js`.
 - **Advanced Excel Templates (New)**: Templates are now generated using **ExcelJS** (instead of basic XLSX) to support native **Data Validation (Dropdowns)** for City and Barangay. It uses dependent list logic (`INDIRECT` formulas) to ensure data integrity during offline entry.
+- **Interactive Map GIS (New)**: A dedicated module for visualizing monitoring stations. It features a horizontal 3-3-1 inventory layout, draggable detail modals for real-time equipment editing, and backend partial-update support for surgical data integrity.
 - **AI Summary**: Uses `generateAISummary` (OpenAI/Gemini/Groq integration) to convert raw metrics into a readable textual summary for the PDF.
 
 ### Step 5: Approval Workflow

@@ -52,3 +52,16 @@
 - Reorganized Help Manual categories and added a "Developer Profile" section.
 - Added iframe/video embed support to the manual for developer showcases.
 - Completed the Update Summary and Code Review documentation for final system hand-over.
+
+### Day 11 (June 16-17)
+- Integrated **ExcelJS** to replace standard CSV/XLSX exports in templates.
+- Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay in Excel files.
+- Implemented **Dependent Dropdowns**: Selecting a City in Excel automatically filters available Barangays via `INDIRECT` formulas.
+- Implemented a **Mobile-First Responsive UI** including a Hamburger Menu and optimized grids for phone/tablet users.
+
+### Day 12 (June 17)
+- Developed the **Interactive GIS Map** for monitoring and warning stations.
+- Refactored Equipment Inventory to a **Horizontal 3-3-1 Grid Layout** for improved space efficiency.
+- Implemented **Draggable & Editable Detail Modals** for real-time equipment specification updates.
+- Refactored backend `PATCH` routes for stations to support **Partial Updates** and surgical data modification.
+- Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
