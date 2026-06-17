@@ -3,6 +3,11 @@
 **Version:** 1.2.1  
 **Stack:** React 19 (Vite) + Node.js/Express + PostgreSQL + Socket.io + Docker  
 **Domain:** https://proact.dost1.ph
+dist/assets/index-DIgBqyte.css             214.32 kB │ gzip:    34.04 kB
+dist/assets/purify.es-Bzr520pe.js           22.45 kB │ gzip:     8.63 kB
+dist/assets/index.es-fZDbFJQ4.js           158.56 kB │ gzip:    52.91 kB
+dist/assets/html2canvas.esm-DXEQVQnt.js    201.04 kB │ gzip:    47.43 kB
+dist/assets/index-Bcr-oZtE.js            4,408.80 kB │ gzip: 1,218.52 kB
 
 ---
 
@@ -16,11 +21,14 @@ PROACT is a multi-level disaster situational reporting platform used by RDRRMC (
 - Role-based data scoping (LGU → Provincial → Regional)
 - Real-time updates via Socket.io
 - PDF and CSV report generation and download
-- Approval workflow (Draft → Pending Approval → Approved/Rejected)
+- **Advanced Excel Templates**: Native Excel dropdowns and dependent location selection using ExcelJS
+- **Mobile-Responsive Design**: Full support for smartphones and tablets with a hamburger navigation menu
+- Approval workflow (Draft → Sent → Pending Approval → Approved/Rejected)
 - Signal alerts (typhoon warning signals) per location
 - LGU deployment tracking
 - In-app notifications
 - Dashboard KPIs and charts
+- **AI-Powered Analysis**: Automated executive summary generation using LLMs
 
 ---
 
@@ -73,7 +81,8 @@ report system/
 │   │   │   ├── notifications.js
 │   │   │   ├── signals.js      # Typhoon signal assignments
 │   │   │   ├── deployments.js  # LGU event deployments
-│   │   │   └── activityLogs.js
+│   │   │   ├── activityLogs.js
+│   │   │   └── settings.js     # AI and System settings
 │   │   └── utils/
 │   │       └── mailer.js       # Brevo/Nodemailer email
 │   └── uploads/                # Uploaded PDF files
@@ -96,8 +105,8 @@ report system/
 │   │   ├── ForcePasswordChange.jsx
 │   │   └── Manual.jsx
 │   ├── components/
-│   │   ├── Layout.jsx          # Shell with sidebar
-│   │   ├── Sidebar.jsx         # Navigation + role-based menu
+│   │   ├── Layout.jsx          # Shell with mobile responsive header
+│   │   ├── Sidebar.jsx         # Navigation + role-based menu + mobile hamburger
 │   │   ├── NotificationBell.jsx
 │   │   ├── SettingsModal.jsx
 │   │   ├── ConfirmationModal.jsx
@@ -109,6 +118,7 @@ report system/
 │       ├── api.js              # Axios instance with auth headers
 │       ├── generateConsolidatedCsv.js  # CSV export logic
 │       ├── generateRelatedIncidentsPdf.js  # PDF generation
+│       ├── dromicParser.js      # Excel import logic
 │       └── passwordUtils.js
 ├── nginx.conf                  # Nginx reverse proxy config
 ├── docker-compose.yml
@@ -164,6 +174,8 @@ report system/
 | rejection_remarks | TEXT | Set when rejected |
 | approved_pdf_url | TEXT | URL to approved PDF |
 | pending_pdf_url | TEXT | URL to pending PDF |
+| cloned_from_id | UUID FK → situational_reports | Source of auto-cloned data |
+| auto_cloned | BOOLEAN | Whether report was auto-cloned |
 
 ### 4.4 Report Sub-Tables (all linked to `situational_report_id` + `event_id`)
 
@@ -194,6 +206,7 @@ report system/
 | `notifications` | In-app notifications per user |
 | `activity_logs` | Audit trail of user actions |
 | `signatories` | Named signatories for PDF reports |
+| `ai_summaries` | History of generated AI summaries |
 
 ---
 
@@ -268,7 +281,7 @@ Token expiry: **7 days**
 - Auto-increments `report_number` per event
 - Notifies target LGU users with in-app notification
 - Auto-deploys LGU cities to `event_deployments`
-- Supports `copy_from_id`: clones all 14 sub-table data from a previous SitRep (transactional)
+- **Intelligent Auto-Clone**: Automatically clones all 14 sub-table data from the latest previous SitRep, respecting role-based geographic scoping (LGU clones city, Provincial clones province).
 
 #### `PATCH /situational-reports/:id`
 - Updates title, status, target_lgus, pdf URLs, rejection remarks
@@ -379,7 +392,7 @@ Token expiry: **7 days**
 **Icons:** Phosphor Icons  
 **Charts:** Recharts  
 **PDF Gen:** jsPDF + jspdf-autotable  
-**Excel/CSV:** xlsx-js-style  
+**Excel/CSV:** ExcelJS  
 **Real-time:** socket.io-client
 
 ### 6.1 Authentication Flow (`App.jsx`)
@@ -455,14 +468,16 @@ If `must_change_password = TRUE`, user is redirected to `ForcePasswordChange`.
 - Filters by event and SitRep selection
 - Only aggregates **Approved** SitReps
 - Data scoped by user role (LGU sees own city, Provincial sees own province, Regional sees all)
+- **Mobile Optimized**: Cards stack and layout adjusts for small screens.
 
 ### AddReport.jsx
 - The main data entry page
 - Users select an event and SitRep, then fill 14 collapsible sections
 - Each section maps to a sub-table (e.g., Affected Population → `reports`+`report_rows`)
 - Supports bulk save per section (POST bulk then PATCH bulk for updates)
-- Can clone data from previous SitRep when creating new one
-- Generates and uploads PDF of the completed report
+- **Intelligent Auto-Clone**: Data is automatically carried over from the previous SitRep upon creation.
+- **Enhanced Templates**: Generates Excel templates with native dropdowns for location selection.
+- Generates and uploads PDF of the completed report.
 
 ### ManageEvents.jsx
 - Create, edit, delete events
@@ -474,10 +489,11 @@ If `must_change_password = TRUE`, user is redirected to `ForcePasswordChange`.
 - Lists SitReps with status `Pending Approval`
 - Approver can view all section data, then Approve or Reject with remarks
 - Triggers PATCH to update SitRep status
+- **Mobile Friendly**: Approval workflow is accessible on mobile devices.
 
 ### ConsolidatedReport.jsx
 - Displays aggregated totals across selected SitReps for an event
-- CSV download via `generateConsolidatedCsv.js`
+- CSV/Excel download via `generateConsolidatedCsv.js`
 
 ### Users.jsx
 - Admin creates/edits/activates/deactivates users
@@ -509,7 +525,7 @@ Super Admin
          │
          ▼
     Status: Draft
-         │  (LGU fills data via AddReport) NOTE as of: 01/06/26 LGU should be able to approve own report
+         │  (LGU fills data via AddReport)
          ▼
     Status: Sent
          │  (Provincial submits for approval)
@@ -594,11 +610,11 @@ docker-compose up -d --build
 
 ---
 
-## 15. PDF Generation
+## 15. Document Generation
 
-- `src/lib/generateRelatedIncidentsPdf.js` — generates full SitRep PDF using jsPDF
-- `src/lib/generateConsolidatedCsv.js` — generates consolidated CSV per event using xlsx-js-style
-- PDFs are uploaded to the backend via `POST /upload` and the URL is stored in the SitRep record
+- `src/lib/generateRelatedIncidentsPdf.js` — generates full SitRep PDF using jsPDF.
+- `src/lib/generateConsolidatedCsv.js` — generates consolidated Excel/CSV using ExcelJS.
+- **Advanced Templates**: `AddReport.jsx` uses ExcelJS for templates with native dropdowns.
 
 ---
 

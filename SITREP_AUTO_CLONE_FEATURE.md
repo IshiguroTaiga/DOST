@@ -9,18 +9,13 @@
 
 ## 1. Overview
 
-### Current Behavior
-- Users explicitly choose to "copy data from previous SitRep" (manual cloning)
-- Creates friction during rapid SitRep creation cycles in disasters
-
-### Proposed Behavior (Auto-Clone)
-- When creating a new SitRep for an event, the system automatically detects the **latest previous SitRep**
-- All 15 data categories are cloned to the new SitRep
-- **Hierarchy-aware filtering**: Each user only clones data relevant to their role/location
-  - **LGU users**: Clone only their city's data
-  - **Provincial users**: Clone their province's data
-  - **Regional users**: Clone all data
-- Users then modify only changed values (delta updates), not re-enter everything
+### Current Behavior (PROACT 1.2.1)
+- **Intelligent Auto-Clone**: When creating a new SitRep for an event, the system automatically detects the **latest previous SitRep** (non-draft).
+- **Hierarchy-aware filtering**: Each user only clones data relevant to their role/location.
+  - **LGU users**: Clone only their city's data.
+  - **Provincial users**: Clone their province's data.
+  - **Regional users**: Clone all data.
+- **ExcelJS Templates**: Cloned data can be exported to Excel templates that now include native dropdowns for consistency.
 
 ---
 
@@ -69,15 +64,16 @@
 
 ### 2.2 Key Principles
 
-1. **Automatic Detection**: No user interaction needed; system finds the latest SitRep automatically
-2. **Role-Aware Filtering**: Only relevant data is cloned for each user's role
-3. **Transactional Integrity**: All clones succeed or all fail (no partial clones)
-4. **Non-Destructive**: Users can modify or delete cloned data without affecting the source
-5. **Audit Trail**: Every clone operation is logged with source SitRep ID and user who triggered it
+1. **Automatic Detection**: No user interaction needed; system finds the latest SitRep automatically.
+2. **Role-Aware Filtering**: Only relevant data is cloned for each user's role.
+3. **Transactional Integrity**: All clones succeed or all fail (no partial clones).
+4. **Non-Destructive**: Users can modify or delete cloned data without affecting the source.
+5. **Audit Trail**: Every clone operation is logged with source SitRep ID and user who triggered it.
+6. **Mobile Integration**: Users can trigger and verify clones via the mobile-optimized interface.
 
 ---
 
-## 3. Database Schema Changes
+## 3. Database Schema Status
 
 ### 3.1 New Column: `situational_reports`
 
