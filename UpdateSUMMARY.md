@@ -50,7 +50,9 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Interactive Map Feature:**
     - Developed a new module to visualize **Monitoring and Warning Stations** across Region I.
     - Integrated **Leaflet** for geospatial data plotting with OpenStreetMap.
-    - Created a database migration script to import station inventories from Excel.
+    - **Refined Inventory Management**: Implemented a horizontal 3-3-1 grid layout for equipment inventories in both popups and drawers.
+    - **Interactive Interactivity**: Added draggable and editable detail modals, allowing users to update specs and contact numbers directly on the map.
+    - **Surgical Backend**: Refactored API routes to support partial station updates, ensuring data integrity during equipment edits.
     - Added real-time filtering by Province and LGU searching on the map.
 - **Mobile Compatibility & UI Optimization:**
     - Implemented a **Hamburger Menu** and mobile header for navigation on small screens.

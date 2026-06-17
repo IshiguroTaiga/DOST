@@ -165,6 +165,13 @@ Integrated Leaflet to visualize monitoring and warning stations across the regio
 </MapContainer>
 ```
 
+### 5.7 Equipment Inventory & Interactive Detail Modals (Day 12)
+Refactored the inventory layout and added deep interactivity for equipment tracking.
+- **Horizontal Grid Layout**: Optimized vertical space by implementing a 3-column grid (3-3-1 pattern) for equipment types in both popups and drawers.
+- **Draggable Detail Modals**: Custom React implementation of draggable overlays for equipment specs using native mouse events.
+- **Partial Updates**: Refactored backend `PATCH` routes to support dynamic SQL query building, allowing surgical updates to specific equipment details without requiring full station payloads.
+- **Input Validation**: Implemented client-side numeric validation and length limits for contact data.
+
 ---
 
 ## 6. Technical Debt & Maintenance (Recommendations)

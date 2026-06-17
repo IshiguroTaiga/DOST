@@ -271,7 +271,7 @@ export const MANUAL_SECTIONS = [
       },
       {
         title: 'Week 3: Final Features and Debugging',
-        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover.\nDay 11: Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.',
+        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover.\nDay 11: Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.\nDay 12: Developed Interactive GIS Map; refactored Equipment Inventory to horizontal 3-3-1 grid; implemented draggable and editable equipment detail modals; refactored backend stations API for partial updates and added numeric input validation.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }

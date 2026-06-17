@@ -17,6 +17,7 @@ PROACT is a multi-level disaster situational reporting platform designed for the
 - **Automated Consolidation:** Real-time aggregation of local data into provincial and regional views.
 - **Smart Data Inheritance:** Intelligent auto-cloning of historical report data.
 - **Advanced Excel Templates:** Native Excel dropdowns and dependent location selection using ExcelJS.
+- **Interactive Map GIS:** Leaflet-powered visualization of regional monitoring stations with draggable/editable equipment details.
 - **Mobile-Responsive Design:** Full support for smartphones and tablets with a hamburger navigation menu.
 - **AI-Powered Analysis:** Automated executive summary generation using LLMs.
 - **Formal Approval Workflow:** Document-based approval pipeline mimicking government workflows.
@@ -104,7 +105,9 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 
 - **Rebranding:** Full transition from SIREN to PROACT with updated UI/UX.
 - **LGU Autonomy:** LGUs can now independently create and submit reports for review.
-- **Simplified Roles:** Removed redundant "Approver" roles in favor of a streamlined submission/signature flow.
+- **Interactive GIS Map:** New module for plotting **Monitoring and Warning Stations** across Region I.
+- **Advanced Inventory Tracking:** Refactored equipment inventory with 3-3-1 horizontal grid layouts and draggable detail modals for real-time spec editing.
+- **Backend Optimization:** Implemented **Partial Update** support in the stations API to handle surgical equipment detail edits without side effects.
 - **Weather Integration:** Real-time local weather updates via browser Geolocation API with Super Admin overrides.
 - **Security Enhancements:** Strengthened RBAC (Role-Based Access Control) and rigorous password verification logic.
 - **DROMIC Integration:** Template downloads and Excel import functionality for streamlined data entry.
@@ -115,9 +118,9 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 
 1.  **Selective Cloning:** Allow users to choose specific categories to carry over.
 2.  **Smart Suggestions:** AI-driven recommendations based on historical data trends.
-3.  **Scheduled Auto-Reports:** Automatic SitRep generation at fixed intervals (e.g., every 6 hours).
-4.  **Mobile-First Reporting:** Optimized interface for field-level data entry.
-5.  **Advanced GIS Integration:** Real-time mapping of incidents and damage reports.
+3.  **Advanced GIS Overlays:** Real-time mapping of disaster incidents (floods, landslides) on the Interactive Map.
+4.  **Scheduled Auto-Reports:** Automatic SitRep generation at fixed intervals (e.g., every 6 hours).
+5.  **Mobile-First Reporting:** Optimized interface for field-level data entry.
 
 ---
 

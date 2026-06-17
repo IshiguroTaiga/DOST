@@ -615,7 +615,11 @@ docker-compose up -d --build
 - `src/lib/generateRelatedIncidentsPdf.js` — generates full SitRep PDF using jsPDF.
 - `src/lib/generateConsolidatedCsv.js` — generates consolidated Excel/CSV using ExcelJS.
 - **Advanced Templates**: `AddReport.jsx` uses ExcelJS for templates with native dropdowns.
-- **Interactive Map**: `src/pages/InteractiveMap.jsx` uses Leaflet to plot station inventories. Data is migrated from Excel using `backend/migrate_stations.cjs`.
+- **Interactive Map GIS**: `src/pages/InteractiveMap.jsx` uses Leaflet to plot station inventories.
+    - **Refined Inventory**: Implements a horizontal 3-3-1 grid layout for equipment.
+    - **Draggable Modals**: Allows users to reposition equipment detail windows.
+    - **Real-time Editing**: Integrated with the backend stations API for direct spec/contact updates.
+    - **Migration**: Data is migrated from Excel using `backend/migrate_stations.cjs`.
 
 ---
 
