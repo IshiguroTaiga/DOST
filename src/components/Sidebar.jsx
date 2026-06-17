@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X, MapTrifold } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
@@ -100,6 +100,14 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
               {getNavCount('/dashboard')}
             </span>
           )}
+        </NavLink>
+        <NavLink
+          to="/map"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          title={isCollapsed ? 'Interactive Map' : ''}
+        >
+          <MapTrifold size={16} weight="bold" />
+          {!isCollapsed && <span>Interactive Map</span>}
         </NavLink>
         {(isAdmin || isRegional || isProvincial) && (
           <NavLink

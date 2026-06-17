@@ -577,6 +577,21 @@ CREATE TABLE IF NOT EXISTS public.ai_summaries (
 );
 
 -- ============================================================
+-- TABLE: monitoring_stations
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.monitoring_stations (
+  id UUID NOT NULL DEFAULT gen_random_uuid(),
+  province TEXT NOT NULL,
+  lgu TEXT NOT NULL,
+  address TEXT,
+  latitude NUMERIC,
+  longitude NUMERIC,
+  equipment_details JSONB DEFAULT '{}'::JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT monitoring_stations_pkey PRIMARY KEY (id)
+);
+
+-- ============================================================
 -- SEED: Default Super Admin User
 -- Email:    admin@proact.local
 -- Password: Admin@1234

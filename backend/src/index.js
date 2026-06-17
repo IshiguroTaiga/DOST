@@ -18,6 +18,7 @@ const deploymentsRoutes = require('./routes/deployments');
 const activityLogsRoutes = require('./routes/activityLogs');
 const lguSubmissionsRoutes = require('./routes/lguSubmissions');
 const settingsRoutes = require('./routes/settings');
+const stationsRoutes = require('./routes/stations');
 const { seedAdmin } = require('./seed');
 
 const app = express();
@@ -113,6 +114,7 @@ app.use('/api/signals', signalsRoutes);
 app.use('/api/deployments', deploymentsRoutes);
 app.use('/api/activity-logs', activityLogsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/stations', stationsRoutes);
 
 // Backup Routes (non-prefixed)
 app.use('/auth', authRoutes);
@@ -126,6 +128,7 @@ app.use('/signals', signalsRoutes);
 app.use('/deployments', deploymentsRoutes);
 app.use('/activity-logs', activityLogsRoutes);
 app.use('/settings', settingsRoutes);
+app.use('/stations', stationsRoutes);
 
 // --- Error Handler ---
 app.use((err, req, res, next) => {
