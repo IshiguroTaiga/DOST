@@ -11,24 +11,31 @@
 - Fixed bugs in the event assignment interface to allow "apply to all" functionality.
 - Developed a pop-up modal to display details for "Affected Persons".
 - Integrated a redirection link to the SOLIDO DRRM Knowledge Hub in the sidebar.
+- Log in page BG to WhiteSmoke.
 
 ### Day 3 (June 3)
 - Familiarized with the project's file structure (React/JavaScript stack).
 - Implemented UI refinements to the dashboard header as instructed.
+- Finalized PROACT logo.
 
 ### Day 4 (June 4)
-- Provided technical support at Ynads Hotel and Resort, including setting up networking cables and hardware.
+- Sidebar: Added Hazard Information which includes three external resources: Solido, PAGASA, and PHIVOLCS.
+- Fixed dash-hero-meta and dash-hero-amount overlapping.
 
 ## Week 2: Backend Logic and System Optimization
 
 ### Day 5 (June 8)
-- Integrated the Browser Geolocation API into `Dashboard.jsx` for real-time local weather tracking.
+- Integrated the Browser Geolocation API (wttr) into `Dashboard.jsx` for real-time local weather tracking.
 - Simplified user management by removing redundant "Approver" roles.
 - Implemented a self-approval workflow for LGUs and Provinces.
+- Add Report: fixed classification and summary details not displaying.
+- Added weatherClassification.json.
+- Assistance Value: not properly displaying 1M, 1B currency
+- Added handleScrollToBottom for Damaged Houses
 
 ### Day 6 (June 9)
 - Developed an AI report summary generator that allows users to switch between models like Groq (Llama 3) and Google Gemini using custom API keys.
-- Performed hardware maintenance, including RJ45 cable crimping and replacement.
+- dashboard.css == changed display: flex; to display: grid; at dash-hero-meta
 
 ### Day 7 (June 10)
 - Conducted testing on a Vercel deployment.
@@ -37,12 +44,15 @@
 ### Day 8 (June 11)
 - Worked remotely to fix PDF preview bugs.
 - Created a new database schema to store a history of AI-generated executive summaries.
+- Affected Person: Barchart Vertical turned to Barchart Horizontal and Added Filtering.
+- Suspension: Suspension by City changed to Suspension by LGU.
 
 ## Week 3: Final Features and Debugging
 
 ### Day 9 (June 15)
-- Performed inventory at the RSTL building and microlaboratory.
 - Fixed two major bugs in situational reporting: isolated data leaking between provinces and standardized the global SitRep numbering sequence.
+- Affected Person: Clicking the city/municipality displays their respective barangays (Accordion).
+- Affected Person Chart: Added Pop-up modal, if the user click the chart of the specific city/municipality it will show the barangays chart too.
 
 ### Day 10 (June 16)
 - Conducted a final security audit.
@@ -52,6 +62,9 @@
 - Reorganized Help Manual categories and added a "Developer Profile" section.
 - Added iframe/video embed support to the manual for developer showcases.
 - Completed the Update Summary and Code Review documentation for final system hand-over.
+- Hazard Information: when the sidebar is collapsed, Solido, PAGASA, and PHIVOLCS are not showing FIXED.
+- Weather Icon to Black Colors.
+- Fixed Affected Person showing wrong numbers.
 
 ### Day 11 (June 16-17)
 - Integrated **ExcelJS** to replace standard CSV/XLSX exports in templates.
@@ -65,3 +78,4 @@
 - Implemented **Draggable & Editable Detail Modals** for real-time equipment specification updates.
 - Refactored backend `PATCH` routes for stations to support **Partial Updates** and surgical data modification.
 - Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
+- Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.
