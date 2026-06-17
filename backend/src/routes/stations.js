@@ -4,6 +4,43 @@ const pool = require('../db');
 const { authenticate } = require('../middleware/auth');
 
 /**
+ * Helper to ensure table exists with all necessary columns.
+ */
+async function ensureTable() {
+  try {
+    // Create table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.monitoring_stations (
+        id UUID NOT NULL DEFAULT gen_random_uuid(),
+        province TEXT NOT NULL,
+        lgu TEXT NOT NULL,
+        address TEXT,
+        latitude NUMERIC,
+        longitude NUMERIC,
+        equipment_details JSONB DEFAULT '{}'::JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT monitoring_stations_pkey PRIMARY KEY (id)
+      )
+    `);
+
+    // Ensure photo_url column exists (added in later update)
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='monitoring_stations' AND column_name='photo_url') THEN
+          ALTER TABLE monitoring_stations ADD COLUMN photo_url TEXT;
+        END IF;
+      END $$;
+    `);
+  } catch (err) {
+    console.error('[Stations Init] Error ensuring table exists:', err);
+  }
+}
+
+// Run init
+ensureTable();
+
+/**
  * GET /api/stations
  * Returns all monitoring and warning stations.
  */
