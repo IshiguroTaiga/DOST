@@ -104,20 +104,23 @@ Once LGUs have inputted their data, Provincial users view the consolidated outpu
 
 **Exporting:**
 - **PDF Generation**: Handled on the frontend via `generateRelatedIncidentsPdf.js` using `jspdf` and `jspdf-autotable`. It requires Signatories (Prepared By, Noted By, Approved By).
-- **CSV Generation**: Handled via `generateConsolidatedCsv.js`.
-- **AI Summary**: Uses `generateSummary` (OpenAI integration) to convert raw metrics into a readable textual summary for the PDF.
+- **Excel/CSV Generation**: Handled via `generateConsolidatedCsv.js`.
+- **Advanced Excel Templates (New)**: Templates are now generated using **ExcelJS** (instead of basic XLSX) to support native **Data Validation (Dropdowns)** for City and Barangay. It uses dependent list logic (`INDIRECT` formulas) to ensure data integrity during offline entry.
+- **AI Summary**: Uses `generateAISummary` (OpenAI/Gemini/Groq integration) to convert raw metrics into a readable textual summary for the PDF.
 
 ### Step 5: Approval Workflow
 *Frontend: `ForApproval.jsx` | Backend: `situationalReports.js`*
 
 The SitRep lifecycle moves through specific statuses:
 1. **Draft**: Initial state. LGUs and Provincial users are inputting data.
-2. **Pending Approval (Sent)**: 
-   - Provincial user generates the PDF, physically signs it (or attaches signatures), and uploads it.
-   - Status changes to `Pending Approval`. The file is saved to `pending_pdf_url`.
+2. **Sent**: 
+   - LGU or Provincial user completes data entry.
+   - **Mobile-Ready Navigation**: The system now features a responsive hamburger menu for easy navigation on tablets and phones during field reports.
+   - User generates the PDF, physically signs it (or attaches signatures), and uploads it.
+   - Status changes to `Sent` (or `Pending Approval`). The file is saved to `pending_pdf_url`.
 3. **Review by Approver**:
    - `Provincial Approver` (e.g., PDRRMO Head) logs in and sees the report in `ForApproval.jsx`.
-   - They review the attached PDF.
+   - They review the attached PDF and consolidated data view (now mobile-optimized).
 4. **Approve / Reject**:
    - **Approve**: Status becomes `Approved`. `pending_pdf_url` is moved to `approved_pdf_url`. Socket event `sitrep:updated` is fired.
    - **Reject**: Status reverts to `Draft`. The Approver must provide `rejection_remarks`. The Provincial team gets notified, makes corrections, and resubmits.
@@ -130,6 +133,12 @@ The SitRep lifecycle moves through specific statuses:
 The system uses Socket.IO initialized in `backend/src/index.js`.
 - `io.emit('events:created')`, `io.emit('sitrep:updated')`, etc.
 - In the frontend, `EventContext.jsx` establishes the connection and listens to these events to trigger functions like `fetchSituationalReports()` or `fetchPendingApprovalsCount()`.
+
+### Mobile Responsiveness (New)
+The UI has been refactored for cross-device compatibility:
+- **Hamburger Menu**: Replaces the sidebar on screens < 768px.
+- **Grid Stacking**: Dashboard cards and report grids stack vertically on mobile.
+- **Table Wrapping**: Tables are wrapped in `overflow-x: auto` containers to maintain usability on small screens.
 
 ### Multi-Tenancy (Row-Level Scoping)
 Authorization is strictly enforced in the API routes. In almost every `GET` request (e.g., `situationalReports.js`, `reports.js`), a scoping block exists:
@@ -148,4 +157,4 @@ PDFs uploaded during the approval process are handled by `multer` in `index.js`,
 ---
 
 ## 5. Summary
-The PROACT SitRep system is a robust, multi-tiered reporting engine. Its power lies in the strict role-based data scoping, the ability to rapidly clone massive amounts of data from previous reports, real-time collaboration using WebSockets, and a formal document-based approval pipeline that mimics actual government workflows.
+The PROACT SitRep system is a robust, multi-tiered reporting engine. Its power lies in the strict role-based data scoping, the ability to rapidly clone massive amounts of data from previous reports, real-time collaboration using WebSockets, and a formal document-based approval pipeline that mimics actual government workflows. The latest updates further enhance data integrity through **Advanced Excel Dropdowns** and improve accessibility via a **Mobile-First Responsive UI**.
