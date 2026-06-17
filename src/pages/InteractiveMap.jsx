@@ -381,10 +381,6 @@ export default function InteractiveMap() {
 
       <div className="map-overlay-title-card">
         <h2>Region I Ready Map</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-          <Globe size={14} color="#3b82f6" weight="bold" />
-          <p style={{ margin: 0 }}>{filteredStations.length} Stations Active</p>
-        </div>
       </div>
 
       <div className="map-overlay-controls">
