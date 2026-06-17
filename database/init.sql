@@ -587,6 +587,7 @@ CREATE TABLE IF NOT EXISTS public.monitoring_stations (
   latitude NUMERIC,
   longitude NUMERIC,
   equipment_details JSONB DEFAULT '{}'::JSONB,
+  photo_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT monitoring_stations_pkey PRIMARY KEY (id)
 );
