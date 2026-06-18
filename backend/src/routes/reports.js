@@ -31,6 +31,29 @@ const cityCondition = (tableAlias, paramIndex) => {
   return `REGEXP_REPLACE(${tableAlias}.city, '\\s*\\(.*\\)\\s*$', '') = $${paramIndex}`;
 };
 
+const validateReportAccess = (user, data) => {
+  const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
+  if (isSuperAdmin || isRegional) return true;
+
+  const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
+  const rows = Array.isArray(data) ? data : [data];
+
+  if (isLgu && user.city) {
+    const normalize = (s) => (s || '').replace(/\s*\(.*\)\s*$/, '').replace(/^city\s+of\s+/i, '').trim().toLowerCase();
+    const cleanUserCity = normalize(user.city);
+    for (const row of rows) {
+      if (row.city) {
+        const cleanRowCity = normalize(row.city);
+        if (cleanRowCity && cleanRowCity !== cleanUserCity) {
+          return `Forbidden: You can only submit data for ${user.city}. Found: ${row.city}`;
+        }
+      }
+    }
+  }
+  return true;
+};
+
 // GET /api/reports/all-types?situational_report_id=
 router.get('/all-types', authenticate, async (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -367,6 +390,11 @@ router.post('/:table', authenticate, async (req, res) => {
   const { table } = req.params;
   if (!ALLOWED_TABLES.has(table)) return res.status(400).json({ error: 'Unknown table' });
   const body = req.body;
+
+  // Validation
+  const accessError = validateReportAccess(req.user, body);
+  if (accessError !== true) return res.status(403).json({ error: accessError });
+
   const columns = Object.keys(body);
   const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
   const values = columns.map(col => typeof body[col] === 'object' && body[col] !== null ? JSON.stringify(body[col]) : body[col]);
@@ -391,6 +419,10 @@ router.post('/:table/bulk', authenticate, async (req, res) => {
   if (!ALLOWED_TABLES.has(table)) return res.status(400).json({ error: 'Unknown table' });
   const data = req.body;
   if (!Array.isArray(data) || data.length === 0) return res.status(400).json({ error: 'Array required' });
+
+  // Validation
+  const accessError = validateReportAccess(req.user, data);
+  if (accessError !== true) return res.status(403).json({ error: accessError });
 
   const client = await pool.connect();
   try {
@@ -423,6 +455,11 @@ router.patch('/:table/bulk', authenticate, async (req, res) => {
   const { table } = req.params;
   if (!ALLOWED_TABLES.has(table)) return res.status(400).json({ error: 'Unknown table' });
   const data = req.body;
+
+  // Validation
+  const accessError = validateReportAccess(req.user, data);
+  if (accessError !== true) return res.status(403).json({ error: accessError });
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
