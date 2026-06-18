@@ -48,7 +48,7 @@ export default function Login({ onLogin }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <img src="/proactLogo.png" alt="PROACT LOGO" className="login-logo-img" />
+          <img src="/proactLogo1RDRRMC.png" alt="PROACT LOGO" className="login-logo-img" />
           <p>Sign in to your account</p>
         </div>
 

@@ -73,7 +73,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-branding" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-          <img src={isCollapsed ? '/P.png' : '/proactLogo.png'} alt="PROACT Logo" className="sidebar-logo-image" />
+          <img src={isCollapsed ? '/P.png' : '/proactLogo1RDRRMC.png'} alt="PROACT Logo" className="sidebar-logo-image" />
         </div>
         <button className="mobile-close-btn" onClick={onCloseMobile}>
           <X size={20} weight="bold" />
