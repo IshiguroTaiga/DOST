@@ -236,9 +236,9 @@ export const MANUAL_SECTIONS = [
     steps: [
       {
         title: 'Developers Profile',
-        text: '[Placeholder for About Me content. To be updated by the developer.]',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
+        text: 'Patongan, Joaquin\nPermison, Micko Gabriel\nBullanday, Luis\nPagurayan, Angel Lyka\nLadera, Ivan',
+        visual: '/assets/help/DVProfile.JPG',
+        type: 'iframe'
       },
       {
         title: 'Developer Showcase',
