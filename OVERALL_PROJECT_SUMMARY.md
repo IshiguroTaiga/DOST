@@ -3,7 +3,7 @@
 **System Name:** PROACT (Proactive Reporting, Operation, Analysis, Communication and Tracking System)  
 **Formerly:** SIREN (Situation Intelligence & Rapid Emergency Network)  
 **Domain:** https://proact.dost1.ph  
-**Version:** 1.2.1 (June 2026)
+**Version:** 1.2.2 (June 2026)
 
 ---
 
@@ -17,6 +17,7 @@ PROACT is a multi-level disaster situational reporting platform designed for the
 - **Automated Consolidation:** Real-time aggregation of local data into provincial and regional views.
 - **Smart Data Inheritance:** Intelligent auto-cloning of historical report data.
 - **Advanced Excel Templates:** Native Excel dropdowns and dependent location selection using ExcelJS.
+- **LGU Scope Validation:** Strict enforcement of jurisdictional boundaries during Excel imports and API submissions.
 - **Interactive Map GIS:** Leaflet-powered visualization of regional monitoring stations with draggable/editable equipment details.
 - **Mobile-Responsive Design:** Full support for smartphones and tablets with a hamburger navigation menu.
 - **AI-Powered Analysis:** Automated executive summary generation using LLMs.
@@ -105,6 +106,7 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 
 - **Rebranding:** Full transition from SIREN to PROACT with updated UI/UX.
 - **LGU Autonomy:** LGUs can now independently create and submit reports for review.
+- **LGU Scope Enforcement:** Implemented strict LGU-level boundaries for Excel templates and API submissions to prevent cross-jurisdictional data entry.
 - **Interactive GIS Map:** New module for plotting **Monitoring and Warning Stations** across Region I.
 - **Advanced Inventory Tracking:** Refactored equipment inventory with 3-3-1 horizontal grid layouts and draggable detail modals for real-time spec editing.
 - **Backend Optimization:** Implemented **Partial Update** support in the stations API to handle surgical equipment detail edits without side effects.
@@ -124,5 +126,5 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 
 ---
 
-**Last Updated:** June 16, 2026  
+**Last Updated:** June 18, 2026  
 **Maintained By:** DOST ITSM Unit Development Team

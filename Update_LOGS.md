@@ -79,3 +79,10 @@
 - Refactored backend `PATCH` routes for stations to support **Partial Updates** and surgical data modification.
 - Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
 - Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.
+
+### Day 13 (June 18)
+- Implemented **LGU/Provincial Scope Validation** for Excel uploads.
+- Restricted **Excel Template Dropdowns**: LGU users now only see their assigned city in the template selection.
+- Added **Frontend Import Filtering**: Automatically skips unauthorized rows during Excel/CSV imports with a warning notification.
+- Strengthened **Backend API Security**: Integrated `validateReportAccess` in all report `POST` and `PATCH` routes to strictly enforce LGU boundaries at the server level.
+- Refactored `AddReport.jsx` and `reports.js` to use **Normalized City Comparison** (case-insensitive and prefix-aware) for robust access control.
