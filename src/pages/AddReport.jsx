@@ -1918,7 +1918,39 @@ useEffect(() => {
         const data = XLSX.utils.sheet_to_json(ws)
 
         if (data && data.length > 0) {
-          const importedRows = data.map(config.map)
+          let importedRows = data.map(config.map)
+
+          // Scope Validation: Ensure users can only import data they are authorized for
+          if (!isSuperAdmin && !isRegional) {
+            if (isLGU && user?.city) {
+              const cleanUserCity = normalizeCity(user.city)
+              const unauthorized = importedRows.filter(r => r.city && normalizeCity(r.city) !== cleanUserCity)
+              if (unauthorized.length > 0) {
+                showToast('Scope Warning', `Skipped ${unauthorized.length} rows not belonging to ${user.city}.`, 'warning')
+                importedRows = importedRows.filter(r => !r.city || normalizeCity(r.city) === cleanUserCity)
+              }
+            } else if (isProvincial && userProvince) {
+              const unauthorized = importedRows.filter(r => {
+                if (!r.city) return false
+                const rowProv = getProvinceForCity(r.city)
+                return rowProv && rowProv !== userProvince
+              })
+              if (unauthorized.length > 0) {
+                showToast('Scope Warning', `Skipped ${unauthorized.length} rows not belonging to ${userProvince}.`, 'warning')
+                importedRows = importedRows.filter(r => {
+                  if (!r.city) return true
+                  const rowProv = getProvinceForCity(r.city)
+                  return !rowProv || rowProv === userProvince
+                })
+              }
+            }
+          }
+
+          if (importedRows.length === 0) {
+            showToast('Import Failed', 'No valid rows found for your LGU/Province scope.', 'danger')
+            return
+          }
+
           setRows(importedRows)
           showSuccess('Import Successful', `Imported ${importedRows.length} rows. Please verify the data.`)
         } else {
@@ -1962,7 +1994,20 @@ useEffect(() => {
     }))
 
     // Add LGU data to hidden sheet
-    const lgus = LGU_NAMES
+    // Restricted to user's scope: SuperAdmin/Regional see all, Provincial see their province, LGUs see only their city
+    let lgus = []
+    if (isSuperAdmin || isRegional) {
+      lgus = LGU_NAMES
+    } else if (isProvincial) {
+      lgus = getLguNames(userProvince)
+    } else if (isLGU) {
+      // For LGU users, strictly show only their city
+      lgus = [user?.city].filter(Boolean)
+    } else {
+      // Default fallback
+      lgus = LGU_NAMES
+    }
+      
     dataSheet.getColumn(1).values = ['LGUs', ...lgus]
     
     // Create named range for LGUs
@@ -2301,6 +2346,31 @@ useEffect(() => {
             setSubmitting(false)
             return
           }
+
+          // Scope Validation (Final check before submission)
+          if (!isSuperAdmin && !isRegional) {
+            if (isLGU && user?.city) {
+              const cleanUserCity = normalizeCity(user.city)
+              const invalid = validRows.find(r => r.city && normalizeCity(r.city) !== cleanUserCity)
+              if (invalid) {
+                showToast('Scope Error', `Unauthorized data detected. You can only submit for ${user.city}.`, 'danger')
+                setSubmitting(false)
+                return
+              }
+            } else if (isProvincial && userProvince) {
+              const invalid = validRows.find(r => {
+                if (!r.city) return false
+                const rowProv = getProvinceForCity(r.city)
+                return rowProv && rowProv !== userProvince
+              })
+              if (invalid) {
+                showToast('Scope Error', `Unauthorized data detected. You can only submit for cities in ${userProvince}.`, 'danger')
+                setSubmitting(false)
+                return
+              }
+            }
+          }
+
           const table = CATEGORY_TO_TABLE[activeCategoryModal]
           let reportId = null
           
