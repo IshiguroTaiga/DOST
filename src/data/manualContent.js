@@ -232,11 +232,11 @@ export const MANUAL_SECTIONS = [
     category: 'developer',
     title: 'Developers Profile',
     roles: ['All'],
-    description: 'Information about the developer/contributor.',
+    description: 'Information about the developer/contributor of PROACT.',
     steps: [
       {
         title: 'Developers Profile',
-        text: 'Patongan, Joaquin\nPermison, Micko Gabriel\nBullanday, Luis\nPagurayan, Angel Lyka\nLadera, Ivan',
+        text: 'Patongan, Joaquin\nBullanday, Luis\nLadera, Ivan\nPagurayan, Angel Lyka\nPermison, Micko Gabriel',
         visual: '/assets/help/DVProfile.JPG',
         type: 'iframe'
       },
