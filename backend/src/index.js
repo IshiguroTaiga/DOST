@@ -19,7 +19,7 @@ const activityLogsRoutes = require('./routes/activityLogs');
 const lguSubmissionsRoutes = require('./routes/lguSubmissions');
 const settingsRoutes = require('./routes/settings');
 const stationsRoutes = require('./routes/stations');
-const { seedAdmin } = require('./seed');
+const { initDatabase } = require('./dbInit');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -140,5 +140,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, async () => {
   console.log(`[PROACT API] Running on port ${PORT}`);
-  await seedAdmin();
+  try {
+    await initDatabase();
+  } catch (err) {
+    console.error('Fatal error during startup db initialization:', err);
+  }
 });

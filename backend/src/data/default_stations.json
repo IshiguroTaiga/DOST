@@ -1,0 +1,3653 @@
+[
+  {
+    "province": "La Union",
+    "lgu": "LGU DOST",
+    "address": "San Fernando CIty",
+    "latitude": "16.6159",
+    "longitude": "120.3159",
+    "equipment_details": {
+      "arg": {
+        "brand": "fFrf",
+        "model": "RrfAFf",
+        "coords": "fFf"
+      },
+      "aws": {
+        "brand": "fdwaFRf",
+        "model": "FfF",
+        "coords": "AFfF"
+      },
+      "ctas": {
+        "brand": "ararfarf",
+        "model": "atratat",
+        "coords": "tatata"
+      },
+      "slms": null,
+      "wlms": {
+        "brand": "fgatga",
+        "model": "agtaga",
+        "coords": "artara"
+      },
+      "peimnet": {
+        "brand": "ARarfa",
+        "model": "tfafar",
+        "coords": "rqarfa"
+      },
+      "alerting": {
+        "name": "atat",
+        "brand": "atat",
+        "model": "tqat",
+        "coords": "atat"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Umingan",
+    "address": "Municipal Hall, Municipal St., Poblacion West, Umingan, Pangasinan 2443",
+    "latitude": "15.938268",
+    "longitude": "120.841867",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.938268° 120.841867°",
+        "coverage": "N/A"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.927145° 120.841012°",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Pozorrubio",
+    "address": "Sison Street, Poblacion District III, Pozorrubio, Pangasinan",
+    "latitude": "16.110721",
+    "longitude": "120.545379",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "address": "Poblacion West, San Ildefonso, Ilocos Sur",
+    "latitude": "17.624252",
+    "longitude": "120.393423",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Siren",
+        "brand": "LK",
+        "model": "M2",
+        "coords": "MDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN FABIAN",
+    "address": "POBLACION, SAN FABIAN, PANGASINAN",
+    "latitude": "16.12198",
+    "longitude": "120.40302",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU- SUDIPEN",
+    "address": "Poblacion, Sudipen, La Union",
+    "latitude": "16.90512",
+    "longitude": "120.462663",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Bolinao",
+    "address": "Concordia, Bolinao, Pangasinan",
+    "latitude": "16.38835874920866",
+    "longitude": "119.89278535704038",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": {
+        "brand": "c/o DOST-PHIVOLCS",
+        "model": "c/o DOST-PHIVOLCS",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "Japan International Cooperation Agency (JICA)",
+        "model": "aJ2P-001",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU BANGAR, LA UNION",
+    "address": "National Highway, Brgy. Central East # 2, Bangar, La Union",
+    "latitude": "16.8942",
+    "longitude": "120.424",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Comtel",
+        "model": "CS 2-4-112",
+        "coords": "N (16.8942), E (120.4240)",
+        "coverage": "1 km radius"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "aJ2P-001",
+        "coords": "N (16.8942), E (120.4241)",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU BANTAY",
+    "address": "BRGY. V, BANTAY, ILOCOS SUR",
+    "latitude": "17.581073665471905",
+    "longitude": "120.39029182332621",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS INSTRUMENTS WEATHERLINK CONSOLE",
+        "model": "6313",
+        "coords": "17.581073665471905 120.39029182332621",
+        "coverage": "Up to 1,000 feet (300 meters)"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Bugallon, Pangasinan",
+    "address": "National Road Poblacion Bugallon, Pangasinan",
+    "latitude": "15.95436",
+    "longitude": "120.21651",
+    "equipment_details": {
+      "arg": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436, 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "aws": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436 , 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Water level monitoring system installed at Barangay Banaga by PAGASA  ",
+        "model": "Installed  staff gauge Agno River Basin Flood Forecasting and Warning Center  Telemetry equipment ",
+        "coords": " Latitude: 15.93° N Longitude: 120.18° ",
+        "coverage": "Banaga Agnon River "
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU DINGRAS",
+    "address": "BRGY MADAMBDA,DINGRAS ILOCOS NORTE 2913",
+    "latitude": "18.095693",
+    "longitude": "120.71843",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT:18.095693    LONG: 120.71843",
+        "coverage": "50"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "lat: 18.095693  long: 120.71843",
+        "coverage": "50"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT: 18.095693 LONG: 120.71843",
+        "coverage": "50"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Balaoan",
+    "address": "Antonino, Balaoan, La Union",
+    "latitude": "16.82163",
+    "longitude": "120.40214",
+    "equipment_details": {
+      "arg": {
+        "brand": "Oregon Scientific",
+        "model": "RGR126N",
+        "coords": "N (16.82163) E (120.40214)",
+        "coverage": "Up to 100 feet"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU SANTO TOMAS LA UNION",
+    "address": "PATAC, SANTO TOMAS, LA UNION 2505",
+    "latitude": "16.284362",
+    "longitude": "120.390779",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS Vantage Pro2 Weather Station",
+        "model": "6263",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius"
+      },
+      "aws": {
+        "brand": "DAVIS Vantage Pro 2 Weather Station",
+        "model": "6253",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius "
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Natividad, Pangasinan",
+    "address": "Poblacion East, Natividad, Pangasinan",
+    "latitude": "16.0427694",
+    "longitude": "120.7965869",
+    "equipment_details": {
+      "arg": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "aws": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.0325055,120.7999356",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU VINTAR, ILOCOS NORTE",
+    "address": "BRGY. #2 SAN NICOLAS, VINTAR, ILOCOS NORTE",
+    "latitude": "18.326",
+    "longitude": "120.734",
+    "equipment_details": {
+      "arg": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.326*  / LON: 120.734*",
+        "coverage": "NOT SURE"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.322*   / LON: 120.730*",
+        "coverage": "NOT SURE"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "ELECTRONIC ACTIVATED SIREN",
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LGU VINTAR-MUNICIPAL DISASTER RISK REDUCTION & MANAGEMENT OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN JACINTO",
+    "address": "BARANGAY CAPAOAY SAN JACINTO PANGASINAN ",
+    "latitude": "16.082",
+    "longitude": "120.4235",
+    "equipment_details": {
+      "arg": {
+        "brand": "...",
+        "model": "...",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "aws": {
+        "brand": "RIKA",
+        "model": "MODEL 1 RKL-03 LIQUID LEVEL TRANSMITTER / MODEL 2 RL330-01A ATMHOSPERIC TEMPERATURE AND HUMIDITY  ",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "RIKA ",
+        "model": "MODEL 1 RKL - 03 LIQUID LEVEL TRANSMITTER  / MODEL 2 RL330 01A ATMHOSPERIC TEMPERATURE  AND HUMIDITY SENSOR ",
+        "coords": "APPROXIMATELY 16.0820N, 120.4235E.",
+        "coverage": "..."
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "POWER SIREN ",
+        "brand": "...",
+        "model": "ELECTRONIC POWER SIREN ",
+        "coords": "MDRRMO "
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Bani, Pangasinan",
+    "address": "Bani, Pangasinan",
+    "latitude": "16.1970575",
+    "longitude": "119.8620832",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "PEIMNET",
+        "model": "PEIMNET",
+        "coords": "16.1970575,119.8620832",
+        "coverage": "  "
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU - Suyo, Ilocos Sur",
+    "address": "Poblacion, Suyo, Ilocos Sur",
+    "latitude": "16.972808333333333",
+    "longitude": "120.54101388888888",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Meter Group",
+        "model": "ATMOS 41W wireless all-in-one weather station",
+        "coords": " 16°58'22.11\"N 120°32'27.65\"E",
+        "coverage": "2 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Burgos, Ilocos Sur",
+    "address": "Poblacion Norte, Burgos, Ilocos Sur",
+    "latitude": "17.333423",
+    "longitude": "120.49481",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTE",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "aws": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTEM",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Sta. Catalina, Ilocos Sur",
+    "address": "Sta. Catalina, Ilocos Sur",
+    "latitude": "17.5843",
+    "longitude": "120.3576",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5k"
+      },
+      "aws": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "concrete",
+        "model": "concrete post",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "2"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "early warning system with public address",
+        "brand": "talos",
+        "model": "talos",
+        "coords": "LGU Sta. Catalina"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "SUDIPEN",
+    "address": "McArthur Hiway, Brgy. Poblacion, Sudipen, La Union",
+    "latitude": "16.911659",
+    "longitude": "120.462806",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Geolux",
+        "model": "HSA-0727WA4",
+        "coords": "Latitude: N (16.911659) Longitude: E (120.462806)",
+        "coverage": ".002 km radius"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "Municipal Siren",
+        "brand": "LION KING",
+        "model": "LK-M2",
+        "coords": "LGU Sudipen"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU Santiago Ilocos Sur",
+    "address": "Brgy. Poblacion Norte, Santiago, Ilocos Sur",
+    "latitude": "17.29472",
+    "longitude": "120.445617",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Santol, La Union",
+    "address": "Poblacion, Santol, La Union",
+    "latitude": "16.772226",
+    "longitude": "120.459385",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Davis WeatherLink  6.0.5",
+        "model": "Vantage Pro2  6153",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "300 meters"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU ALCALA, PANGASINAN",
+    "address": "NATIONAL ROAD, POBLACION EAST ALCALA, PANGASINAN",
+    "latitude": "15.8457",
+    "longitude": "120.521",
+    "equipment_details": {
+      "arg": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Alaminos City Pangasinan",
+    "address": "Quezon Ave., Poblacion Alaminos City Pangasinan",
+    "latitude": "16.228804166666666",
+    "longitude": "119.95703805555556",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis vantage",
+        "model": "pro2",
+        "coords": "16.15643535929771, 119.97846790725436",
+        "coverage": "n/a"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "SB-2-4-112dB",
+        "coords": "LatitudeN S  16  °  13  '  43.695  '' LongitudeE W  119  °  57  '  25.337  ''",
+        "coverage": "30m radius and up to 80db @ 1km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "multi locations, near water ways and flood risk areas",
+        "coverage": "n/a"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "n/a",
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "CDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "TAYUG, PANGASINAN",
+    "address": "QUEZON BLVD. ST. BRGY. POBLACION D ",
+    "latitude": "16.03003611111111",
+    "longitude": "120.74550555555555",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'48.13\"N 120°44'43.82\"E,   16° 2'25.66\"N 120°45'2.60\"E,  16° 2'14.60\"N 120°43'33.11\"E,  16° 1'25.29\"N 120°43'27.98\"E,  16° 0'50.14\"N 120°44'17.58, 16° 1'8.99\"N 120°45'16.59\"E \"E",
+        "coverage": "XX"
+      },
+      "peimnet": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'40.12\"N 120°44'43.00\"E",
+        "coverage": "XX"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU-Adams, Ilocos Norte",
+    "address": "Poblacion 1, Adams Ilocos Norte",
+    "latitude": "18.4614786",
+    "longitude": "120.9017301",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Outdoor Warning Siren",
+        "brand": "LK-JDL400 SINGLETONE SIREN",
+        "model": "LK-JDL400 SINGLETONE SIREN",
+        "coords": "LDRRM OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "Municipal Government of Solsona",
+    "address": "Brgy. Laureta, Solsona, Ilocos Norte",
+    "latitude": "18.098777777777777",
+    "longitude": "120.77330555555555",
+    "equipment_details": {
+      "arg": {
+        "brand": "SIAP+MICROS",
+        "model": "B-3802",
+        "coords": " 18° 5'55.60\"N 120°46'23.90\"E",
+        "coverage": "1 km"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "PRONAMIC ApS",
+        "model": "DK-6950",
+        "coords": "18° 7'10.45\"N 120°44'56.97\"E",
+        "coverage": "1 km"
+      },
+      "peimnet": {
+        "brand": "-",
+        "model": "-",
+        "coords": "18° 5'31.54\"N 120°46'21.30\"E",
+        "coverage": "Solsona and surrounding municipalities"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit - Mabini",
+    "address": "Poblacion, Mabini, Pangasinan",
+    "latitude": "16.06913888888889",
+    "longitude": "119.94127777777778",
+    "equipment_details": {
+      "arg": {
+        "brand": "RainWise ",
+        "model": "SKU: 803-1001",
+        "coords": "16°04'08.9\"N 119°56'28.6\"E",
+        "coverage": "AOR"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "address": "POBLACION , AGUILAR, PANGASINAN",
+    "latitude": "15.889307",
+    "longitude": "120.238286",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "address": "Don Dimas Querubin, Caoayan, Ilocos Sur",
+    "latitude": "17.325088",
+    "longitude": "120.225872",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Provincial Government of Ilocos Sur",
+    "address": "Brgy III Vigan City Ilocos Sur",
+    "latitude": "17.619817",
+    "longitude": "120.392713",
+    "equipment_details": {
+      "arg": {
+        "brand": "Senix Toughsonic",
+        "model": "Hyquest tb4",
+        "coords": "17.388457, 120.483566",
+        "coverage": "5KM"
+      },
+      "aws": {
+        "brand": "senix toughsonic",
+        "model": "hyquest tb4",
+        "coords": "17.619817, 120.392713",
+        "coverage": "5km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU DOST",
+    "address": "San Fernando CIty",
+    "latitude": "16.6159",
+    "longitude": "120.3159",
+    "equipment_details": {
+      "arg": {
+        "brand": "fFrf",
+        "model": "RrfAFf",
+        "coords": "fFf"
+      },
+      "aws": {
+        "brand": "fdwaFRf",
+        "model": "FfF",
+        "coords": "AFfF"
+      },
+      "ctas": {
+        "brand": "ararfarf",
+        "model": "atratat",
+        "coords": "tatata"
+      },
+      "slms": null,
+      "wlms": {
+        "brand": "fgatga",
+        "model": "agtaga",
+        "coords": "artara"
+      },
+      "peimnet": {
+        "brand": "ARarfa",
+        "model": "tfafar",
+        "coords": "rqarfa"
+      },
+      "alerting": {
+        "name": "atat",
+        "brand": "atat",
+        "model": "tqat",
+        "coords": "atat"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Umingan",
+    "address": "Municipal Hall, Municipal St., Poblacion West, Umingan, Pangasinan 2443",
+    "latitude": "15.938268",
+    "longitude": "120.841867",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.938268° 120.841867°",
+        "coverage": "N/A"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.927145° 120.841012°",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Pozorrubio",
+    "address": "Sison Street, Poblacion District III, Pozorrubio, Pangasinan",
+    "latitude": "16.110721",
+    "longitude": "120.545379",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "address": "Poblacion West, San Ildefonso, Ilocos Sur",
+    "latitude": "17.624252",
+    "longitude": "120.393423",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Siren",
+        "brand": "LK",
+        "model": "M2",
+        "coords": "MDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN FABIAN",
+    "address": "POBLACION, SAN FABIAN, PANGASINAN",
+    "latitude": "16.12198",
+    "longitude": "120.40302",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU- SUDIPEN",
+    "address": "Poblacion, Sudipen, La Union",
+    "latitude": "16.90512",
+    "longitude": "120.462663",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Bolinao",
+    "address": "Concordia, Bolinao, Pangasinan",
+    "latitude": "16.38835874920866",
+    "longitude": "119.89278535704038",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": {
+        "brand": "c/o DOST-PHIVOLCS",
+        "model": "c/o DOST-PHIVOLCS",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "Japan International Cooperation Agency (JICA)",
+        "model": "aJ2P-001",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU BANGAR, LA UNION",
+    "address": "National Highway, Brgy. Central East # 2, Bangar, La Union",
+    "latitude": "16.8942",
+    "longitude": "120.424",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Comtel",
+        "model": "CS 2-4-112",
+        "coords": "N (16.8942), E (120.4240)",
+        "coverage": "1 km radius"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "aJ2P-001",
+        "coords": "N (16.8942), E (120.4241)",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Bugallon, Pangasinan",
+    "address": "National Road Poblacion Bugallon, Pangasinan",
+    "latitude": "15.95436",
+    "longitude": "120.21651",
+    "equipment_details": {
+      "arg": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436, 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "aws": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436 , 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Water level monitoring system installed at Barangay Banaga by PAGASA  ",
+        "model": "Installed  staff gauge Agno River Basin Flood Forecasting and Warning Center  Telemetry equipment ",
+        "coords": " Latitude: 15.93° N Longitude: 120.18° ",
+        "coverage": "Banaga Agnon River "
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU DINGRAS",
+    "address": "BRGY MADAMBDA,DINGRAS ILOCOS NORTE 2913",
+    "latitude": "18.095693",
+    "longitude": "120.71843",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT:18.095693    LONG: 120.71843",
+        "coverage": "50"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "lat: 18.095693  long: 120.71843",
+        "coverage": "50"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT: 18.095693 LONG: 120.71843",
+        "coverage": "50"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Balaoan",
+    "address": "Antonino, Balaoan, La Union",
+    "latitude": "16.82163",
+    "longitude": "120.40214",
+    "equipment_details": {
+      "arg": {
+        "brand": "Oregon Scientific",
+        "model": "RGR126N",
+        "coords": "N (16.82163) E (120.40214)",
+        "coverage": "Up to 100 feet"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU SANTO TOMAS LA UNION",
+    "address": "PATAC, SANTO TOMAS, LA UNION 2505",
+    "latitude": "16.284362",
+    "longitude": "120.390779",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS Vantage Pro2 Weather Station",
+        "model": "6263",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius"
+      },
+      "aws": {
+        "brand": "DAVIS Vantage Pro 2 Weather Station",
+        "model": "6253",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius "
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Natividad, Pangasinan",
+    "address": "Poblacion East, Natividad, Pangasinan",
+    "latitude": "16.0427694",
+    "longitude": "120.7965869",
+    "equipment_details": {
+      "arg": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "aws": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.0325055,120.7999356",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU VINTAR, ILOCOS NORTE",
+    "address": "BRGY. #2 SAN NICOLAS, VINTAR, ILOCOS NORTE",
+    "latitude": "18.326",
+    "longitude": "120.734",
+    "equipment_details": {
+      "arg": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.326*  / LON: 120.734*",
+        "coverage": "NOT SURE"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.322*   / LON: 120.730*",
+        "coverage": "NOT SURE"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "ELECTRONIC ACTIVATED SIREN",
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LGU VINTAR-MUNICIPAL DISASTER RISK REDUCTION & MANAGEMENT OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Balaoan",
+    "address": "Antonino, Balaoan, La Union",
+    "latitude": "16.82163",
+    "longitude": "120.40214",
+    "equipment_details": {
+      "arg": {
+        "brand": "Oregon Scientific",
+        "model": "RGR126N",
+        "coords": "N (16.82163) E (120.40214)",
+        "coverage": "Up to 100 feet"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN JACINTO",
+    "address": "BARANGAY CAPAOAY SAN JACINTO PANGASINAN ",
+    "latitude": "16.082",
+    "longitude": "120.4235",
+    "equipment_details": {
+      "arg": {
+        "brand": "...",
+        "model": "...",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "aws": {
+        "brand": "RIKA",
+        "model": "MODEL 1 RKL-03 LIQUID LEVEL TRANSMITTER / MODEL 2 RL330-01A ATMHOSPERIC TEMPERATURE AND HUMIDITY  ",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "RIKA ",
+        "model": "MODEL 1 RKL - 03 LIQUID LEVEL TRANSMITTER  / MODEL 2 RL330 01A ATMHOSPERIC TEMPERATURE  AND HUMIDITY SENSOR ",
+        "coords": "APPROXIMATELY 16.0820N, 120.4235E.",
+        "coverage": "..."
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "POWER SIREN ",
+        "brand": "...",
+        "model": "ELECTRONIC POWER SIREN ",
+        "coords": "MDRRMO "
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Bani, Pangasinan",
+    "address": "Bani, Pangasinan",
+    "latitude": "16.1970575",
+    "longitude": "119.8620832",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "PEIMNET",
+        "model": "PEIMNET",
+        "coords": "16.1970575,119.8620832",
+        "coverage": "  "
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU - Suyo, Ilocos Sur",
+    "address": "Poblacion, Suyo, Ilocos Sur",
+    "latitude": "16.972808333333333",
+    "longitude": "120.54101388888888",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Meter Group",
+        "model": "ATMOS 41W wireless all-in-one weather station",
+        "coords": " 16°58'22.11\"N 120°32'27.65\"E",
+        "coverage": "2 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Burgos, Ilocos Sur",
+    "address": "Poblacion Norte, Burgos, Ilocos Sur",
+    "latitude": "17.333423",
+    "longitude": "120.49481",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTE",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "aws": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTEM",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Sta. Catalina, Ilocos Sur",
+    "address": "Sta. Catalina, Ilocos Sur",
+    "latitude": "17.5843",
+    "longitude": "120.3576",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5k"
+      },
+      "aws": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "concrete",
+        "model": "concrete post",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "2"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "early warning system with public address",
+        "brand": "talos",
+        "model": "talos",
+        "coords": "LGU Sta. Catalina"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "SUDIPEN",
+    "address": "McArthur Hiway, Brgy. Poblacion, Sudipen, La Union",
+    "latitude": "16.911659",
+    "longitude": "120.462806",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Geolux",
+        "model": "HSA-0727WA4",
+        "coords": "Latitude: N (16.911659) Longitude: E (120.462806)",
+        "coverage": ".002 km radius"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "Municipal Siren",
+        "brand": "LION KING",
+        "model": "LK-M2",
+        "coords": "LGU Sudipen"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU Santiago Ilocos Sur",
+    "address": "Brgy. Poblacion Norte, Santiago, Ilocos Sur",
+    "latitude": "17.29472",
+    "longitude": "120.445617",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Santol, La Union",
+    "address": "Poblacion, Santol, La Union",
+    "latitude": "16.772226",
+    "longitude": "120.459385",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Davis WeatherLink  6.0.5",
+        "model": "Vantage Pro2  6153",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "300 meters"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU ALCALA, PANGASINAN",
+    "address": "NATIONAL ROAD, POBLACION EAST ALCALA, PANGASINAN",
+    "latitude": "15.8457",
+    "longitude": "120.521",
+    "equipment_details": {
+      "arg": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Alaminos City Pangasinan",
+    "address": "Quezon Ave., Poblacion Alaminos City Pangasinan",
+    "latitude": "16.228804166666666",
+    "longitude": "119.95703805555556",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis vantage",
+        "model": "pro2",
+        "coords": "16.15643535929771, 119.97846790725436",
+        "coverage": "n/a"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "SB-2-4-112dB",
+        "coords": "LatitudeN S  16  °  13  '  43.695  '' LongitudeE W  119  °  57  '  25.337  ''",
+        "coverage": "30m radius and up to 80db @ 1km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "multi locations, near water ways and flood risk areas",
+        "coverage": "n/a"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "n/a",
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "CDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "TAYUG, PANGASINAN",
+    "address": "QUEZON BLVD. ST. BRGY. POBLACION D ",
+    "latitude": "16.03003611111111",
+    "longitude": "120.74550555555555",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'48.13\"N 120°44'43.82\"E,   16° 2'25.66\"N 120°45'2.60\"E,  16° 2'14.60\"N 120°43'33.11\"E,  16° 1'25.29\"N 120°43'27.98\"E,  16° 0'50.14\"N 120°44'17.58, 16° 1'8.99\"N 120°45'16.59\"E \"E",
+        "coverage": "XX"
+      },
+      "peimnet": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'40.12\"N 120°44'43.00\"E",
+        "coverage": "XX"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU-Adams, Ilocos Norte",
+    "address": "Poblacion 1, Adams Ilocos Norte",
+    "latitude": "18.4614786",
+    "longitude": "120.9017301",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Outdoor Warning Siren",
+        "brand": "LK-JDL400 SINGLETONE SIREN",
+        "model": "LK-JDL400 SINGLETONE SIREN",
+        "coords": "LDRRM OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "Municipal Government of Solsona",
+    "address": "Brgy. Laureta, Solsona, Ilocos Norte",
+    "latitude": "18.098777777777777",
+    "longitude": "120.77330555555555",
+    "equipment_details": {
+      "arg": {
+        "brand": "SIAP+MICROS",
+        "model": "B-3802",
+        "coords": " 18° 5'55.60\"N 120°46'23.90\"E",
+        "coverage": "1 km"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "PRONAMIC ApS",
+        "model": "DK-6950",
+        "coords": "18° 7'10.45\"N 120°44'56.97\"E",
+        "coverage": "1 km"
+      },
+      "peimnet": {
+        "brand": "-",
+        "model": "-",
+        "coords": "18° 5'31.54\"N 120°46'21.30\"E",
+        "coverage": "Solsona and surrounding municipalities"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit - Mabini",
+    "address": "Poblacion, Mabini, Pangasinan",
+    "latitude": "16.06913888888889",
+    "longitude": "119.94127777777778",
+    "equipment_details": {
+      "arg": {
+        "brand": "RainWise ",
+        "model": "SKU: 803-1001",
+        "coords": "16°04'08.9\"N 119°56'28.6\"E",
+        "coverage": "AOR"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "address": "POBLACION , AGUILAR, PANGASINAN",
+    "latitude": "15.889307",
+    "longitude": "120.238286",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "address": "Don Dimas Querubin, Caoayan, Ilocos Sur",
+    "latitude": "17.325088",
+    "longitude": "120.225872",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Provincial Government of Ilocos Sur",
+    "address": "Brgy III Vigan City Ilocos Sur",
+    "latitude": "17.619817",
+    "longitude": "120.392713",
+    "equipment_details": {
+      "arg": {
+        "brand": "Senix Toughsonic",
+        "model": "Hyquest tb4",
+        "coords": "17.388457, 120.483566",
+        "coverage": "5KM"
+      },
+      "aws": {
+        "brand": "senix toughsonic",
+        "model": "hyquest tb4",
+        "coords": "17.619817, 120.392713",
+        "coverage": "5km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU DOST",
+    "address": "San Fernando CIty",
+    "latitude": "16.6159",
+    "longitude": "120.3159",
+    "equipment_details": {
+      "arg": {
+        "brand": "fFrf",
+        "model": "RrfAFf",
+        "coords": "fFf"
+      },
+      "aws": {
+        "brand": "fdwaFRf",
+        "model": "FfF",
+        "coords": "AFfF"
+      },
+      "ctas": {
+        "brand": "ararfarf",
+        "model": "atratat",
+        "coords": "tatata"
+      },
+      "slms": null,
+      "wlms": {
+        "brand": "fgatga",
+        "model": "agtaga",
+        "coords": "artara"
+      },
+      "peimnet": {
+        "brand": "ARarfa",
+        "model": "tfafar",
+        "coords": "rqarfa"
+      },
+      "alerting": {
+        "name": "atat",
+        "brand": "atat",
+        "model": "tqat",
+        "coords": "atat"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Umingan",
+    "address": "Municipal Hall, Municipal St., Poblacion West, Umingan, Pangasinan 2443",
+    "latitude": "15.938268",
+    "longitude": "120.841867",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.938268° 120.841867°",
+        "coverage": "N/A"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.927145° 120.841012°",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Pozorrubio",
+    "address": "Sison Street, Poblacion District III, Pozorrubio, Pangasinan",
+    "latitude": "16.110721",
+    "longitude": "120.545379",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "address": "Poblacion West, San Ildefonso, Ilocos Sur",
+    "latitude": "17.624252",
+    "longitude": "120.393423",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Siren",
+        "brand": "LK",
+        "model": "M2",
+        "coords": "MDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN FABIAN",
+    "address": "POBLACION, SAN FABIAN, PANGASINAN",
+    "latitude": "16.12198",
+    "longitude": "120.40302",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU- SUDIPEN",
+    "address": "Poblacion, Sudipen, La Union",
+    "latitude": "16.90512",
+    "longitude": "120.462663",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Bolinao",
+    "address": "Concordia, Bolinao, Pangasinan",
+    "latitude": "16.38835874920866",
+    "longitude": "119.89278535704038",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": {
+        "brand": "c/o DOST-PHIVOLCS",
+        "model": "c/o DOST-PHIVOLCS",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "Japan International Cooperation Agency (JICA)",
+        "model": "aJ2P-001",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU BANGAR, LA UNION",
+    "address": "National Highway, Brgy. Central East # 2, Bangar, La Union",
+    "latitude": "16.8942",
+    "longitude": "120.424",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Comtel",
+        "model": "CS 2-4-112",
+        "coords": "N (16.8942), E (120.4240)",
+        "coverage": "1 km radius"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "aJ2P-001",
+        "coords": "N (16.8942), E (120.4241)",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU BANTAY",
+    "address": "BRGY. V, BANTAY, ILOCOS SUR",
+    "latitude": "17.581073665471905",
+    "longitude": "120.39029182332621",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS INSTRUMENTS WEATHERLINK CONSOLE",
+        "model": "6313",
+        "coords": "17.581073665471905 120.39029182332621",
+        "coverage": "Up to 1,000 feet (300 meters)"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Bugallon, Pangasinan",
+    "address": "National Road Poblacion Bugallon, Pangasinan",
+    "latitude": "15.95436",
+    "longitude": "120.21651",
+    "equipment_details": {
+      "arg": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436, 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "aws": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436 , 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Water level monitoring system installed at Barangay Banaga by PAGASA  ",
+        "model": "Installed  staff gauge Agno River Basin Flood Forecasting and Warning Center  Telemetry equipment ",
+        "coords": " Latitude: 15.93° N Longitude: 120.18° ",
+        "coverage": "Banaga Agnon River "
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU DINGRAS",
+    "address": "BRGY MADAMBDA,DINGRAS ILOCOS NORTE 2913",
+    "latitude": "18.095693",
+    "longitude": "120.71843",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT:18.095693    LONG: 120.71843",
+        "coverage": "50"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "lat: 18.095693  long: 120.71843",
+        "coverage": "50"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT: 18.095693 LONG: 120.71843",
+        "coverage": "50"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Balaoan",
+    "address": "Antonino, Balaoan, La Union",
+    "latitude": "16.82163",
+    "longitude": "120.40214",
+    "equipment_details": {
+      "arg": {
+        "brand": "Oregon Scientific",
+        "model": "RGR126N",
+        "coords": "N (16.82163) E (120.40214)",
+        "coverage": "Up to 100 feet"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU SANTO TOMAS LA UNION",
+    "address": "PATAC, SANTO TOMAS, LA UNION 2505",
+    "latitude": "16.284362",
+    "longitude": "120.390779",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS Vantage Pro2 Weather Station",
+        "model": "6263",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius"
+      },
+      "aws": {
+        "brand": "DAVIS Vantage Pro 2 Weather Station",
+        "model": "6253",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius "
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Natividad, Pangasinan",
+    "address": "Poblacion East, Natividad, Pangasinan",
+    "latitude": "16.0427694",
+    "longitude": "120.7965869",
+    "equipment_details": {
+      "arg": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "aws": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.0325055,120.7999356",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU VINTAR, ILOCOS NORTE",
+    "address": "BRGY. #2 SAN NICOLAS, VINTAR, ILOCOS NORTE",
+    "latitude": "18.326",
+    "longitude": "120.734",
+    "equipment_details": {
+      "arg": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.326*  / LON: 120.734*",
+        "coverage": "NOT SURE"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.322*   / LON: 120.730*",
+        "coverage": "NOT SURE"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "ELECTRONIC ACTIVATED SIREN",
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LGU VINTAR-MUNICIPAL DISASTER RISK REDUCTION & MANAGEMENT OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN JACINTO",
+    "address": "BARANGAY CAPAOAY SAN JACINTO PANGASINAN ",
+    "latitude": "16.082",
+    "longitude": "120.4235",
+    "equipment_details": {
+      "arg": {
+        "brand": "...",
+        "model": "...",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "aws": {
+        "brand": "RIKA",
+        "model": "MODEL 1 RKL-03 LIQUID LEVEL TRANSMITTER / MODEL 2 RL330-01A ATMHOSPERIC TEMPERATURE AND HUMIDITY  ",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "RIKA ",
+        "model": "MODEL 1 RKL - 03 LIQUID LEVEL TRANSMITTER  / MODEL 2 RL330 01A ATMHOSPERIC TEMPERATURE  AND HUMIDITY SENSOR ",
+        "coords": "APPROXIMATELY 16.0820N, 120.4235E.",
+        "coverage": "..."
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "POWER SIREN ",
+        "brand": "...",
+        "model": "ELECTRONIC POWER SIREN ",
+        "coords": "MDRRMO "
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Bani, Pangasinan",
+    "address": "Bani, Pangasinan",
+    "latitude": "16.1970575",
+    "longitude": "119.8620832",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "PEIMNET",
+        "model": "PEIMNET",
+        "coords": "16.1970575,119.8620832",
+        "coverage": "  "
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU - Suyo, Ilocos Sur",
+    "address": "Poblacion, Suyo, Ilocos Sur",
+    "latitude": "16.972808333333333",
+    "longitude": "120.54101388888888",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Meter Group",
+        "model": "ATMOS 41W wireless all-in-one weather station",
+        "coords": " 16°58'22.11\"N 120°32'27.65\"E",
+        "coverage": "2 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Burgos, Ilocos Sur",
+    "address": "Poblacion Norte, Burgos, Ilocos Sur",
+    "latitude": "17.333423",
+    "longitude": "120.49481",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTE",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "aws": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTEM",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Sta. Catalina, Ilocos Sur",
+    "address": "Sta. Catalina, Ilocos Sur",
+    "latitude": "17.5843",
+    "longitude": "120.3576",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5k"
+      },
+      "aws": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "concrete",
+        "model": "concrete post",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "2"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "early warning system with public address",
+        "brand": "talos",
+        "model": "talos",
+        "coords": "LGU Sta. Catalina"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "SUDIPEN",
+    "address": "McArthur Hiway, Brgy. Poblacion, Sudipen, La Union",
+    "latitude": "16.911659",
+    "longitude": "120.462806",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Geolux",
+        "model": "HSA-0727WA4",
+        "coords": "Latitude: N (16.911659) Longitude: E (120.462806)",
+        "coverage": ".002 km radius"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "Municipal Siren",
+        "brand": "LION KING",
+        "model": "LK-M2",
+        "coords": "LGU Sudipen"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU Santiago Ilocos Sur",
+    "address": "Brgy. Poblacion Norte, Santiago, Ilocos Sur",
+    "latitude": "17.29472",
+    "longitude": "120.445617",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Santol, La Union",
+    "address": "Poblacion, Santol, La Union",
+    "latitude": "16.772226",
+    "longitude": "120.459385",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Davis WeatherLink  6.0.5",
+        "model": "Vantage Pro2  6153",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "300 meters"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU ALCALA, PANGASINAN",
+    "address": "NATIONAL ROAD, POBLACION EAST ALCALA, PANGASINAN",
+    "latitude": "15.8457",
+    "longitude": "120.521",
+    "equipment_details": {
+      "arg": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Alaminos City Pangasinan",
+    "address": "Quezon Ave., Poblacion Alaminos City Pangasinan",
+    "latitude": "16.228804166666666",
+    "longitude": "119.95703805555556",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis vantage",
+        "model": "pro2",
+        "coords": "16.15643535929771, 119.97846790725436",
+        "coverage": "n/a"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "SB-2-4-112dB",
+        "coords": "LatitudeN S  16  °  13  '  43.695  '' LongitudeE W  119  °  57  '  25.337  ''",
+        "coverage": "30m radius and up to 80db @ 1km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "multi locations, near water ways and flood risk areas",
+        "coverage": "n/a"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "n/a",
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "CDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "TAYUG, PANGASINAN",
+    "address": "QUEZON BLVD. ST. BRGY. POBLACION D ",
+    "latitude": "16.03003611111111",
+    "longitude": "120.74550555555555",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'48.13\"N 120°44'43.82\"E,   16° 2'25.66\"N 120°45'2.60\"E,  16° 2'14.60\"N 120°43'33.11\"E,  16° 1'25.29\"N 120°43'27.98\"E,  16° 0'50.14\"N 120°44'17.58, 16° 1'8.99\"N 120°45'16.59\"E \"E",
+        "coverage": "XX"
+      },
+      "peimnet": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'40.12\"N 120°44'43.00\"E",
+        "coverage": "XX"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "Municipal Government of Solsona",
+    "address": "Brgy. Laureta, Solsona, Ilocos Norte",
+    "latitude": "18.098777777777777",
+    "longitude": "120.77330555555555",
+    "equipment_details": {
+      "arg": {
+        "brand": "SIAP+MICROS",
+        "model": "B-3802",
+        "coords": " 18° 5'55.60\"N 120°46'23.90\"E",
+        "coverage": "1 km"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "PRONAMIC ApS",
+        "model": "DK-6950",
+        "coords": "18° 7'10.45\"N 120°44'56.97\"E",
+        "coverage": "1 km"
+      },
+      "peimnet": {
+        "brand": "-",
+        "model": "-",
+        "coords": "18° 5'31.54\"N 120°46'21.30\"E",
+        "coverage": "Solsona and surrounding municipalities"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit - Mabini",
+    "address": "Poblacion, Mabini, Pangasinan",
+    "latitude": "16.06913888888889",
+    "longitude": "119.94127777777778",
+    "equipment_details": {
+      "arg": {
+        "brand": "RainWise ",
+        "model": "SKU: 803-1001",
+        "coords": "16°04'08.9\"N 119°56'28.6\"E",
+        "coverage": "AOR"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "address": "POBLACION , AGUILAR, PANGASINAN",
+    "latitude": "15.889307",
+    "longitude": "120.238286",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "address": "Don Dimas Querubin, Caoayan, Ilocos Sur",
+    "latitude": "17.325088",
+    "longitude": "120.225872",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Provincial Government of Ilocos Sur",
+    "address": "Brgy III Vigan City Ilocos Sur",
+    "latitude": "17.619817",
+    "longitude": "120.392713",
+    "equipment_details": {
+      "arg": {
+        "brand": "Senix Toughsonic",
+        "model": "Hyquest tb4",
+        "coords": "17.388457, 120.483566",
+        "coverage": "5KM"
+      },
+      "aws": {
+        "brand": "senix toughsonic",
+        "model": "hyquest tb4",
+        "coords": "17.619817, 120.392713",
+        "coverage": "5km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU DOST",
+    "address": "San Fernando CIty",
+    "latitude": "16.6159",
+    "longitude": "120.3159",
+    "equipment_details": {
+      "arg": {
+        "brand": "fFrf",
+        "model": "RrfAFf",
+        "coords": "fFf"
+      },
+      "aws": {
+        "brand": "fdwaFRf",
+        "model": "FfF",
+        "coords": "AFfF"
+      },
+      "ctas": {
+        "brand": "ararfarf",
+        "model": "atratat",
+        "coords": "tatata"
+      },
+      "slms": null,
+      "wlms": {
+        "brand": "fgatga",
+        "model": "agtaga",
+        "coords": "artara"
+      },
+      "peimnet": {
+        "brand": "ARarfa",
+        "model": "tfafar",
+        "coords": "rqarfa"
+      },
+      "alerting": {
+        "name": "atat",
+        "brand": "atat",
+        "model": "tqat",
+        "coords": "atat"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Umingan",
+    "address": "Municipal Hall, Municipal St., Poblacion West, Umingan, Pangasinan 2443",
+    "latitude": "15.938268",
+    "longitude": "120.841867",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.938268° 120.841867°",
+        "coverage": "N/A"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": " 15.927145° 120.841012°",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Pozorrubio",
+    "address": "Sison Street, Poblacion District III, Pozorrubio, Pangasinan",
+    "latitude": "16.110721",
+    "longitude": "120.545379",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "address": "Poblacion West, San Ildefonso, Ilocos Sur",
+    "latitude": "17.624252",
+    "longitude": "120.393423",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Siren",
+        "brand": "LK",
+        "model": "M2",
+        "coords": "MDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN FABIAN",
+    "address": "POBLACION, SAN FABIAN, PANGASINAN",
+    "latitude": "16.12198",
+    "longitude": "120.40302",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU- SUDIPEN",
+    "address": "Poblacion, Sudipen, La Union",
+    "latitude": "16.90512",
+    "longitude": "120.462663",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Bolinao",
+    "address": "Concordia, Bolinao, Pangasinan",
+    "latitude": "16.38835874920866",
+    "longitude": "119.89278535704038",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": {
+        "brand": "c/o DOST-PHIVOLCS",
+        "model": "c/o DOST-PHIVOLCS",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "Japan International Cooperation Agency (JICA)",
+        "model": "aJ2P-001",
+        "coords": "16.38835874920866, 119.89278535704038",
+        "coverage": "c/o DOST-PHIVOLCS"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU BANGAR, LA UNION",
+    "address": "National Highway, Brgy. Central East # 2, Bangar, La Union",
+    "latitude": "16.8942",
+    "longitude": "120.424",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Comtel",
+        "model": "CS 2-4-112",
+        "coords": "N (16.8942), E (120.4240)",
+        "coverage": "1 km radius"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "aJ2P-001",
+        "coords": "N (16.8942), E (120.4241)",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU BANTAY",
+    "address": "BRGY. V, BANTAY, ILOCOS SUR",
+    "latitude": "17.581073665471905",
+    "longitude": "120.39029182332621",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS INSTRUMENTS WEATHERLINK CONSOLE",
+        "model": "6313",
+        "coords": "17.581073665471905 120.39029182332621",
+        "coverage": "Up to 1,000 feet (300 meters)"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU-Adams, Ilocos Norte",
+    "address": "Poblacion 1, Adams Ilocos Norte",
+    "latitude": "18.4614786",
+    "longitude": "120.9017301",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Outdoor Warning Siren",
+        "brand": "LK-JDL400 SINGLETONE SIREN",
+        "model": "LK-JDL400 SINGLETONE SIREN",
+        "coords": "LDRRM OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Anda, Pangasinan",
+    "address": "Artacho St. corner Burgos St., Poblacion, Anda, Pangasinan",
+    "latitude": "16.289134",
+    "longitude": "119.9485051",
+    "equipment_details": {
+      "arg": {
+        "brand": "Sainlogic",
+        "model": "FT0310",
+        "manual": true
+      },
+      "aws": {
+        "brand": "Sainlogic",
+        "model": "FT-0310",
+        "manual": true
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "brand": "unknown",
+        "model": "unknown",
+        "manual": true
+      }
+    },
+    "photo_url": ""
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Anda, Pangasinan",
+    "address": "Artacho St. corner Burgos St., Poblacion, Anda, Pangasinan",
+    "latitude": "16.289134",
+    "longitude": "119.9485051",
+    "equipment_details": {
+      "arg": {
+        "manual": true
+      },
+      "aws": {
+        "manual": true
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "manual": true
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Anda, Pangasinan",
+    "address": "Artacho St. corner Burgos St., Poblacion, Anda, Pangasinan",
+    "latitude": "16.289134",
+    "longitude": "119.9485051",
+    "equipment_details": {
+      "arg": {
+        "brand": "Sainlogic",
+        "model": "FT0310",
+        "manual": true
+      },
+      "aws": {
+        "brand": "Sainlogic",
+        "model": "FT-0310",
+        "manual": true
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "brand": "unknown",
+        "model": "unknown",
+        "manual": true
+      }
+    },
+    "photo_url": ""
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Bugallon, Pangasinan",
+    "address": "National Road Poblacion Bugallon, Pangasinan",
+    "latitude": "15.95436",
+    "longitude": "120.21651",
+    "equipment_details": {
+      "arg": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436, 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "aws": {
+        "brand": "Wireless Weather Station Sainlogic",
+        "model": "Model No. WS0310",
+        "coords": "15.95436 , 120.21651",
+        "coverage": "Outdoor sensor"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Water level monitoring system installed at Barangay Banaga by PAGASA  ",
+        "model": "Installed  staff gauge Agno River Basin Flood Forecasting and Warning Center  Telemetry equipment ",
+        "coords": " Latitude: 15.93° N Longitude: 120.18° ",
+        "coverage": "Banaga Agnon River "
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU DINGRAS",
+    "address": "BRGY MADAMBDA,DINGRAS ILOCOS NORTE 2913",
+    "latitude": "18.095693",
+    "longitude": "120.71843",
+    "equipment_details": {
+      "arg": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT:18.095693    LONG: 120.71843",
+        "coverage": "50"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "lat: 18.095693  long: 120.71843",
+        "coverage": "50"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "LAT: 18.095693 LONG: 120.71843",
+        "coverage": "50"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "LGU SANTO TOMAS LA UNION",
+    "address": "PATAC, SANTO TOMAS, LA UNION 2505",
+    "latitude": "16.284362",
+    "longitude": "120.390779",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS Vantage Pro2 Weather Station",
+        "model": "6263",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius"
+      },
+      "aws": {
+        "brand": "DAVIS Vantage Pro 2 Weather Station",
+        "model": "6253",
+        "coords": "N(16.284362) E(120.390779)",
+        "coverage": "3 to 5 km radius "
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Natividad, Pangasinan",
+    "address": "Poblacion East, Natividad, Pangasinan",
+    "latitude": "16.0427694",
+    "longitude": "120.7965869",
+    "equipment_details": {
+      "arg": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "aws": {
+        "brand": "Misol",
+        "model": "WH2900C",
+        "coords": "16.0427694,120.7965869",
+        "coverage": "100-meter transmission range"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.0325055,120.7999356",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU VINTAR, ILOCOS NORTE",
+    "address": "BRGY. #2 SAN NICOLAS, VINTAR, ILOCOS NORTE",
+    "latitude": "18.326",
+    "longitude": "120.734",
+    "equipment_details": {
+      "arg": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.326*  / LON: 120.734*",
+        "coverage": "NOT SURE"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LAT: 18.322*   / LON: 120.730*",
+        "coverage": "NOT SURE"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "ELECTRONIC ACTIVATED SIREN",
+        "brand": "NOT SURE",
+        "model": "NOT SURE",
+        "coords": "LGU VINTAR-MUNICIPAL DISASTER RISK REDUCTION & MANAGEMENT OFFICE"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "SAN JACINTO",
+    "address": "BARANGAY CAPAOAY SAN JACINTO PANGASINAN ",
+    "latitude": "16.082",
+    "longitude": "120.4235",
+    "equipment_details": {
+      "arg": {
+        "brand": "...",
+        "model": "...",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "aws": {
+        "brand": "RIKA",
+        "model": "MODEL 1 RKL-03 LIQUID LEVEL TRANSMITTER / MODEL 2 RL330-01A ATMHOSPERIC TEMPERATURE AND HUMIDITY  ",
+        "coords": "...",
+        "coverage": "..."
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "RIKA ",
+        "model": "MODEL 1 RKL - 03 LIQUID LEVEL TRANSMITTER  / MODEL 2 RL330 01A ATMHOSPERIC TEMPERATURE  AND HUMIDITY SENSOR ",
+        "coords": "APPROXIMATELY 16.0820N, 120.4235E.",
+        "coverage": "..."
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "POWER SIREN ",
+        "brand": "...",
+        "model": "ELECTRONIC POWER SIREN ",
+        "coords": "MDRRMO "
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU Bani, Pangasinan",
+    "address": "Bani, Pangasinan",
+    "latitude": "16.1970575",
+    "longitude": "119.8620832",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "PEIMNET",
+        "model": "PEIMNET",
+        "coords": "16.1970575,119.8620832",
+        "coverage": "  "
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU - Suyo, Ilocos Sur",
+    "address": "Poblacion, Suyo, Ilocos Sur",
+    "latitude": "16.972808333333333",
+    "longitude": "120.54101388888888",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Meter Group",
+        "model": "ATMOS 41W wireless all-in-one weather station",
+        "coords": " 16°58'22.11\"N 120°32'27.65\"E",
+        "coverage": "2 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Burgos, Ilocos Sur",
+    "address": "Poblacion Norte, Burgos, Ilocos Sur",
+    "latitude": "17.333423",
+    "longitude": "120.49481",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU SAN QUINTIN, PANGASINAN",
+    "address": "POBLACION ZONE 1, SAN QUINTIN, PANGASINAN",
+    "latitude": "15.983481",
+    "longitude": "120.813873",
+    "equipment_details": {
+      "arg": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTE",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "aws": {
+        "brand": "MICROCLIMATE INFORMATION COLLECTOR SYSTEM",
+        "model": "NL-5 PLUS",
+        "coords": "15.983481, 120.813873",
+        "coverage": "NOT SPECIFIED"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Sta. Catalina, Ilocos Sur",
+    "address": "Sta. Catalina, Ilocos Sur",
+    "latitude": "17.5843",
+    "longitude": "120.3576",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5k"
+      },
+      "aws": {
+        "brand": "davis",
+        "model": "vantage VUE",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "5 km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "concrete",
+        "model": "concrete post",
+        "coords": "17.5843° N, 120.3576° E",
+        "coverage": "2"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "early warning system with public address",
+        "brand": "talos",
+        "model": "talos",
+        "coords": "LGU Sta. Catalina"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "SUDIPEN",
+    "address": "McArthur Hiway, Brgy. Poblacion, Sudipen, La Union",
+    "latitude": "16.911659",
+    "longitude": "120.462806",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "Geolux",
+        "model": "HSA-0727WA4",
+        "coords": "Latitude: N (16.911659) Longitude: E (120.462806)",
+        "coverage": ".002 km radius"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "Municipal Siren",
+        "brand": "LION KING",
+        "model": "LK-M2",
+        "coords": "LGU Sudipen"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU Santiago Ilocos Sur",
+    "address": "Brgy. Poblacion Norte, Santiago, Ilocos Sur",
+    "latitude": "17.29472",
+    "longitude": "120.445617",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Santol, La Union",
+    "address": "Poblacion, Santol, La Union",
+    "latitude": "16.772226",
+    "longitude": "120.459385",
+    "equipment_details": {
+      "arg": null,
+      "aws": {
+        "brand": "Davis WeatherLink  6.0.5",
+        "model": "Vantage Pro2  6153",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "300 meters"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "16.772226°N, 120.459385°E",
+        "coverage": "N/A"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LGU ALCALA, PANGASINAN",
+    "address": "NATIONAL ROAD, POBLACION EAST ALCALA, PANGASINAN",
+    "latitude": "15.8457",
+    "longitude": "120.521",
+    "equipment_details": {
+      "arg": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "-",
+        "model": "-",
+        "coords": "-",
+        "coverage": "-"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit of Alaminos City Pangasinan",
+    "address": "Quezon Ave., Poblacion Alaminos City Pangasinan",
+    "latitude": "16.228804166666666",
+    "longitude": "119.95703805555556",
+    "equipment_details": {
+      "arg": {
+        "brand": "davis vantage",
+        "model": "pro2",
+        "coords": "16.15643535929771, 119.97846790725436",
+        "coverage": "n/a"
+      },
+      "aws": {
+        "brand": "n/a",
+        "model": "SB-2-4-112dB",
+        "coords": "LatitudeN S  16  °  13  '  43.695  '' LongitudeE W  119  °  57  '  25.337  ''",
+        "coverage": "30m radius and up to 80db @ 1km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "multi locations, near water ways and flood risk areas",
+        "coverage": "n/a"
+      },
+      "peimnet": null,
+      "alerting": {
+        "name": "n/a",
+        "brand": "n/a",
+        "model": "n/a",
+        "coords": "CDRRMO"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "TAYUG, PANGASINAN",
+    "address": "QUEZON BLVD. ST. BRGY. POBLACION D ",
+    "latitude": "16.03003611111111",
+    "longitude": "120.74550555555555",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'48.13\"N 120°44'43.82\"E,   16° 2'25.66\"N 120°45'2.60\"E,  16° 2'14.60\"N 120°43'33.11\"E,  16° 1'25.29\"N 120°43'27.98\"E,  16° 0'50.14\"N 120°44'17.58, 16° 1'8.99\"N 120°45'16.59\"E \"E",
+        "coverage": "XX"
+      },
+      "peimnet": {
+        "brand": "XX",
+        "model": "XX",
+        "coords": " 16° 1'40.12\"N 120°44'43.00\"E",
+        "coverage": "XX"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "Municipal Government of Solsona",
+    "address": "Brgy. Laureta, Solsona, Ilocos Norte",
+    "latitude": "18.098777777777777",
+    "longitude": "120.77330555555555",
+    "equipment_details": {
+      "arg": {
+        "brand": "SIAP+MICROS",
+        "model": "B-3802",
+        "coords": " 18° 5'55.60\"N 120°46'23.90\"E",
+        "coverage": "1 km"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "PRONAMIC ApS",
+        "model": "DK-6950",
+        "coords": "18° 7'10.45\"N 120°44'56.97\"E",
+        "coverage": "1 km"
+      },
+      "peimnet": {
+        "brand": "-",
+        "model": "-",
+        "coords": "18° 5'31.54\"N 120°46'21.30\"E",
+        "coverage": "Solsona and surrounding municipalities"
+      },
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "Local Government Unit - Mabini",
+    "address": "Poblacion, Mabini, Pangasinan",
+    "latitude": "16.06913888888889",
+    "longitude": "119.94127777777778",
+    "equipment_details": {
+      "arg": {
+        "brand": "RainWise ",
+        "model": "SKU: 803-1001",
+        "coords": "16°04'08.9\"N 119°56'28.6\"E",
+        "coverage": "AOR"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Pangasinan",
+    "lgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "address": "POBLACION , AGUILAR, PANGASINAN",
+    "latitude": "15.889307",
+    "longitude": "120.238286",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "address": "Don Dimas Querubin, Caoayan, Ilocos Sur",
+    "latitude": "17.325088",
+    "longitude": "120.225872",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "Provincial Government of Ilocos Sur",
+    "address": "Brgy III Vigan City Ilocos Sur",
+    "latitude": "17.619817",
+    "longitude": "120.392713",
+    "equipment_details": {
+      "arg": {
+        "brand": "Senix Toughsonic",
+        "model": "Hyquest tb4",
+        "coords": "17.388457, 120.483566",
+        "coverage": "5KM"
+      },
+      "aws": {
+        "brand": "senix toughsonic",
+        "model": "hyquest tb4",
+        "coords": "17.619817, 120.392713",
+        "coverage": "5km"
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Sur",
+    "lgu": "LGU BANTAY",
+    "address": "BRGY. V, BANTAY, ILOCOS SUR",
+    "latitude": "17.581073665471905",
+    "longitude": "120.39029182332621",
+    "equipment_details": {
+      "arg": {
+        "brand": "DAVIS INSTRUMENTS WEATHERLINK CONSOLE",
+        "model": "6313",
+        "specs": "Standard ARG Unit",
+        "coords": "17.581073665471905 120.39029182332621",
+        "manual": true,
+        "contact": "09154425310fss",
+        "officer": "LDRRMO LGU BANTAY",
+        "coverage": "Up to 1,000 feet (300 meters)"
+      },
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": {
+        "brand": "N/A",
+        "model": "N/A",
+        "coords": "N/A",
+        "coverage": "N/A"
+      },
+      "peimnet": null,
+      "alerting": null
+    },
+    "photo_url": null
+  },
+  {
+    "province": "Ilocos Norte",
+    "lgu": "LGU-Adams, Ilocos Norte",
+    "address": "Poblacion 1, Adams Ilocos Norte",
+    "latitude": "18.4614786",
+    "longitude": "120.9017301",
+    "equipment_details": {
+      "arg": null,
+      "aws": null,
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "name": "Outdoor Warning Siren",
+        "brand": "LK-JDL400 SINGLETONE SIREN",
+        "model": "LK-JDL400 SINGLETONE SIREN",
+        "specs": "Standard SIREN Unit",
+        "coords": "LDRRM OFFICE",
+        "manual": true,
+        "contact": "09154425310",
+        "officer": "LDRRMO LGU-Adams, Ilocos Norte",
+        "coverage": "LGU-Adams, Ilocos Norte, Ilocos Norte"
+      }
+    },
+    "photo_url": null
+  },
+  {
+    "province": "La Union",
+    "lgu": "Local Government Unit of Anda, Pangasinan",
+    "address": "Artacho St. corner Burgos St., Poblacion, Anda, Pangasinan",
+    "latitude": "16.289134",
+    "longitude": "119.9485051",
+    "equipment_details": {
+      "arg": {
+        "brand": "Sainlogic",
+        "model": "FT0310",
+        "manual": true
+      },
+      "aws": {
+        "brand": "Sainlogic",
+        "model": "FT-0310",
+        "manual": true
+      },
+      "ctas": null,
+      "slms": null,
+      "wlms": null,
+      "peimnet": null,
+      "alerting": {
+        "brand": "unknown",
+        "model": "unknown",
+        "manual": true
+      }
+    },
+    "photo_url": ""
+  }
+]
