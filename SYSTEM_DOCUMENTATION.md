@@ -599,14 +599,25 @@ npm run dev        # nodemon src/index.js, port 4000
 
 ## 14. Production Deployment (Docker)
 
+To deploy the PROACT system to production, pull the latest codebase and run:
+
 ```bash
-docker-compose up -d --build
+# 1. Fetch latest updates
+git pull
+
+# 2. Run manual schema updates for existing database (only if report_rows lacks city/remarks columns)
+# ALTER TABLE report_rows ADD COLUMN IF NOT EXISTS city TEXT DEFAULT '';
+# ALTER TABLE report_rows ADD COLUMN IF NOT EXISTS remarks TEXT DEFAULT '';
+
+# 3. Build and spin up the containers
+docker compose up -d --build
 ```
 
-- Frontend built as static files, served by Nginx on port 80 (mapped to 3001)
-- Backend runs on port 4000 (internal network: `proact_network`)
-- Nginx proxies `/api/*` and `/socket.io/` to backend container named `backend`
-- All non-asset URLs fall back to `index.html` (SPA routing)
+- **Frontend:** Compiled to static files and served via Nginx on port `80` (mapped to external port `4001` in [docker-compose.yml](file:///C:/Users/TUF/OneDrive/Desktop/DOST/PROACT/docker-compose.yml)).
+- **Backend:** Runs on port `4000` (mapped to external port `4000` in [docker-compose.yml](file:///C:/Users/TUF/OneDrive/Desktop/DOST/PROACT/docker-compose.yml)) and communicates on the isolated `proact_network`.
+- **API Routing:** Nginx proxies `/api/*` and `/socket.io/` requests directly to the `proact_backend` container.
+- **SPA Fallback:** All non-asset URLs fall back to `index.html` to support client-side React Router routing.
+- **Auto-Initialization:** On startup, the backend calls `initDatabase()` to dynamically check and create schemas for LGU submissions, AI summaries, monitoring stations, and setup indexes.
 
 ---
 
