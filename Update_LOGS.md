@@ -66,18 +66,28 @@
 - Weather Icon to Black Colors.
 - Fixed Affected Person showing wrong numbers.
 
-### **Day 11** (June 16-17)
+### **Day 10-11** (June 16-17)
 - Integrated **ExcelJS** to replace standard CSV/XLSX exports in templates.
 - Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay in Excel files.
 - Implemented **Dependent Dropdowns**: Selecting a City in Excel automatically filters available Barangays via `INDIRECT` formulas.
 - Implemented a **Mobile-First Responsive UI** including a Hamburger Menu and optimized grids for phone/tablet users.
 - **Interactive Map Implementation**: Integrated **Leaflet** to plot the inventory of regional monitoring/warning stations (AWS, Rain Gauges, Sirens, etc.) on an interactive map. Developed a migration script (`migrate_stations.cjs`) to parse coordinates from inventory Excel sheets and import them to the database. Added LGU and Province map filters, MapTrifold sidebar integration, draggable/editable specs detail modals, and partial updates on backend patch endpoints.
 
+<<<<<<< HEAD
 ### **Day 12** (June 17)
 - Refactored Equipment Inventory display to a space-efficient **Horizontal 3-3-1 Grid Layout** in station info popups and forms.
 - Updated system branding to include the official **1RDRRMC Logo** inside the main PROACT logo.
+=======
+### **Day 11** (June 17)
+- Developed the **Interactive GIS Map** for monitoring and warning stations.
+- Refactored Equipment Inventory to a **Horizontal 3-3-1 Grid Layout** for improved space efficiency.
+- Implemented **Draggable & Editable Detail Modals** for real-time equipment specification updates.
+- Refactored backend `PATCH` routes for stations to support **Partial Updates** and surgical data modification.
+- Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
+- Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.
+>>>>>>> 1f208b5d3bad34e7b357004a2b11be732f49b587
 
-### **Day 13** (June 18)
+### **Day 12** (June 18)
 - Implemented **LGU/Provincial Scope Validation** for Excel uploads.
 - Restricted **Excel Template Dropdowns**: LGU users now only see their assigned city in the template selection.
 - Added **Frontend Import Filtering**: Automatically skips unauthorized rows during Excel/CSV imports with a warning notification.
@@ -86,7 +96,7 @@
 - **Event Selection Refined**: Removed the legacy logic on the dashboard that forced automatic selection resets back to the active deployed event, allowing sticky selection of any event.
 - **Auto-Refresh Optimization**: Refined the page auto-refresh behavior across system views to improve state stability.
 
-### **Day 14** (June 22)
+### **Day 13** (June 22)
 - **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
 - **Interactive Map Pre-population**: Configured the Province select and LGU Name input fields in the station drawer to automatically pre-populate and disable for LGU users to enforce mapping coordinates and prevent cross-jurisdictional updates.
 - **Add Report Validation Markers Auto-Refresh**: Resolved the lag where newly created events/SitReps did not immediately display the red markers (required/pinged report categories) until a manual refresh. Destructured `fetchEvents` from `EventContext`, invoked it during report creation, and added `useEffect` sync hooks to keep the local `selectedEvent` state aligned with the global context.
