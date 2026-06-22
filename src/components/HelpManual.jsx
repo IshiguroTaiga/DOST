@@ -59,7 +59,12 @@ export default function HelpManual({ user }) {
                 <div key={idx} className="help-step-card">
                   <div className="help-step-info">
                     <h4 className="help-step-title">{step.title}</h4>
-                    <p className="help-step-text">{step.text}</p>
+                    <p 
+                      className="help-step-text" 
+                      dangerouslySetInnerHTML={{ 
+                        __html: step.text.replace(/\n/g, '<br />')
+                      }} 
+                    />
                     <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6366f1', fontSize: '0.75rem', fontWeight: 600 }}>
                       <Info size={14} /> Step {idx + 1}
                     </div>

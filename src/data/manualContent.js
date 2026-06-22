@@ -233,7 +233,7 @@ export const MANUAL_SECTIONS = [
     title: 'Developers Profile',
     roles: ['All'],
     description: 'Information about the developer/contributor.',
-    steps: [
+    steps: [ 
       {
         title: 'Developers Profile',
         text: 'Patongan, Joaquin\nPermison, Micko Gabriel\nBullanday, Luis\nPagurayan, Angel Lyka\nLadera, Ivan',

@@ -1961,9 +1961,11 @@ CHRONOLOGY OF EVENTS`;
               fontSize: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.975rem' : undefined,
               lineHeight: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.2' : undefined
             }}>
-              {!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white'
+              {!currentEvent || currentEvent.id === 'default-good-day'
                 ? "It's a Good Day! (No Active Threats)"
-                : currentEvent.name}
+                : currentEvent.alertStatus === 'white'
+                  ? `It's a Good Day! ${currentEvent.name}`
+                  : currentEvent.name}
             </h2>
             {userSignal && currentEvent?.alertStatus !== 'white' ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
