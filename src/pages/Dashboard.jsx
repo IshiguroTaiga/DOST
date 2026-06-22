@@ -1944,7 +1944,7 @@ CHRONOLOGY OF EVENTS`;
           </div>
 
           <div className="dash-hero-title-wrap">
-            {currentEvent?.alertLevel && currentEvent?.id !== 'default-good-day' && currentEvent?.alertStatus !== 'white' && (
+            {currentEvent?.alertLevel && currentEvent?.id !== 'default-good-day' && (
               <span style={{
                 display: 'inline-block',
                 fontSize: '0.75rem',
@@ -1958,22 +1958,20 @@ CHRONOLOGY OF EVENTS`;
               </span>
             )}
             <h2 className="dash-hero-amount" style={{
-              fontSize: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.975rem' : undefined,
-              lineHeight: (!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') ? '1.2' : undefined
+              fontSize: (!currentEvent || currentEvent.id === 'default-good-day') ? '1.975rem' : undefined,
+              lineHeight: (!currentEvent || currentEvent.id === 'default-good-day') ? '1.2' : undefined
             }}>
               {!currentEvent || currentEvent.id === 'default-good-day'
                 ? "It's a Good Day! (No Active Threats)"
-                : currentEvent.alertStatus === 'white'
-                  ? `It's a Good Day! ${currentEvent.name}`
-                  : currentEvent.name}
+                : currentEvent.name}
             </h2>
-            {userSignal && currentEvent?.alertStatus !== 'white' ? (
+            {userSignal && currentEvent?.id !== 'default-good-day' ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
                 Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> active in your area
               </p>
             ) : (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
-                {(!currentEvent || currentEvent.id === 'default-good-day' || currentEvent.alertStatus === 'white') 
+                {(!currentEvent || currentEvent.id === 'default-good-day') 
                   ? "All systems normal. Routine monitoring active."
                   : "Monitoring active for this event."}
               </p>
