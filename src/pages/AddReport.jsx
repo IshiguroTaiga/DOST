@@ -513,7 +513,7 @@ function CategorySelectionModal({ onClose, onSelect, pingedReportTypes = [], sub
 
 export default function AddReport() {
   const { user } = useOutletContext() || {}
-  const { events, currentEventId, openSelectEventModal, selectedEventForReport, showSuccess, showConfirm, notifications, showToast, lastReportsUpdate } = useEvents()
+  const { events, currentEventId, openSelectEventModal, selectedEventForReport, showSuccess, showConfirm, notifications, showToast, lastReportsUpdate, fetchEvents } = useEvents()
 
   const T = {
     blue: '#3b82f6',
@@ -1254,6 +1254,23 @@ export default function AddReport() {
       fetchSituationalReports(selectedEvent.id)
     }
   }, [selectedEvent?.id, fetchSituationalReports])
+
+  // Fetch events on mount to ensure we have the latest event metadata
+  useEffect(() => {
+    if (fetchEvents) {
+      fetchEvents()
+    }
+  }, [fetchEvents])
+
+  // Synchronize local selectedEvent when the global events array updates
+  useEffect(() => {
+    if (selectedEvent?.id && events?.length > 0) {
+      const updatedEvent = events.find(e => e.id === selectedEvent.id)
+      if (updatedEvent) {
+        setSelectedEvent(updatedEvent)
+      }
+    }
+  }, [events, selectedEvent?.id])
 
 useEffect(() => {
   if (view === 'entries') {
@@ -2218,6 +2235,12 @@ useEffect(() => {
           })
           if (newSR) {
             console.log('[AddReport] SitRep created successfully:', newSR);
+            
+            // Re-fetch events to update local state mapping for newly created event red markers
+            if (fetchEvents) {
+              await fetchEvents();
+            }
+
             const clonedMsg = newSR.autoCloned || newSR.cloned_from_id 
               ? ' with data automatically cloned from the previous report.' 
               : '.';

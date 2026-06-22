@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info, Database, DownloadSimple, UploadSimple, WarningCircle, FileZip, Envelope, Sparkle, Sun, Cloud, CloudRain, CloudLightning, Wind, ThermometerHot } from '@phosphor-icons/react'
+import { X, Shield, Palette, Eye, EyeClosed, ClockCounterClockwise, Info, Database, DownloadSimple, UploadSimple, WarningCircle, FileZip, Envelope, Sparkle, Sun, Cloud, CloudRain, CloudLightning, Wind, ThermometerHot, MapPin } from '@phosphor-icons/react'
 import { zip, unzip, strToU8, strFromU8 } from 'fflate'
 import pkg from '../../package.json'
 
@@ -53,6 +53,10 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
     const [showSmtpPassword, setShowSmtpPassword] = useState(false)
     const [smtpLogs, setSmtpLogs] = useState([])
     const [loadingLogs, setLoadingLogs] = useState(false)
+
+    // Map Logs State
+    const [mapLogs, setMapLogs] = useState([])
+    const [loadingMapLogs, setLoadingMapLogs] = useState(false)
 
     // AI Config State
     const [aiConfig, setAiConfig] = useState({
@@ -144,6 +148,23 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
         }
     }
 
+    const fetchMapLogs = async () => {
+        try {
+            setLoadingMapLogs(true)
+            const { data } = await api.get('/activity-logs', { params: { limit: 200 } })
+            const stationLogs = (data || []).filter(log => 
+                log.action === 'Station Created' || 
+                log.action === 'Station Updated' || 
+                log.action === 'Station Deleted'
+            )
+            setMapLogs(stationLogs)
+        } catch (err) {
+            console.error('Failed to fetch map logs', err)
+        } finally {
+            setLoadingMapLogs(false)
+        }
+    }
+
     const handleSaveEmailConfig = async () => {
         try {
             setEmailLoading(true)
@@ -199,6 +220,12 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             if (activeTab === 'ai-config') fetchAiConfig()
         }
     }, [isOpen, activeTab, isSuperAdmin])
+
+    useEffect(() => {
+        if (isOpen && activeTab === 'map-logs') {
+            fetchMapLogs()
+        }
+    }, [isOpen, activeTab])
 
     const handleThemeChange = async (newTheme) => {
         setTheme(newTheme)
@@ -358,6 +385,14 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                     >
                         <ClockCounterClockwise size={16} /> System Event Logs
                     </button>
+
+                    <button
+                        onClick={() => setActiveTab('map-logs')}
+                        className={`modal-sidebar-tab ${activeTab === 'map-logs' ? 'active' : ''}`}
+                    >
+                        <MapPin size={16} /> Map Logs
+                    </button>
+
                     <button
                         onClick={() => {
                             navigate('/manual')
@@ -810,6 +845,63 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                                 })
                                             ) : (
                                                 <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No configuration logs found.</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'map-logs' && (
+                        <div className="settings-tab-pane">
+                            <h3 className="settings-section-title">Map Activity Logs</h3>
+                            <p className="settings-section-desc">History of monitoring station additions, edits, and deletions.</p>
+
+                            <div className="smtp-logs-section" style={{ marginTop: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 700 }}>Map Changes History</h4>
+                                    <Button variant="ghost" size="sm" onClick={fetchMapLogs} isLoading={loadingMapLogs}>Refresh</Button>
+                                </div> 
+
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', fontSize: '0.8125rem', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
+                                                <th style={{ padding: '8px' }}>Date</th>
+                                                <th style={{ padding: '8px' }}>Action</th>
+                                                <th style={{ padding: '8px' }}>User</th>
+                                                <th style={{ padding: '8px' }}>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {loadingMapLogs ? (
+                                                <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}><LoadingSpinner size="sm" /></td></tr>
+                                            ) : mapLogs.length > 0 ? (
+                                                mapLogs.map((log) => {
+                                                    const displayName = log.first_name && log.last_name 
+                                                        ? `${log.first_name} ${log.last_name}` 
+                                                        : log.email || 'Unknown User';
+                                                    
+                                                    let actionColor = '#3b82f6';
+                                                    if (log.action === 'Station Created') actionColor = '#10b981';
+                                                    if (log.action === 'Station Deleted') actionColor = '#ef4444';
+
+                                                    return (
+                                                        <tr key={log.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                            <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>
+                                                                {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </td>
+                                                            <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>
+                                                                <span style={{ color: actionColor, fontWeight: 700 }}>{log.action}</span>
+                                                            </td>
+                                                            <td style={{ padding: '8px', whiteSpace: 'nowrap' }}>{displayName}</td>
+                                                            <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{log.details || '-'}</td>
+                                                        </tr>
+                                                    )
+                                                })
+                                            ) : (
+                                                <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No map logs found.</td></tr>
                                             )}
                                         </tbody>
                                     </table>

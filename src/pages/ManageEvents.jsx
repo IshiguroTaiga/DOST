@@ -95,7 +95,7 @@ export default function ManageEvents() {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({
     name: '',
-    color: '#6366f1',
+    color: '#94a3b8',
     startDate: '',
     endDate: '',
     eventType: 'typhoon',
@@ -152,7 +152,7 @@ export default function ManageEvents() {
       }
     }
     return {
-      name: '', color: '#6366f1',
+      name: '', color: '#94a3b8',
       startDate: new Date().toISOString().slice(0, 16),
       endDate: '', eventType: 'typhoon', alertStatus: 'white', alertLevel: '',
       summary: '', affectedProvinces: defaultProvinces,
