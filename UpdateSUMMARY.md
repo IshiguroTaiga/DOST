@@ -60,10 +60,17 @@ This document summarizes the development, refactoring, and feature implementatio
     - Added **Horizontal Table Scrolling** to ensure data accessibility on mobile devices.
     - Enhanced **Modal Responsiveness** for phone and tablet users.
 
----
-**Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities and AI-assisted reporting.
+## 8. System Adjustments & Bug Fixes (June 22, 2026)
+- **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
+- **Interactive Map Pre-population**: Configured Province select and LGU Name inputs to pre-populate with user credentials and disabled them for LGU accounts to enforce correct mapping coordinates and prevent cross-jurisdictional updates.
+- **Add Report Validation Markers Auto-Refresh**: Fixed a lag issue where newly created events/reports did not immediately render the red markers (required/pinged report types) until a page refresh. Destructured `fetchEvents` from the global `EventContext`, triggered it in the `handleCreateSitRep` creation callback, and added a `useEffect` synchronization hook to keep the local `selectedEvent` state fully synced with the global `events` array.
+- **Manage Event White Alert Level Default Indicator Color**: Fixed a bug where creating events with "White (Normal)" alert status defaulted to a blue/indigo circle icon (`#6366f1`). Changed the default color in form state and the `blankForm()` constructor in `ManageEvents.jsx` to `#94a3b8` (gray/white) to match.
+- **Davis Instruments API Token**: Provided clarification regarding the default API token (`5ECABC5CB8824E5D86D12115782CE2EC`) for weather stations.
 
-## 8. System Flow Comparison (Old vs. New)
+---
+**Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities, GIS mapping, and AI-assisted reporting.
+
+## 9. System Flow Comparison (Old vs. New)
 
 | Feature | Legacy Flow (SIREN) | New Flow (PROACT) |
 | :--- | :--- | :--- |

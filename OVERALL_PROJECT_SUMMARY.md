@@ -3,7 +3,7 @@
 **System Name:** PROACT (Proactive Reporting, Operation, Analysis, Communication and Tracking System)  
 **Formerly:** SIREN (Situation Intelligence & Rapid Emergency Network)  
 **Domain:** https://proact.dost1.ph  
-**Version:** 1.2.2 (June 2026)
+**Version:** 1.2.3 (June 2026)
 
 ---
 
@@ -108,7 +108,10 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 - **LGU Autonomy:** LGUs can now independently create and submit reports for review.
 - **LGU Scope Enforcement:** Implemented strict LGU-level boundaries for Excel templates and API submissions to prevent cross-jurisdictional data entry.
 - **Interactive GIS Map:** New module for plotting **Monitoring and Warning Stations** across Region I.
+- **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the Interactive GIS Map and backend routes, with Province and LGU Name fields pre-populated and locked for their assigned location.
 - **Advanced Inventory Tracking:** Refactored equipment inventory with 3-3-1 horizontal grid layouts and draggable detail modals for real-time spec editing.
+- **Auto-Refresh of Validation Markers**: Resolved the validation markers lag on new reports by synchronizing the local page state with global events context updates.
+- **Event Indicator Color Fixed**: Corrected the default color for "White (Normal)" alert status events to `#94a3b8` (gray/white) upon creation.
 - **Backend Optimization:** Implemented **Partial Update** support in the stations API to handle surgical equipment detail edits without side effects.
 - **Weather Integration:** Real-time local weather updates via browser Geolocation API with Super Admin overrides.
 - **Security Enhancements:** Strengthened RBAC (Role-Based Access Control) and rigorous password verification logic.
@@ -126,5 +129,5 @@ Data is split into 15+ specialized tables, all linked to a SitRep ID:
 
 ---
 
-**Last Updated:** June 18, 2026  
+**Last Updated:** June 22, 2026  
 **Maintained By:** DOST ITSM Unit Development Team

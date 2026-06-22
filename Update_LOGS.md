@@ -86,3 +86,10 @@
 - Added **Frontend Import Filtering**: Automatically skips unauthorized rows during Excel/CSV imports with a warning notification.
 - Strengthened **Backend API Security**: Integrated `validateReportAccess` in all report `POST` and `PATCH` routes to strictly enforce LGU boundaries at the server level.
 - Refactored `AddReport.jsx` and `reports.js` to use **Normalized City Comparison** (case-insensitive and prefix-aware) for robust access control.
+
+### Day 14 (June 22)
+- **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
+- **Interactive Map Pre-population**: Configured the Province select and LGU Name input fields in the station drawer to automatically pre-populate and disable for LGU users to enforce mapping coordinates and prevent cross-jurisdictional updates.
+- **Add Report Validation Markers Auto-Refresh**: Resolved the lag where newly created events/SitReps did not immediately display the red markers (required/pinged report categories) until a manual refresh. Destructured `fetchEvents` from `EventContext`, invoked it during report creation, and added `useEffect` sync hooks to keep the local `selectedEvent` state aligned with the global context.
+- **Manage Event Alert Status Default Circle Color**: Fixed a bug where creating a new event under "White (Normal)" alert status defaulted to a blue/indigo circle color `#6366f1` instead of gray/white `#94a3b8`.
+- **Davis API Token Clarification**: Clarified that token `5ECABC5CB8824E5D86D12115782CE2EC` is the default token used for weather data simulation and Davis Instruments v1 API proxying.
