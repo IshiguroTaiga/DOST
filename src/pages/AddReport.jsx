@@ -35,6 +35,9 @@ const CATEGORY_LABELS = {
   stateOfCalamity: 'Declaration of State of Calamity',
   preEmptiveEvacuation: 'Pre-emptive Evacuation',
   assistanceProvided: 'Assistance Provided to Affected Families',
+  assistanceLgus: 'Assistance (LGUs/Agencies)',
+  agricultureDamage: 'Agriculture Damage',
+  infrastructureDamage: 'Infrastructure Damage',
 }
 
 const CATEGORY_NAMES = Object.keys(CATEGORY_LABELS).map(key => ({
