@@ -545,6 +545,12 @@ export function EventProvider({ children, user }) {
       const { data } = await api.post('/situational-reports', payload)
       
       setSituationalReports(prev => [data, ...prev])
+      
+      // Update local events array immediately to sync pinged report types
+      if (options.pingedReportTypes && options.pingedReportTypes.length > 0) {
+        setEvents(prev => prev.map(e => e.id === eventId ? { ...e, pingedReportTypes: options.pingedReportTypes } : e))
+      }
+
       return data
     } catch (err) {
       console.error('Error creating situational report:', err)
