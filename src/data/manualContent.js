@@ -249,7 +249,7 @@ export const MANUAL_SECTIONS = [
     ]
   },
 
-  // --- UPDATE LOGS V2 (CURRENT SUMMARY) ---
+// --- UPDATE LOGS V2 (CURRENT SUMMARY) ---
   {
     id: 'logs-v2-summary',
     category: 'logs_v2',
@@ -259,25 +259,25 @@ export const MANUAL_SECTIONS = [
     steps: [
       {
         title: 'Week 1: Introduction and Initial UI Changes',
-        text: '**Day 1:** Oriented with SIREN project; rebranding to PROACT; clickable dashboard category buttons.\n**Day 2:** Fixed event assignment "apply to all" bug; Affected Persons modal; SOLIDO link integration.\n**Day 3:** File structure orientation; dashboard header refinements.\n**Day 4:** Sidebar: Added Hazard Information which includes three external resources: Solido, PAGASA, and PHIVOLCS. And Fixed dash-hero-meta and dash-hero-amount overlapping.',
+        text: '**Day 1:** Oriented with SIREN project; rebranding to PROACT; implemented clickable dashboard category buttons.\n**Day 2:** Fixed event assignment "apply to all" functionality; developed Affected Persons details modal; integrated SOLIDO DRRM Knowledge Hub sidebar link; updated log-in page background to WhiteSmoke.\n**Day 3:** React/JavaScript project file structure orientation; dashboard header UI refinements; finalized PROACT logo.\n**Day 4:** Added Hazard Information to sidebar with external resources (Solido, PAGASA, PHIVOLCS); fixed dash-hero-meta and dash-hero-amount overlapping layout.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
         title: 'Week 2: Backend Logic and System Optimization',
-        text: '**Day 5:** Real-time local weather tracking via Geolocation API (wttr.in); self-approval workflow for LGUs; Assistance Value: not properly displaying 1M, 1B currency\n**Day 6:** AI report summary generator (Groq/Gemini); display: flex; to display: grid; at dash-hero-meta\n**Day 7:** Fixed login fetching and Super Admin privilege bugs.\n**Day 8:** Fixed PDF preview bugs; AI summary history schema implementation; Affected Person: Barchart Vertical turned to Barchart Horizontal and Added Filtering; Suspension by City changed to Suspension by LGU.',
+        text: '**Day 5:** Integrated Browser Geolocation API (wttr) into Dashboard.jsx; removed redundant "Approver" user roles; implemented LGU/Province self-approval workflow; fixed Add Report classification/summary layout; added weatherClassification.json; fixed 1M/1B currency formatting for Assistance Value; added scroll-to-bottom utility for Damaged Houses.\n**Day 6:** Developed AI report summary generator supporting Groq (Llama 3) and Google Gemini via custom API keys; changed dash-hero-meta layout from flex to grid.\n**Day 7:** Tested Vercel deployment; resolved user login fetching and Super Admin privilege bugs on proact.dost1.ph.\n**Day 8:** Fixed remote PDF preview bugs; designed database schema for AI executive summary history; converted Affected Person vertical bar chart to horizontal with filtering; updated city suspension tracking to LGU scope.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
         title: 'Week 3: Final Features and Debugging',
-        text: '**Day 9:** Inventory management; fixed SitRep numbering and data leak bugs; Affected Person: Clicking the city/municipality displays their respective barangays (Accordion); Affected Person Chart: Added Pop-up modal, if the user click the chart of the specific city/municipality it will show the barangays chart too.\n**Day 10:** Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover; Hazard Information isCollapsed displays the icon of SOLIDO, PAGASA, and PHIVOLCS; Weather Icon to Black Colors.\n**Day 11:** Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.\n**Day 12:** Developed Interactive GIS Map; refactored Equipment Inventory to horizontal 3-3-1 grid; implemented draggable and editable equipment detail modals; refactored backend stations API for partial updates; Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.',
+        text: '**Day 9:** Resolved provincial data leaks and standardized global SitRep numbering; added barangay accordions to Affected Person list; implemented synchronized pop-up barangay charts when clicking city data.\n**Day 10:** Security audit & "Edit User" password bypass patch; corrected gaps in weatherClassifications.json (e.g., 30°C alignment); enforced Mandatory Report Categories (Red Dots); reorganized Help Manual with developer profiles and iframe/video support; fixed sidebar collapse visibility for hazard links; changed weather icons to black; fixed Affected Person numerical bugs.\n**Day 10-11:** Integrated ExcelJS for advanced exports; added native data validation dropdowns and dependent city-to-barangay filtering via INDIRECT formulas; built mobile-first responsive UI with Hamburger Menu and optimized grids.\n**Day 11:** Developed Interactive GIS Map for monitoring stations; refactored Equipment Inventory to a space-efficient horizontal 3-3-1 grid layout; implemented draggable/editable detail modals; configured partial update PATCH routes for stations; added 11-digit Philippine mobile formatting; updated PROACT logo to feature the 1RDRRMC crest.\n**Day 12:** Enforced LGU/Provincial scope validation for Excel uploads and limited templates to assigned cities; added frontend import filters with warnings for unauthorized rows; secured backend API using validateReportAccess across POST/PATCH routes; normalized city string comparisons.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
-        title: 'Week 4: System Integration & Permissions',
-        text: '**Day 13:** Implemented LGU/Provincial scope validation for Excel uploads and API submissions; restricted Excel template dropdowns to user scope; added frontend import filtering and backend security enforcement and Reverted LGU station restrictions to enable add/edit; resolved situational report validation markers refresh lag; fixed white alert level default indicator color.\n **Day 14:**',
+        title: 'Week 4: Final Permissions & Context Synchronization',
+        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }

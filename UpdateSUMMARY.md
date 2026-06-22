@@ -23,6 +23,8 @@ This document summarizes the development, refactoring, and feature implementatio
     - **Data Security:** Refined backend routes to ensure provinces only see their own data within a shared SitRep, while Regional users see the consolidated view.
 - **DROMIC Integration:** Added functionality to download templates and import data directly from Excel, streamlining the reporting process.
 - **User Management:** Enhanced user creation/editing modals to dynamically hide/show fields (like City/Municipality) based on account type.
+- **Event Selection Refined:** Removed the legacy logic on the dashboard that forced automatic selection resets back to the active deployed event, allowing sticky selection of any event.
+- **Auto-Refresh Optimization:** Refined the auto-refresh behaviors across all views to improve system stability and real-time state synchronization.
 
 ## 4. Real-Time Features & Notifications
 - **Location-Aware Weather:** Integrated the browser Geolocation API for real-time local weather updates, with a fallback to the user's profile location.
@@ -50,10 +52,13 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Interactive Map Feature:**
     - Developed a new module to visualize **Monitoring and Warning Stations** across Region I.
     - Integrated **Leaflet** for geospatial data plotting with OpenStreetMap.
+    - **Automated Data Import**: Developed a robust migration script (`migrate_stations.cjs`) that parses inventory Excel sheets and imports coordinates to the database.
     - **Refined Inventory Management**: Implemented a horizontal 3-3-1 grid layout for equipment inventories in both popups and drawers.
     - **Interactive Interactivity**: Added draggable and editable detail modals, allowing users to update specs and contact numbers directly on the map.
     - **Surgical Backend**: Refactored API routes to support partial station updates, ensuring data integrity during equipment edits.
     - Added real-time filtering by Province and LGU searching on the map.
+    - **Navigation Icon**: Added an "Interactive Map" sidebar navigation item with a custom `MapTrifold` icon.
+    - Added numeric input validation and Philippine mobile number formatting rules.
 - **Mobile Compatibility & UI Optimization:**
     - Implemented a **Hamburger Menu** and mobile header for navigation on small screens.
     - Optimized the **Dashboard** and **Add Report** pages for mobile viewports using responsive CSS grids.

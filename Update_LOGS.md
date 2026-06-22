@@ -71,14 +71,11 @@
 - Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay in Excel files.
 - Implemented **Dependent Dropdowns**: Selecting a City in Excel automatically filters available Barangays via `INDIRECT` formulas.
 - Implemented a **Mobile-First Responsive UI** including a Hamburger Menu and optimized grids for phone/tablet users.
+- **Interactive Map Implementation**: Integrated **Leaflet** to plot the inventory of regional monitoring/warning stations (AWS, Rain Gauges, Sirens, etc.) on an interactive map. Developed a migration script (`migrate_stations.cjs`) to parse coordinates from inventory Excel sheets and import them to the database. Added LGU and Province map filters, MapTrifold sidebar integration, draggable/editable specs detail modals, and partial updates on backend patch endpoints.
 
 ### **Day 12** (June 17)
-- Developed the **Interactive GIS Map** for monitoring and warning stations.
-- Refactored Equipment Inventory to a **Horizontal 3-3-1 Grid Layout** for improved space efficiency.
-- Implemented **Draggable & Editable Detail Modals** for real-time equipment specification updates.
-- Refactored backend `PATCH` routes for stations to support **Partial Updates** and surgical data modification.
-- Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
-- Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.
+- Refactored Equipment Inventory display to a space-efficient **Horizontal 3-3-1 Grid Layout** in station info popups and forms.
+- Updated system branding to include the official **1RDRRMC Logo** inside the main PROACT logo.
 
 ### **Day 13** (June 18)
 - Implemented **LGU/Provincial Scope Validation** for Excel uploads.
@@ -86,6 +83,8 @@
 - Added **Frontend Import Filtering**: Automatically skips unauthorized rows during Excel/CSV imports with a warning notification.
 - Strengthened **Backend API Security**: Integrated `validateReportAccess` in all report `POST` and `PATCH` routes to strictly enforce LGU boundaries at the server level.
 - Refactored `AddReport.jsx` and `reports.js` to use **Normalized City Comparison** (case-insensitive and prefix-aware) for robust access control.
+- **Event Selection Refined**: Removed the legacy logic on the dashboard that forced automatic selection resets back to the active deployed event, allowing sticky selection of any event.
+- **Auto-Refresh Optimization**: Refined the page auto-refresh behavior across system views to improve state stability.
 
 ### **Day 14** (June 22)
 - **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
