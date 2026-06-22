@@ -2,29 +2,29 @@
 
 ## Week 1: Introduction and Initial UI Changes
 
-### Day 1 (June 1)
+### **Day 1** (June 1)
 - Oriented with the Situation Intelligence & Rapid Emergency Network (SIREN) project.
 - Began rebranding the system to PROACT (Proactive Reporting, Operation, Analysis, Communication and Tracking System).
 - Implemented clickable category buttons on the dashboard overview.
 
-### Day 2 (June 2)
+### **Day 2** (June 2)
 - Fixed bugs in the event assignment interface to allow "apply to all" functionality.
 - Developed a pop-up modal to display details for "Affected Persons".
 - Integrated a redirection link to the SOLIDO DRRM Knowledge Hub in the sidebar.
 - Log in page BG to WhiteSmoke.
 
-### Day 3 (June 3)
+### **Day 3** (June 3)
 - Familiarized with the project's file structure (React/JavaScript stack).
 - Implemented UI refinements to the dashboard header as instructed.
 - Finalized PROACT logo.
 
-### Day 4 (June 4)
+### **Day 4** (June 4)
 - Sidebar: Added Hazard Information which includes three external resources: Solido, PAGASA, and PHIVOLCS.
 - Fixed dash-hero-meta and dash-hero-amount overlapping.
 
 ## Week 2: Backend Logic and System Optimization
 
-### Day 5 (June 8)
+### **Day 5** (June 8)
 - Integrated the Browser Geolocation API (wttr) into `Dashboard.jsx` for real-time local weather tracking.
 - Simplified user management by removing redundant "Approver" roles.
 - Implemented a self-approval workflow for LGUs and Provinces.
@@ -33,15 +33,15 @@
 - Assistance Value: not properly displaying 1M, 1B currency
 - Added handleScrollToBottom for Damaged Houses
 
-### Day 6 (June 9)
+### **Day 6** (June 9)
 - Developed an AI report summary generator that allows users to switch between models like Groq (Llama 3) and Google Gemini using custom API keys.
 - dashboard.css == changed display: flex; to display: grid; at dash-hero-meta
 
-### Day 7 (June 10)
+### **Day 7** (June 10)
 - Conducted testing on a Vercel deployment.
 - Resolved critical bugs related to user login fetching and Super Admin privileges during the initial deployment to `proact.dost1.ph`.
 
-### Day 8 (June 11)
+### **Day 8** (June 11)
 - Worked remotely to fix PDF preview bugs.
 - Created a new database schema to store a history of AI-generated executive summaries.
 - Affected Person: Barchart Vertical turned to Barchart Horizontal and Added Filtering.
@@ -49,12 +49,12 @@
 
 ## Week 3: Final Features and Debugging
 
-### Day 9 (June 15)
+### **Day 9** (June 15)
 - Fixed two major bugs in situational reporting: isolated data leaking between provinces and standardized the global SitRep numbering sequence.
 - Affected Person: Clicking the city/municipality displays their respective barangays (Accordion).
 - Affected Person Chart: Added Pop-up modal, if the user click the chart of the specific city/municipality it will show the barangays chart too.
 
-### Day 10 (June 16)
+### **Day 10** (June 16)
 - Conducted a final security audit.
 - Fixed a password bypass flaw in the "Edit User" modal.
 - Fixed temperature range gaps in `weatherClassifications.json` to ensure consistent labeling (e.g., exactly 30°C).
@@ -66,13 +66,13 @@
 - Weather Icon to Black Colors.
 - Fixed Affected Person showing wrong numbers.
 
-### Day 11 (June 16-17)
+### **Day 11** (June 16-17)
 - Integrated **ExcelJS** to replace standard CSV/XLSX exports in templates.
 - Added **Native Data Validation (Dropdowns)** for City/Municipality and Barangay in Excel files.
 - Implemented **Dependent Dropdowns**: Selecting a City in Excel automatically filters available Barangays via `INDIRECT` formulas.
 - Implemented a **Mobile-First Responsive UI** including a Hamburger Menu and optimized grids for phone/tablet users.
 
-### Day 12 (June 17)
+### **Day 12** (June 17)
 - Developed the **Interactive GIS Map** for monitoring and warning stations.
 - Refactored Equipment Inventory to a **Horizontal 3-3-1 Grid Layout** for improved space efficiency.
 - Implemented **Draggable & Editable Detail Modals** for real-time equipment specification updates.
@@ -80,14 +80,14 @@
 - Added numeric validation and Philippine mobile number formatting (11 digits) to contact fields.
 - Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.
 
-### Day 13 (June 18)
+### **Day 13** (June 18)
 - Implemented **LGU/Provincial Scope Validation** for Excel uploads.
 - Restricted **Excel Template Dropdowns**: LGU users now only see their assigned city in the template selection.
 - Added **Frontend Import Filtering**: Automatically skips unauthorized rows during Excel/CSV imports with a warning notification.
 - Strengthened **Backend API Security**: Integrated `validateReportAccess` in all report `POST` and `PATCH` routes to strictly enforce LGU boundaries at the server level.
 - Refactored `AddReport.jsx` and `reports.js` to use **Normalized City Comparison** (case-insensitive and prefix-aware) for robust access control.
 
-### Day 14 (June 22)
+### **Day 14** (June 22)
 - **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
 - **Interactive Map Pre-population**: Configured the Province select and LGU Name input fields in the station drawer to automatically pre-populate and disable for LGU users to enforce mapping coordinates and prevent cross-jurisdictional updates.
 - **Add Report Validation Markers Auto-Refresh**: Resolved the lag where newly created events/SitReps did not immediately display the red markers (required/pinged report categories) until a manual refresh. Destructured `fetchEvents` from `EventContext`, invoked it during report creation, and added `useEffect` sync hooks to keep the local `selectedEvent` state aligned with the global context.

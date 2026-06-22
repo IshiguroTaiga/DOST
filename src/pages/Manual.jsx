@@ -19,6 +19,26 @@ export default function Manual() {
   const [activeCategory, setActiveCategory] = useState(MANUAL_CATEGORIES[0].id)
   const [searchTerm, setSearchTerm] = useState('')
 
+  const parseStepText = (text) => {
+    if (!text) return '';
+    const lines = text.split('\n');
+    return lines.map((line, lineIdx) => {
+      const parts = line.split(/(\*\*[^*]+\*\*)/g);
+      const formattedLine = parts.map((part, partIdx) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={partIdx}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+      return (
+        <span key={lineIdx}>
+          {formattedLine}
+          {lineIdx < lines.length - 1 && <br />}
+        </span>
+      );
+    });
+  };
+
   const accountType = user?.account_type || user?.role || 'Viewer'
 
   // Filter sections by role and search term
@@ -113,7 +133,7 @@ export default function Manual() {
                       <div className="manual-step-content">
                         <span className="manual-step-number">STEP {idx + 1}</span>
                         <h3 className="manual-step-title">{step.title}</h3>
-                        <p className="manual-step-text">{step.text}</p>
+                        <p className="manual-step-text">{parseStepText(step.text)}</p>
                       </div>
                       <div className="manual-visual-box">
                         {step.type === 'video' ? (
