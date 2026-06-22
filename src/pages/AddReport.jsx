@@ -559,6 +559,16 @@ export default function AddReport() {
   const defaultCity = user?.city ?? ''
   const [view, setView] = useState('events') // 'events', 'versions', or 'entries'
   const [selectedEvent, setSelectedEvent] = useState(null)
+
+  // Keep selectedEvent in sync with context events when event updates (e.g. when pinged categories change)
+  useEffect(() => {
+    if (selectedEvent?.id && events?.length > 0) {
+      const updatedEvent = events.find(e => e.id === selectedEvent.id)
+      if (updatedEvent && JSON.stringify(updatedEvent.pingedReportTypes) !== JSON.stringify(selectedEvent.pingedReportTypes)) {
+        setSelectedEvent(updatedEvent)
+      }
+    }
+  }, [events, selectedEvent])
   const { currentSituationalReport, setCurrentSituationalReport, situationalReports, fetchSituationalReports, createSituationalReport, updateSituationalReport, sendSituationalReport, markSitRepNotificationsAsRead, markEventNotificationsAsRead } = useEvents()
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [activeCategoryModal, setActiveCategoryModal] = useState(null)
@@ -2223,6 +2233,9 @@ useEffect(() => {
               : '.';
             showSuccess('Report Created', `Successfully created ${newSR.title}${clonedMsg}`)
             
+            // Synchronously update selectedEvent's pingedReportTypes so that it's available immediately
+            setSelectedEvent(prev => prev ? { ...prev, pingedReportTypes: pingedCategories } : null)
+
             setCurrentSituationalReport(newSR)
             setShowNewSitRepModal(false)
             setNewSitRepTitle('')

@@ -215,6 +215,7 @@ router.get('/', authenticate, async (req, res) => {
       SELECT sr.*, 
              concat(u.first_name, ' ', u.last_name) as creator_name,
              u.city as creator_city,
+             e.pinged_report_types,
              json_build_object('id', e.id, 'name', e.name) as events
       FROM situational_reports sr
       LEFT JOIN events e ON sr.event_id = e.id
@@ -267,7 +268,7 @@ router.get('/:id', authenticate, async (req, res) => {
   try {
     const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
     const { rows } = await pool.query(
-      'SELECT sr.*, u.first_name, u.last_name FROM situational_reports sr LEFT JOIN users u ON sr.created_by = u.id WHERE sr.id = $1',
+      'SELECT sr.*, u.first_name, u.last_name, e.pinged_report_types FROM situational_reports sr LEFT JOIN users u ON sr.created_by = u.id LEFT JOIN events e ON sr.event_id = e.id WHERE sr.id = $1',
       [req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -392,11 +393,29 @@ router.post('/', authenticate, async (req, res) => {
 
       await client.query('COMMIT');
       
+      // Fetch complete sitrep data to return (with event's pinged_report_types and creator details)
+      const completeSR = await pool.query(
+        `SELECT sr.*, concat(u.first_name, ' ', u.last_name) as creator_name, u.city as creator_city, e.pinged_report_types
+         FROM situational_reports sr
+         LEFT JOIN users u ON sr.created_by = u.id
+         LEFT JOIN events e ON sr.event_id = e.id
+         WHERE sr.id = $1`,
+        [sitRep.id]
+      );
+
       const io = req.app.locals.io;
-      if (io) io.emit('sitrep:created', sitRep);
+      if (io) {
+        io.emit('sitrep:created', completeSR.rows[0]);
+        if (pinged_report_types && pinged_report_types.length > 0) {
+          const updatedEventRes = await pool.query('SELECT * FROM events WHERE id = $1', [event_id]);
+          if (updatedEventRes.rows.length > 0) {
+            io.emit('events:updated', updatedEventRes.rows[0]);
+          }
+        }
+      }
 
       res.status(201).json({ 
-        ...sitRep, 
+        ...completeSR.rows[0], 
         autoCloned: !!sourceToClone,
         cloned_from_id: sourceToClone,
         debug_cloned_count: totalCloned 
@@ -433,10 +452,20 @@ router.patch('/:id', authenticate, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Report not found' });
 
-    const io = req.app.locals.io;
-    if (io) io.emit('sitrep:updated', rows[0]);
+    // Fetch complete sitrep data to return
+    const completeSR = await pool.query(
+      `SELECT sr.*, concat(u.first_name, ' ', u.last_name) as creator_name, u.city as creator_city, e.pinged_report_types
+       FROM situational_reports sr
+       LEFT JOIN users u ON sr.created_by = u.id
+       LEFT JOIN events e ON sr.event_id = e.id
+       WHERE sr.id = $1`,
+      [req.params.id]
+    );
 
-    res.json(rows[0]);
+    const io = req.app.locals.io;
+    if (io) io.emit('sitrep:updated', completeSR.rows[0]);
+
+    res.json(completeSR.rows[0]);
   } catch (err) {
     console.error('[SitReps/PATCH] ERROR:', err.message);
     res.status(500).json({ error: 'Server error', details: err.message });
