@@ -41,7 +41,7 @@ const MOCK_USERS = [
 
 export default function Users() {
   const { user: currentUser } = useOutletContext() ?? {}
-  const { showSuccess, showToast, showConfirm, fetchPendingUsersCount, notifications, markUserNotificationsAsRead } = useEvents()
+  const { showSuccess, showToast, showConfirm, fetchPendingUsersCount, notifications, markUserNotificationsAsRead, lastUsersUpdate } = useEvents()
   const unreadNotifs = useMemo(() => notifications?.filter(n => !n.is_read) || [], [notifications])
 
   const hasUnread = useCallback((userId) => {
@@ -114,7 +114,7 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [lastUsersUpdate])
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users

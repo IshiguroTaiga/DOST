@@ -1478,8 +1478,18 @@ export default function ConsolidatedReport() {
 
 
   useEffect(() => {
-    // No longer fetching active event IDs for filters
-  }, [])
+    if (view === 'sitreps' && selectedEvent?.id) {
+      setVersionsLoading(true)
+      fetchSituationalReports(selectedEvent.id)
+        .then((sitreps) => {
+          setSitRepVersions(sitreps || [])
+        })
+        .catch((err) => console.error('Error auto-refreshing sitreps:', err))
+        .finally(() => {
+          setVersionsLoading(false)
+        })
+    }
+  }, [view, selectedEvent?.id, lastReportsUpdate, fetchSituationalReports])
 
   const filteredEvents = useMemo(() => {
     let list = [...events]

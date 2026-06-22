@@ -61,6 +61,7 @@ export function EventProvider({ children, user }) {
   const [loadingSignals, setLoadingSignals] = useState(false)
   const [weatherCondition, setWeatherCondition] = useState({ condition: 'Clear Skies', icon: 'Sun' })
   const [lastReportsUpdate, setLastReportsUpdate] = useState(Date.now())
+  const [lastUsersUpdate, setLastUsersUpdate] = useState(Date.now())
 
   // 3. UI Utility Hooks (Must be defined before they are used in other hooks' dependencies)
   const showSuccess = useCallback((title, message) => {
@@ -199,15 +200,6 @@ export function EventProvider({ children, user }) {
       const mappedEvents = (data || []).map(mapEvent)
       console.log('[EventContext] Fetched events:', mappedEvents.length)
       setEvents(mappedEvents)
-
-      const activeEvent = mappedEvents.find(e => e.isDeployed)
-      if (activeEvent && activeEvent.id !== currentEventId) {
-        setCurrentEventId(activeEvent.id)
-      }
-      if (!currentEventId && mappedEvents.length > 0) {
-        const firstDeployed = mappedEvents.find(e => e.isDeployed) || mappedEvents[0]
-        if (firstDeployed) setCurrentEventId(firstDeployed.id)
-      }
     } catch (err) {
       console.error('Error fetching events:', err)
     } finally {
@@ -369,8 +361,17 @@ export function EventProvider({ children, user }) {
     fetchPendingUsersCount()
     fetchPendingApprovalsCount()
     fetchWeatherCondition()
-    if (currentEventId) fetchUserSignal(currentEventId)
-  }, [user, fetchEvents, fetchNotifications, fetchPendingUsersCount, fetchPendingApprovalsCount, currentEventId, fetchUserSignal, fetchWeatherCondition])
+  }, [user, fetchEvents, fetchNotifications, fetchPendingUsersCount, fetchPendingApprovalsCount, fetchWeatherCondition])
+
+  // Fetch signal when event changes
+  useEffect(() => {
+    if (!user) return
+    if (currentEventId) {
+      fetchUserSignal(currentEventId)
+    } else {
+      setUserSignal(null)
+    }
+  }, [user, currentEventId, fetchUserSignal])
 
   // 5. Computed State
   const defaultEvent = {
@@ -449,7 +450,10 @@ export function EventProvider({ children, user }) {
     })
 
     // Users changed (badge refresh)
-    socket.on('users:changed', () => fetchPendingUsersCount())
+    socket.on('users:changed', () => {
+      fetchPendingUsersCount()
+      setLastUsersUpdate(Date.now())
+    })
 
     // Global Notifications
     socket.on('global:notification', (data) => {
@@ -617,7 +621,10 @@ export function EventProvider({ children, user }) {
       
       const { data } = await api.post('/events', payload)
       const newEvent = mapEvent(data)
-      // Removed manual setEvents call - handled by socket events:created
+      setEvents(prev => {
+        if (prev.some(e => e.id === newEvent.id)) return prev
+        return [newEvent, ...prev]
+      })
       showToast('Event Created', `Successfully created event: ${newEvent.name}`, 'success')
 
       return newEvent
@@ -855,7 +862,7 @@ setEventSignals(Object.values(deduplicated))
   const deleteEvent = useCallback(async (id) => {
     try {
       await api.delete(`/events/${id}`)
-      // Removed manual setEvents call - handled by socket events:deleted
+      setEvents(prev => prev.filter(e => e.id !== id))
       if (currentEventId === id) setCurrentEventId(null)
       showToast('Event Deleted', 'The event and all its associated data have been removed.', 'success')
     } catch (err) {
@@ -946,6 +953,7 @@ setEventSignals(Object.values(deduplicated))
     updateWeatherCondition,
     socket: socketRef.current,
     lastReportsUpdate,
+    lastUsersUpdate,
     toast,
     showToast,
     closeToast
