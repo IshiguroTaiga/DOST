@@ -259,21 +259,25 @@ export const MANUAL_SECTIONS = [
     steps: [
       {
         title: 'Week 1: Introduction and Initial UI Changes',
-        text: 'Day 1: Oriented with SIREN project; rebranding to PROACT; clickable dashboard category buttons.\nDay 2: Fixed event assignment "apply to all" bug; Affected Persons modal; SOLIDO link integration.\nDay 3: File structure orientation; dashboard header refinements.\nDay 4: Hardware and networking support at Ynads Hotel.',
+        text: 'Day 1: Oriented with SIREN project; rebranding to PROACT; clickable dashboard category buttons.\nDay 2: Fixed event assignment "apply to all" bug; Affected Persons modal; SOLIDO link integration.\nDay 3: File structure orientation; dashboard header refinements.\nDay 4: Sidebar: Added Hazard Information which includes three external resources: Solido, PAGASA, and PHIVOLCS. And Fixed dash-hero-meta and dash-hero-amount overlapping.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
         title: 'Week 2: Backend Logic and System Optimization',
-        text: 'Day 5: Real-time local weather tracking via Geolocation API; self-approval workflow for LGUs.\nDay 6: AI report summary generator (Groq/Gemini); hardware maintenance.\nDay 7: Vercel deployment testing; fixed login fetching and Super Admin privilege bugs.\nDay 8: Fixed PDF preview bugs; AI summary history schema implementation.',
+        text: 'Day 5: Real-time local weather tracking via Geolocation API (wttr.in); self-approval workflow for LGUs; Assistance Value: not properly displaying 1M, 1B currency\nDay 6: AI report summary generator (Groq/Gemini); display: flex; to display: grid; at dash-hero-meta\nDay 7:Fixed login fetching and Super Admin privilege bugs.\nDay 8: Fixed PDF preview bugs; AI summary history schema implementation; Affected Person: Barchart Vertical turned to Barchart Horizontal and Added Filtering; Suspension by City changed to Suspension by LGU.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       },
       {
         title: 'Week 3: Final Features and Debugging',
-        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover.\nDay 11: Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.\nDay 12: Developed Interactive GIS Map; refactored Equipment Inventory to horizontal 3-3-1 grid; implemented draggable and editable equipment detail modals; refactored backend stations API for partial updates.\nDay 13: Implemented LGU/Provincial scope validation for Excel uploads and API submissions; restricted Excel template dropdowns to user scope; added frontend import filtering and backend security enforcement.',
+        text: 'Day 9: Inventory management; fixed SitRep numbering and data leak bugs; Affected Person: Clicking the city/municipality displays their respective barangays (Accordion); Affected Person Chart: Added Pop-up modal, if the user click the chart of the specific city/municipality it will show the barangays chart too.\nDay 10: Final security audit; fixed "Edit User" password bypass; fixed weather label gaps; reorganized Help Manual and added iframe/video support; completed documentation handover; Hazard Information isCollapsed displays the icon of SOLIDO, PAGASA, and PHIVOLCS; Weather Icon to Black Colors.\nDay 11: Integrated ExcelJS for native dropdowns in templates; implemented mobile-responsive hamburger menu and UI optimization across all pages.\nDay 12: Developed Interactive GIS Map; refactored Equipment Inventory to horizontal 3-3-1 grid; implemented draggable and editable equipment detail modals; refactored backend stations API for partial updates; Changed the Proact Logo. Proact Logo now has 1RDRRMC Logo in it.\nDay 13: Implemented LGU/Provincial scope validation for Excel uploads and API submissions; restricted Excel template dropdowns to user scope; added frontend import filtering and backend security enforcement.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
+      },
+      {
+        title: 'Week 4: ',
+        text: 'blah',
       }
     ]
   },
