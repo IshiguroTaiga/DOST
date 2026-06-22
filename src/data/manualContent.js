@@ -278,6 +278,8 @@ export const MANUAL_SECTIONS = [
       {
         title: 'Week 4: ',
         text: 'blah',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
       }
     ]
   },
