@@ -28,18 +28,32 @@ const EQUIPMENT_TYPES = [
   { id: 'slms', label: 'SLMS', full: 'Sea Level Monitoring' },
 ]
 
-function MapClickHandler({ onMapClick, isMarking }) {
+function MapEventsHandler({ onMapClick, isMarking, onZoomEnd }) {
   useMapEvents({
     click: (e) => {
       if (isMarking) onMapClick(e.latlng)
+    },
+    zoomend: (e) => {
+      onZoomEnd(e.target.getZoom())
     }
   })
   return null
 }
 
+const getMarkerSize = (zoom) => {
+  if (zoom >= 12) return 18
+  if (zoom === 11) return 17
+  if (zoom === 10) return 16
+  if (zoom === 9) return 15
+  if (zoom === 8) return 14
+  if (zoom === 7) return 10
+  return 7 // zoom <= 6
+}
+
 export default function InteractiveMap() {
   const { user } = useOutletContext()
   const fileInputRef = useRef(null)
+  const [zoom, setZoom] = useState(8)
 
   const accountType = user?.account_type || user?.role || '';
   const isSuperAdmin = accountType === 'Super Admin';
@@ -292,27 +306,37 @@ export default function InteractiveMap() {
   })
   const [uploading, setUploading] = useState(false)
 
-  const ActiveStationIcon = useMemo(() => {
-    try {
-      return L.divIcon({
-        className: 'custom-station-icon active-station',
-        html: '<div class="marker-pin-circle active-station-pin"><div class="marker-pin-inner"></div></div>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      })
-    } catch (e) { return null; }
-  }, []);
+const ActiveStationIcon = useMemo(() => {
+  try {
+    const size = getMarkerSize(zoom);
+    return L.divIcon({
+      className: 'philsensors-marker active-station',
+      html: '<div class="marker-circle"><div class="marker-dot"></div></div>',
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      popupAnchor: [0, -Math.round(size / 2)]
+    });
+  } catch (e) { return null; }
+}, [zoom]);
 
-  const MultiDeviceIcon = useMemo(() => {
-    try {
-      return L.divIcon({
-        className: 'custom-station-icon multi-device-station',
-        html: '<div class="marker-pin-circle multi-device-pin"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 256 256"><path d="M236.4,94.24l-96-64a15.89,15.89,0,0,0-16.8,0l-96,64a16,16,0,0,0,0,26.51l96,64a15.89,15.89,0,0,0,16.8,0l96-64a16,16,0,0,0,0-26.51ZM128,45.15,201.27,94,128,142.85,54.73,94ZM228,136a8,8,0,0,1-8,8c-1.39,0-53.79,35.86-92,35.86s-90.61-35.86-92-35.86a8,8,0,0,1,8.87-13.25c.34.22,46.12,30.82,83.13,30.82s82.79-30.6,83.13-30.82A8,8,0,0,1,228,136Zm0,40a8,8,0,0,1-8,8c-1.39,0-53.79,35.86-92,35.86s-90.61-35.86-92-35.86a8,8,0,0,1,8.87-13.25c.34.22,46.12,30.82,83.13,30.82s82.79-30.6,83.13-30.82A8,8,0,0,1,228,176Z"></path></svg></div>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      })
-    } catch (e) { return null; }
-  }, []);
+const MultiDeviceIcon = useMemo(() => {
+  try {
+    const size = getMarkerSize(zoom);
+    return L.divIcon({
+      className: 'philsensors-marker multi-device-station',
+      html: `
+        <div class="marker-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M236.4,94.24l-96-64a15.89,15.89,0,0,0-16.8,0l-96,64a16,16,0,0,0,0,26.51l96,64a15.89,15.89,0,0,0,16.8,0l96-64a16,16,0,0,0,0-26.51ZM128,45.15,201.27,94,128,142.85,54.73,94ZM228,136a8,8,0,0,1-8,8c-1.39,0-53.79,35.86-92,35.86s-90.61-35.86-92-35.86a8,8,0,0,1,8.87-13.25c.34.22,46.12,30.82,83.13,30.82s82.79-30.6,83.13-30.82A8,8,0,0,1,228,136Zm0,40a8,8,0,0,1-8,8c-1.39,0-53.79,35.86-92,35.86s-90.61-35.86-92-35.86a8,8,0,0,1,8.87-13.25c.34.22,46.12,30.82,83.13,30.82s82.79-30.6,83.13-30.82A8,8,0,0,1,228,176Z"></path>
+          </svg>
+        </div>
+      `,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      popupAnchor: [0, -Math.round(size / 2)]
+    });
+  } catch (e) { return null; }
+}, [zoom]);
 
   useEffect(() => {
     fetchStations()
@@ -618,7 +642,7 @@ export default function InteractiveMap() {
           maxBounds={PH_OUTER_BOUNDS} maxBoundsViscosity={1.0} attributionControl={false}
           style={{ height: '100%', width: '100%', background: '#0f172a' }}
         >
-          <MapClickHandler onMapClick={handleMapClick} isMarking={isMarking} />
+          <MapEventsHandler onMapClick={handleMapClick} isMarking={isMarking} onZoomEnd={setZoom} />
           <ZoomControl position="bottomright" />
           <LayersControl position="bottomright">
             <LayersControl.BaseLayer checked name="Standard">

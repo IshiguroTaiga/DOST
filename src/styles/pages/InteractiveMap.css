@@ -285,52 +285,55 @@
 /* Utilities */
 .leaflet-control-attribution { display: none !important; }
 
-/* Custom Circular Marker - Enlarged */
-.custom-station-icon {
-  background: transparent;
+/* Base wrapper override to clear Leaflet default background/borders */
+.philsensors-marker {
+  background: transparent !important;
+  border: none !important;
+}
+/* The actual circle pin */
+.philsensors-marker .marker-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.marker-pin-circle {
-  width: 28px;
-  height: 28px;
-  background: #3b82f6; /* Modern Blue */
-  border: 3px solid white;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4), 0 0 15px rgba(59, 130, 246, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+/* Hover effects just like premium map interfaces */
+.philsensors-marker:hover .marker-circle {
+  transform: scale(1.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000 !important;
 }
 
-.active-station-pin {
-  background: #3b82f6;
+/* Active Station: Premium Blue */
+.active-station .marker-circle {
+  background-color: #3b82f6; /* Tailwind blue-500 */
 }
 
-.multi-device-pin {
-  background: #10b981 !important;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4), 0 0 15px rgba(16, 185, 129, 0.5) !important;
-}
-
-.marker-pin-inner {
-  width: 8px;
-  height: 8px;
-  background: white;
+/* Active Inner Dot */
+.active-station .marker-dot {
+  width: 30%;
+  height: 30%;
+  background-color: #ffffff;
   border-radius: 50%;
 }
 
-.custom-station-icon:hover .marker-pin-circle {
-  transform: scale(1.2);
-  background: #2563eb;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(37, 99, 235, 0.7);
+/* Multi-Device Station: Vibrant Green */
+.multi-device-station .marker-circle {
+  background-color: #10b981; /* Tailwind emerald-500 to match legend */
+  color: #ffffff;
 }
 
-.custom-station-icon:hover .multi-device-pin {
-  background: #059669 !important;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(5, 150, 105, 0.7) !important;
+/* Ensures SVG icon matches perfectly inside */
+.multi-device-station svg {
+  display: block;
+  width: 57%;
+  height: 57%;
 }
 
 /* Custom Station Popup & Hover Tooltip */
