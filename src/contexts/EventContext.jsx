@@ -154,7 +154,11 @@ export function EventProvider({ children, user }) {
     affectedProvinces: e.affected_provinces || [],
     isDeployed: e.is_deployed || false,
     deployedAt: e.deployed_at || null,
-    deployedSnapshot: e.deployed_snapshot || null
+    deployedSnapshot: e.deployed_snapshot || null,
+    location: e.location || '',
+    windGust: e.wind_gust || '',
+    movement: e.movement || '',
+    coordinates: e.coordinates || ''
   })
 
   // 4. Data Fetching Hooks
@@ -622,7 +626,11 @@ export function EventProvider({ children, user }) {
         alert_level: event.alertLevel || null,
         pinged_report_types: event.pingedReportTypes || [],
         summary: event.summary || '',
-        affected_provinces: event.affectedProvinces || []
+        affected_provinces: event.affectedProvinces || [],
+        location: event.location || null,
+        wind_gust: event.windGust || null,
+        movement: event.movement || null,
+        coordinates: event.coordinates || null
       }
       
       const { data } = await api.post('/events', payload)
@@ -661,6 +669,10 @@ export function EventProvider({ children, user }) {
       if (updates.is_deployed !== undefined) payload.is_deployed = updates.is_deployed
       if (updates.deployedAt !== undefined) payload.deployed_at = updates.deployedAt || null
       if (updates.deployedSnapshot !== undefined) payload.deployed_snapshot = updates.deployedSnapshot || null
+      if (updates.location !== undefined) payload.location = updates.location || null
+      if (updates.windGust !== undefined) payload.wind_gust = updates.windGust || null
+      if (updates.movement !== undefined) payload.movement = updates.movement || null
+      if (updates.coordinates !== undefined) payload.coordinates = updates.coordinates || null
 
       const { data } = await api.patch(`/events/${id}`, payload)
       const updated = mapEvent(data)

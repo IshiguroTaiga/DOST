@@ -238,6 +238,19 @@ export default function Dashboard() {
     dark: '#1e293b'     // Dark
   }
 
+  const [currentTime, setCurrentTime] = useState(() => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+  })
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date()
+      setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [result, setResult] = useState(null)
@@ -1592,6 +1605,10 @@ const handleNotificationClick = (notif) => {
         pingedReportTypes: eventData.pingedReportTypes || [],
         affectedProvinces: eventData.affectedProvinces || [],
         alertLevel: eventData.alertLevel || '',
+        location: eventData.location || '',
+        windGust: eventData.windGust || '',
+        movement: eventData.movement || '',
+        coordinates: eventData.coordinates || '',
         ...existingDetails
       })
       setShowEditEventModal(true)
@@ -1965,7 +1982,39 @@ CHRONOLOGY OF EVENTS`;
                 ? "It's a Good Day! (No Active Threats)"
                 : currentEvent.name}
             </h2>
-            {userSignal && currentEvent?.id !== 'default-good-day' ? (
+            {currentEvent?.eventType === 'typhoon' && currentEvent?.id !== 'default-good-day' ? (
+              <div style={{ margin: '8px 0 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {/* Row 1: Location and Wind/Gust */}
+                <div style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'var(--text-muted)', 
+                  fontWeight: 600,
+                  display: 'grid',
+                  gridTemplateColumns: '320px 1fr',
+                  whiteSpace: 'nowrap'
+                }}>
+                  <div>Location: <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentEvent.location || '—'}</strong></div>
+                  <div>Wind/Gust: <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentEvent.windGust || '—'}</strong></div>
+                </div>
+                
+                {/* Row 2: Time/Coordinates and Movement */}
+                <div style={{ 
+                  fontSize: '0.75rem', 
+                  color: 'var(--text-muted)', 
+                  fontWeight: 500,
+                  display: 'grid',
+                  gridTemplateColumns: '320px 1fr',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap'
+                }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span>({currentTime})</span>
+                    {currentEvent.coordinates && <span>({currentEvent.coordinates})</span>}
+                  </div>
+                  <div>Movement: <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentEvent.movement || '—'}</strong></div>
+                </div>
+              </div>
+            ) : userSignal && currentEvent?.id !== 'default-good-day' ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 600 }}>
                 Signal <strong style={{ color: SIGNAL_COLORS[userSignal].text }}>{userSignal}</strong> active in your area
               </p>
@@ -3570,6 +3619,51 @@ CHRONOLOGY OF EVENTS`;
               </p>
             )}
           </div>
+
+          {editForm.eventType === 'typhoon' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Location</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 380km East of Aparri, Cagayan"
+                  value={editForm.location || ''}
+                  onChange={(e) => setEditForm(f => ({ ...f, location: e.target.value }))}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Wind / Gust</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 175kmh/215km/h"
+                  value={editForm.windGust || ''}
+                  onChange={(e) => setEditForm(f => ({ ...f, windGust: e.target.value }))}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Movement</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Northwestward at 10km/h"
+                  value={editForm.movement || ''}
+                  onChange={(e) => setEditForm(f => ({ ...f, movement: e.target.value }))}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Coordinates</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 18.8°N, 125.2°E"
+                  value={editForm.coordinates || ''}
+                  onChange={(e) => setEditForm(f => ({ ...f, coordinates: e.target.value }))}
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Affected Provinces</label>

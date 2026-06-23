@@ -78,6 +78,7 @@ This document summarizes the development, refactoring, and feature implementatio
 - **User Management Auto-Refresh:** Resolved the issue where the Users table did not automatically sync changes upon mutations without a manual page reload. Added Socket.io broadcasts (`users:changed`) to the backend `POST`, `PATCH`, and `DELETE` endpoints, and optimized frontend data-fetching in `Users.jsx` to refresh the user list in the background silently without screen flashing.
 - **User Email & Password Update Fix:** Resolved a bug where administrative updates to user emails or passwords were not written to the PostgreSQL database. Modified the edit user modal to include `email` inside the JSON payload, structured the backend to parse and execute the email updates, and configured password changes to bypass `currentPassword` verification for administrative overrides (while still enforcing it when editing one's own account).
 - **User Account Deletion Constraint Fix:** Fixed a database constraint violation error (foreign key `activity_logs_user_id_fkey`) when deleting user accounts. Wrapped the backend `DELETE` route in a PostgreSQL transaction that removes user referencing entries in `activity_logs` and sets referencing foreign keys in `lgu_submissions`, `situational_reports`, `event_deployments`, and `event_signals` to `NULL` before deleting the user.
+- **Tropical Cyclone Monitor Details:** Replaced the generic active event hero description on the Dashboard with user-configured Location, Wind/Gust, Movement, Coordinates, and a dynamic real-time clock (HH:MM) that updates every minute for Tropical Cyclone (`typhoon`) events. Added these form inputs to both the main event manager (`ManageEvents.jsx`) and the Dashboard's edit event modal.
 
 ---
 **Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities, GIS mapping, and AI-assisted reporting.
@@ -95,6 +96,7 @@ This document summarizes the development, refactoring, and feature implementatio
 | **Regional Visibility** | Often saw incomplete or draft data. | **Strict Verified Visibility:** Regional/Super Admin dashboards only display data from officially Approved/Signed reports. |
 | **Weather Integration** | Manual text entry or static values. | **Real-Time Geolocation:** Uses browser API for local accuracy with manual Super Admin override for crisis management. |
 | **Reporting** | Manual data compilation for summaries. | **AI-Powered:** One-click Executive Summary generation with historical tracking and model selection. |
+| **Cyclone Monitoring** | Static generic subtitle "Monitoring active for this event.". | **Dynamic Details:** Admins enter Location, Wind/Gust, Movement, and Coordinates, rendering a live real-time clock under the title. |
 
 ### New Operational Workflow Summary:
 1. **Regional Admin** creates an Event (Notifications sent).

@@ -63,15 +63,15 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/events
 router.post('/', authenticate, async (req, res) => {
   const { name, color, start_date, end_date, event_type, alert_status, alert_level,
-    pinged_report_types, summary, affected_provinces } = req.body;
+    pinged_report_types, summary, affected_provinces, location, wind_gust, movement, coordinates } = req.body;
   try {
     const { rows } = await pool.query(
       `INSERT INTO events (name, color, start_date, end_date, event_type, alert_status,
-        alert_level, pinged_report_types, summary, affected_provinces)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+        alert_level, pinged_report_types, summary, affected_provinces, location, wind_gust, movement, coordinates)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
       [name, color, start_date || null, end_date || null, event_type, alert_status,
         alert_level || null, JSON.stringify(pinged_report_types || []),
-        summary || '', affected_provinces || []]
+        summary || '', affected_provinces || [], location || null, wind_gust || null, movement || null, coordinates || null]
     );
     const io = req.app.locals.io;
     io.emit('events:created', rows[0]);
@@ -130,7 +130,8 @@ router.patch('/:id', authenticate, async (req, res) => {
   const fields = req.body;
   const allowed = ['name','color','start_date','end_date','event_type','alert_status',
     'alert_level','pinged_report_types','summary','affected_provinces',
-    'approval_status','approved_pdf_url','is_deployed','deployed_at','deployed_snapshot'];
+    'approval_status','approved_pdf_url','is_deployed','deployed_at','deployed_snapshot',
+    'location', 'wind_gust', 'movement', 'coordinates'];
 
   const setClauses = [];
   const values = [];

@@ -105,6 +105,10 @@ export default function ManageEvents() {
     alertLevel: '',
     // typhoon-specific
     typhoonCategory: '',
+    location: '',
+    windGust: '',
+    movement: '',
+    coordinates: '',
     // earthquake-specific
     magnitude: '',
     intensity: '',
@@ -157,6 +161,7 @@ export default function ManageEvents() {
       endDate: '', eventType: 'typhoon', alertStatus: 'white', alertLevel: '',
       summary: '', affectedProvinces: defaultProvinces,
       typhoonCategory: '',
+      location: '', windGust: '', movement: '', coordinates: '',
       magnitude: '', intensity: '',
       waveHeight: '', tsunamiAlert: '',
       floodLevel: '', rainfall: '',
@@ -192,20 +197,24 @@ export default function ManageEvents() {
       color: event.color,
       startDate: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '',
       endDate: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
-eventType: event.eventType,
-       alertStatus: event.alertStatus,
-       summary: event.summary || '',
-       affectedProvinces: event.affectedProvinces || [],
-       alertLevel: event.alertLevel || '',
-       // categories - map from alertLevel based on event type (since only alertLevel is stored in DB)
-       typhoonCategory: event.eventType === 'typhoon' ? (event.alertLevel || '') : '',
-       magnitude: event.magnitude || '',
-       intensity: event.intensity || '',
-       waveHeight: event.waveHeight || '',
-       tsunamiAlert: event.eventType === 'tsunami' ? (event.alertLevel || '') : '',
-       floodLevel: event.eventType === 'flood' ? (event.alertLevel || '') : '',
-       rainfall: event.rainfall || '',
-     })
+      eventType: event.eventType,
+      alertStatus: event.alertStatus,
+      summary: event.summary || '',
+      affectedProvinces: event.affectedProvinces || [],
+      alertLevel: event.alertLevel || '',
+      // categories - map from alertLevel based on event type (since only alertLevel is stored in DB)
+      typhoonCategory: event.eventType === 'typhoon' ? (event.alertLevel || '') : '',
+      location: event.location || '',
+      windGust: event.windGust || '',
+      movement: event.movement || '',
+      coordinates: event.coordinates || '',
+      magnitude: event.magnitude || '',
+      intensity: event.intensity || '',
+      waveHeight: event.waveHeight || '',
+      tsunamiAlert: event.eventType === 'tsunami' ? (event.alertLevel || '') : '',
+      floodLevel: event.eventType === 'flood' ? (event.alertLevel || '') : '',
+      rainfall: event.rainfall || '',
+    })
     setShowModal(true)
   }
 
@@ -699,10 +708,30 @@ const handleApplyAll = async (signal) => {
                   <div>
                     <label style={LABEL_STYLE}>End Date</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', fontSize: '0.875rem' }}>
-                      <Clock size={16} weight="duotone" />
-                      {form.endDate ? new Date(form.endDate).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) : 'Ongoing'}
+                       <Clock size={16} weight="duotone" />
+                       {form.endDate ? new Date(form.endDate).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) : 'Ongoing'}
                     </div>
                   </div>
+                  {form.eventType === 'typhoon' && (
+                    <>
+                      <div>
+                        <label style={LABEL_STYLE}>Location</label>
+                        <div style={{ color: '#1e293b', fontSize: '0.875rem', fontWeight: 600 }}>{form.location || '—'}</div>
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Wind / Gust</label>
+                        <div style={{ color: '#1e293b', fontSize: '0.875rem', fontWeight: 600 }}>{form.windGust || '—'}</div>
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Movement</label>
+                        <div style={{ color: '#1e293b', fontSize: '0.875rem', fontWeight: 600 }}>{form.movement || '—'}</div>
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Coordinates</label>
+                        <div style={{ color: '#1e293b', fontSize: '0.875rem', fontWeight: 600 }}>{form.coordinates || '—'}</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -886,6 +915,56 @@ const handleApplyAll = async (signal) => {
                      </div>
                    )}
                  </div>
+
+                  {form.eventType === 'typhoon' && (
+                    <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginTop: '0.5rem' }}>
+                      <div>
+                        <label style={LABEL_STYLE}>Location</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 380km East of Aparri, Cagayan"
+                          value={form.location}
+                          onChange={e => setForm({ ...form, location: e.target.value })}
+                          style={INPUT_STYLE}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
+                        />
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Wind / Gust</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 175kmh/215km/h"
+                          value={form.windGust}
+                          onChange={e => setForm({ ...form, windGust: e.target.value })}
+                          style={INPUT_STYLE}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
+                        />
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Movement</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Northwestward at 10km/h"
+                          value={form.movement}
+                          onChange={e => setForm({ ...form, movement: e.target.value })}
+                          style={INPUT_STYLE}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
+                        />
+                      </div>
+                      <div>
+                        <label style={LABEL_STYLE}>Coordinates</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 18.8°N, 125.2°E"
+                          value={form.coordinates}
+                          onChange={e => setForm({ ...form, coordinates: e.target.value })}
+                          style={INPUT_STYLE}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                     <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
