@@ -40,7 +40,7 @@ export const resolvePdfUrl = (url) => {
   const backendBaseUrl = API_URL.replace(/\/api$/, '')
   const parts = url.split('/')
   const filename = parts[parts.length - 1]
-  return `${backendBaseUrl}/uploads/${filename}`
+  return `${backendBaseUrl}/api/uploads/${filename}`
 }
 
 export default api

@@ -4,7 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Plus, X, MapPin, CheckCircle, Warning, MagnifyingGlass, Info, Stack, Eye, EyeSlash, Globe, Pencil, Trash, Camera, UploadSimple, ImageSquare, Tag, Package } from '@phosphor-icons/react'
 import { useOutletContext } from 'react-router-dom'
-import api from '../lib/api'
+import api, { resolvePdfUrl } from '../lib/api'
 import LoadingSpinner from '../components/LoadingSpinner'
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
@@ -666,7 +666,7 @@ const MultiDeviceIcon = useMemo(() => {
                 <Popup className="custom-station-popup">
                   {station.photo_url && (
                     <div className="popup-photo-container">
-                      <img src={station.photo_url} alt={station.lgu} className="popup-photo" />
+                      <img src={resolvePdfUrl(station.photo_url)} alt={station.lgu} className="popup-photo" />
                     </div>
                   )}
                   <div className="station-popup-header">
@@ -805,7 +805,7 @@ const MultiDeviceIcon = useMemo(() => {
               <label className="form-label">Station Photo</label>
               <div className="photo-upload-zone" onClick={() => fileInputRef.current.click()}>
                 {formData.photo_url ? (
-                  <img src={formData.photo_url} alt="Preview" className="photo-preview-img" />
+                  <img src={resolvePdfUrl(formData.photo_url)} alt="Preview" className="photo-preview-img" />
                 ) : (
                   <>
                     {uploading ? <LoadingSpinner size="sm" /> : <Camera size={32} color="#94a3b8" />}

@@ -1073,7 +1073,7 @@ export default function AddReport() {
         type: 'info',
         onConfirm: () => {
           const link = document.createElement('a')
-          link.href = sr.approved_pdf_url
+          link.href = resolvePdfUrl(sr.approved_pdf_url)
           link.setAttribute('download', `Approved_Report_${sr.report_number || sr.id}.pdf`)
           link.setAttribute('target', '_blank')
           document.body.appendChild(link)

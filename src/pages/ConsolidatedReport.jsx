@@ -500,7 +500,7 @@ export default function ConsolidatedReport() {
     // If there's an approved PDF, just download it (though the modal might be skipped)
     if (selectedSitRep?.approved_pdf_url && selectedSitRep?.status === 'Approved') {
       const a = document.createElement('a')
-      a.href = selectedSitRep.approved_pdf_url
+      a.href = resolvePdfUrl(selectedSitRep.approved_pdf_url)
       a.target = '_blank'
       a.download = `${(generatedSummaryData.pdfParams.reportTitle || 'Report').replace(/\s+/g, '-')}.pdf`
       a.click()
