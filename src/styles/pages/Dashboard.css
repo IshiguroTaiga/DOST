@@ -2898,12 +2898,8 @@
   }
 }
 
-/* Tablets */
-@media (max-width: 1024px) {
-  .metrics-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+/* Medium screens and laptops (where sidebar takes significant space) */
+@media (max-width: 1366px) {
   .dash-hero {
     flex-direction: column;
     align-items: flex-start;
@@ -2912,7 +2908,7 @@
 
   .dash-hero-meta {
     width: 100%;
-    min-width: 100;
+    min-width: 100%;
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 0.5rem;
@@ -2920,6 +2916,13 @@
 
   .dash-hero-title-wrap {
     width: 100%;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
