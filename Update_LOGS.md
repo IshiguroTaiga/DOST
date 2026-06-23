@@ -85,7 +85,6 @@
 - **Auto-Refresh Optimization**: Refined the page auto-refresh behavior across system views to improve state stability.
 
 <<<<<<< HEAD
-## Week 4: Final Permissions and Real-Time Synchronization
 =======
 ## Week 4: Final Permissions & Context Synchronization
 >>>>>>> adc7cd3e3714a9cffc78d15c8130bb5c4755cf6c
