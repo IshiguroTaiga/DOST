@@ -84,7 +84,11 @@
 - **Event Selection Refined**: Removed the legacy logic on the dashboard that forced automatic selection resets back to the active deployed event, allowing sticky selection of any event.
 - **Auto-Refresh Optimization**: Refined the page auto-refresh behavior across system views to improve state stability.
 
+<<<<<<< HEAD
 ## Week 4: Final Permissions and Real-Time Synchronization
+=======
+## Week 4: Final Permissions & Context Synchronization
+>>>>>>> adc7cd3e3714a9cffc78d15c8130bb5c4755cf6c
 
 ### **Day 13** (June 22)
 - **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
