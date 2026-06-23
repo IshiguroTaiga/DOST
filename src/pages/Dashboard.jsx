@@ -197,6 +197,8 @@ export default function Dashboard() {
     setCurrentEventId, 
     switchEvent, 
     userSignal,
+    weatherCondition,
+    updateWeatherCondition,
     socket 
   } = useEvents()
 
@@ -222,6 +224,7 @@ export default function Dashboard() {
   const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
   const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
   const isRegionalUser = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.role === 'Super Admin' || user?.account_type === 'Super Admin'
+  const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
 
   const provinceFilter = isProvincialUser ? (user?.province || null) : null
   const canManageEvents = isProvincialUser || isRegionalUser
@@ -306,11 +309,30 @@ export default function Dashboard() {
     }
   }, [isProvincialUser, user?.province])
 
-  // --- Weather Logic ---
+  // --- Temperature Logic ---
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
+  const [showWeatherInputModal, setShowWeatherInputModal] = useState(false)
+  const [manualTemp, setManualTemp] = useState('')
+  const [isManualOverride, setIsManualOverride] = useState(false)
 
   const fetchWeather = useCallback(async () => {
+    const localOverrideStr = localStorage.getItem(`temperature_override_${user?.id}`)
+    if (localOverrideStr) {
+      try {
+        const localOverride = JSON.parse(localOverrideStr)
+        if (localOverride && localOverride.isManual) {
+          setWeather({
+            temp: localOverride.temp,
+            isManual: true
+          })
+          return
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
     const location = user?.city || user?.province || 'Region 1, Philippines'
     try {
       setWeatherLoading(true)
@@ -320,14 +342,11 @@ export default function Dashboard() {
       if (data && data.current_condition && data.current_condition[0]) {
         setWeather({
           temp: data.current_condition[0].temp_C,
-          desc: data.current_condition[0].weatherDesc[0].value,
-          code: data.current_condition[0].weatherCode,
-          humidity: data.current_condition[0].humidity,
-          wind: data.current_condition[0].windspeedKmph
+          isManual: false
         })
       }
     } catch (err) {
-      console.error('Weather fetch error:', err)
+      console.error('Temperature fetch error:', err)
     } finally {
       setWeatherLoading(false)
     }
@@ -335,21 +354,55 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchWeather()
-    const interval = setInterval(fetchWeather, 1800000) // Update every 30 mins
-    return () => clearInterval(interval)
   }, [fetchWeather])
 
-  const getWeatherIcon = (code, desc) => {
-    const d = (desc || '').toLowerCase()
-    if (d.includes('rain') || d.includes('drizzle')) return <CloudRain size={18} weight="duotone" color="black" />
-    if (d.includes('thunder') || d.includes('lightning')) return <CloudLightning size={18} weight="duotone" color="black" />
-    if (d.includes('snow')) return <CloudSnow size={18} weight="duotone" color="black" />
-    if (d.includes('cloud')) {
-      if (d.includes('partly') || d.includes('sun')) return <CloudSun size={18} weight="duotone" color="black" />
-      return <Cloud size={18} weight="duotone" color="black" />
+  useEffect(() => {
+    const localOverrideStr = localStorage.getItem(`temperature_override_${user?.id}`)
+    let isManual = false
+    if (localOverrideStr) {
+      try {
+        const localOverride = JSON.parse(localOverrideStr)
+        isManual = !!localOverride?.isManual
+      } catch (e) {
+        console.error(e)
+      }
     }
-    if (d.includes('clear') || d.includes('sun')) return <Sun size={18} weight="duotone" color="black" />
-    return <Thermometer size={18} weight="duotone" color="black" />
+    if (!isManual) {
+      const interval = setInterval(fetchWeather, 1800000) // Update every 30 mins
+      return () => clearInterval(interval)
+    }
+  }, [fetchWeather, user?.id])
+
+  const handleOpenWeatherModal = () => {
+    const localOverrideStr = localStorage.getItem(`temperature_override_${user?.id}`)
+    let initialTemp = '27'
+    let initialIsManual = false
+    if (localOverrideStr) {
+      try {
+        const localOverride = JSON.parse(localOverrideStr)
+        if (localOverride) {
+          initialTemp = localOverride.temp?.toString() || '27'
+          initialIsManual = localOverride.isManual || false
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    } else if (weather?.temp !== undefined) {
+      initialTemp = weather.temp.toString()
+    }
+    setManualTemp(initialTemp)
+    setIsManualOverride(initialIsManual)
+    setShowWeatherInputModal(true)
+  }
+
+  const handleSaveManualWeather = () => {
+    const override = {
+      temp: parseFloat(manualTemp) || 0,
+      isManual: isManualOverride
+    }
+    localStorage.setItem(`temperature_override_${user?.id}`, JSON.stringify(override))
+    setShowWeatherInputModal(false)
+    fetchWeather()
   }
   const [selectedDashboardSitRepId, setSelectedDashboardSitRepId] = useState('')
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
@@ -2087,13 +2140,20 @@ CHRONOLOGY OF EVENTS`;
               </span>
               </div>
             </div>
-            {/* New Real Time Weather display*/}
-            <div className="meta-item weather-item">
+            {/* Temperature display */}
+            <div 
+              className="meta-item weather-item clickable-meta-item"
+              onClick={handleOpenWeatherModal}
+              style={{ cursor: 'pointer' }}
+              title="Click to set temperature manually"
+            >
               <div className="meta-icon">
-                {weatherLoading ? <ArrowsClockwise size={18} className="animate-spin" /> : getWeatherIcon(weather?.code, weather?.desc)}
+                {weatherLoading ? <ArrowsClockwise size={18} className="animate-spin" /> : <Thermometer size={18} weight="duotone" color="black" />}
               </div>
               <div className="meta-content">
-                <span className="meta-label">Weather</span>
+                <span className="meta-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  Weather <Pencil size={12} style={{ opacity: 0.6 }} />
+                </span>
                 <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
                   {weather ? (
                     `${weather.temp}°C` + 
@@ -4338,6 +4398,67 @@ CHRONOLOGY OF EVENTS`;
           );
         })()}
       </HeaderFooterModal>
+
+      {/* Manual Temperature Input Modal */}
+      {showWeatherInputModal && (
+        <HeaderFooterModal
+          isOpen={true}
+          onClose={() => setShowWeatherInputModal(false)}
+          title="Manual Temperature Setting"
+          maxWidth="450px"
+          footer={
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', width: '100%' }}>
+              <div style={{ flex: 1 }} />
+              <Button
+                variant="subtle"
+                onClick={() => setShowWeatherInputModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="solid"
+                color="primary"
+                onClick={handleSaveManualWeather}
+              >
+                Save Temperature
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="checkbox"
+                id="weatherManualOverride"
+                checked={isManualOverride}
+                onChange={(e) => setIsManualOverride(e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <label htmlFor="weatherManualOverride" style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e293b', cursor: 'pointer' }}>
+                Enable Manual Temperature Override
+              </label>
+            </div>
+            
+            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0' }}>
+              When enabled, the temperature displayed on the dashboard will remain fixed to your manual setting for your account. Disable to resume automatic live updates.
+            </p>
+
+            {isManualOverride && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#64748b', marginBottom: '0.5rem' }}>Temperature (°C)</label>
+                <input
+                  type="number"
+                  className="modern-input"
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                  value={manualTemp}
+                  onChange={(e) => setManualTemp(e.target.value)}
+                  placeholder="e.g. 28"
+                />
+              </div>
+            )}
+          </div>
+        </HeaderFooterModal>
+      )}
       </div >
     </>
   );

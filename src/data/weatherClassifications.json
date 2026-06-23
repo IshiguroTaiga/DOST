@@ -1,11 +1,11 @@
 {
   "classifications": [
-    { "min": -100, "max": 0, "label": "Freezing"},
+    { "min": -999, "max": 0, "label": "Freezing"},
     { "min": 0, "max": 11, "label": "Cold"},
     { "min": 11, "max": 19, "label": "Cool"},
     { "min": 19, "max": 25, "label": "Moderate"},
     { "min": 25, "max": 31, "label": "Warm"},
     { "min": 31, "max": 36, "label": "Hot"},
-    { "min": 36, "max": 100, "label": "Extreme Heat"}
+    { "min": 36, "max": 999, "label": "Extreme Heat"}
   ]
 }
