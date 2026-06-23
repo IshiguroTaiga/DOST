@@ -5,7 +5,7 @@ import { CaretDown, CaretUp, ArrowLeft, Download, FileText, FileArrowDown, Chart
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import ModernDateTimePicker from '../components/ModernDateTimePicker'
-import api from '../lib/api'
+import api, { resolvePdfUrl } from '../lib/api'
 import { generateRelatedIncidentsPdf } from '../lib/generateRelatedIncidentsPdf'
 import { LGU_NAMES, getBarangaysForCity, getCityForBarangay } from '../data/locations'
 import { getCitiesForProvince, PROVINCES_WITH_CITIES, PROVINCE_NAMES } from '../data/provinces'
@@ -2168,7 +2168,28 @@ export default function ConsolidatedReport() {
                         {v.title}
                       </td>
                       {(isRegional || isSuperAdmin) && (
-                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 500 }}>{v.province || '-'}</td>
+                        <td 
+                          style={{ 
+                            fontSize: '0.8125rem', 
+                            color: 'var(--accent, #2563eb)', 
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                          }}
+                          title="Click to view who created this SitRep"
+                          onClick={() => {
+                            showConfirm({
+                              title: 'SitRep Creator Details',
+                              message: `This Situational Report was created by:\n\nEmail: ${v.creator_email || 'System'}\nName: ${v.creator_name || 'System Admin'}\nDate: ${new Date(v.created_at).toLocaleString()}`,
+                              confirmText: 'OK',
+                              cancelText: '',
+                              type: 'info',
+                              onConfirm: () => {}
+                            })
+                          }}
+                        >
+                          {v.province || 'Region 1'}
+                        </td>
                       )}
                       <td className="event-date-cell">
                         {new Date(v.created_at).toLocaleString('en-US', {
@@ -2192,11 +2213,7 @@ export default function ConsolidatedReport() {
                               color="info"
                               size="sm"
                               onClick={() => {
-                                let url = v.approved_pdf_url || v.pending_pdf_url;
-                                // Local development fix: Sanitize protocol if on localhost
-                                if (url && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-                                  url = url.replace(/^https:\/\//, 'http://');
-                                }
+                                const url = resolvePdfUrl(v.approved_pdf_url || v.pending_pdf_url);
                                 setPreviewUrl(url)
                                 setShowPreviewModal(true)
                               }}

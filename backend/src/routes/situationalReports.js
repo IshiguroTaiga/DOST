@@ -214,12 +214,16 @@ router.get('/', authenticate, async (req, res) => {
     let query = `
       SELECT sr.*, 
              concat(u.first_name, ' ', u.last_name) as creator_name,
+             u.email as creator_email,
              u.city as creator_city,
+             concat(appr.first_name, ' ', appr.last_name) as approver_name,
+             appr.email as approver_email,
              e.pinged_report_types,
              json_build_object('id', e.id, 'name', e.name) as events
       FROM situational_reports sr
       LEFT JOIN events e ON sr.event_id = e.id
       LEFT JOIN users u ON sr.created_by = u.id
+      LEFT JOIN users appr ON sr.approved_by = appr.id
       WHERE 1=1
     `;
     const params = [];
@@ -268,7 +272,17 @@ router.get('/:id', authenticate, async (req, res) => {
   try {
     const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
     const { rows } = await pool.query(
-      'SELECT sr.*, u.first_name, u.last_name, e.pinged_report_types FROM situational_reports sr LEFT JOIN users u ON sr.created_by = u.id LEFT JOIN events e ON sr.event_id = e.id WHERE sr.id = $1',
+      `SELECT sr.*, 
+              concat(u.first_name, ' ', u.last_name) as creator_name,
+              u.email as creator_email,
+              concat(appr.first_name, ' ', appr.last_name) as approver_name,
+              appr.email as approver_email,
+              e.pinged_report_types 
+       FROM situational_reports sr 
+       LEFT JOIN users u ON sr.created_by = u.id 
+       LEFT JOIN users appr ON sr.approved_by = appr.id
+       LEFT JOIN events e ON sr.event_id = e.id 
+       WHERE sr.id = $1`,
       [req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -446,17 +460,26 @@ router.patch('/:id', authenticate, async (req, res) => {
         rejection_remarks = COALESCE($4, rejection_remarks),
         approved_pdf_url = COALESCE($5, approved_pdf_url),
         pending_pdf_url = COALESCE($6, pending_pdf_url),
-        summary = COALESCE($7, summary)
+        summary = COALESCE($7, summary),
+        approved_by = CASE WHEN $3 = 'Approved' THEN $9::uuid ELSE approved_by END,
+        approved_at = CASE WHEN $3 = 'Approved' THEN NOW() ELSE approved_at END
        WHERE id = $8 RETURNING *`,
-      [title, target_lgus, status, rejection_remarks, approved_pdf_url, pending_pdf_url, summary, req.params.id]
+      [title, target_lgus, status, rejection_remarks, approved_pdf_url, pending_pdf_url, summary, req.params.id, req.user.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Report not found' });
 
     // Fetch complete sitrep data to return
     const completeSR = await pool.query(
-      `SELECT sr.*, concat(u.first_name, ' ', u.last_name) as creator_name, u.city as creator_city, e.pinged_report_types
+      `SELECT sr.*, 
+              concat(u.first_name, ' ', u.last_name) as creator_name, 
+              u.email as creator_email,
+              u.city as creator_city, 
+              concat(appr.first_name, ' ', appr.last_name) as approver_name,
+              appr.email as approver_email,
+              e.pinged_report_types
        FROM situational_reports sr
        LEFT JOIN users u ON sr.created_by = u.id
+       LEFT JOIN users appr ON sr.approved_by = appr.id
        LEFT JOIN events e ON sr.event_id = e.id
        WHERE sr.id = $1`,
       [req.params.id]

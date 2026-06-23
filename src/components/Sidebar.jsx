@@ -30,16 +30,17 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
       case '/consolidated-report':
         return unreadNotifs.filter(n => n.type === 'sitrep_submission' || n.type === 'sitrep_approval').length
       case '/add-report':
-        return unreadNotifs.filter(n => 
+        const unreadAddReportCount = unreadNotifs.filter(n => 
           n.type === 'sitrep_rejection' || 
           n.type === 'sitrep_assignment' || 
           n.type === 'sitrep_submission' || 
-          n.type === 'sitrep_approval'
+          n.type === 'sitrep_approval' ||
+          n.type === 'lgu_sitrep_submission'
         ).length
+        return unreadAddReportCount + (pendingApprovalsCount || 0)
       case '/users':
-        return pendingUsersCount || 0
-      case '/for-approval':
-        return pendingApprovalsCount || 0
+        const unreadUserCount = unreadNotifs.filter(n => n.type === 'user_created').length
+        return unreadUserCount + (pendingUsersCount || 0)
       default:
         return 0
     }
@@ -148,21 +149,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-        {(accountType === 'Provincial Admin' || accountType === 'Provincial' || accountType === 'LGU Admin' || isSuperAdmin || isRegional) && (
-          <NavLink
-            to="/for-approval"
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            title={isCollapsed ? 'For Approval' : ''}
-          >
-            <CheckSquareOffset size={16} weight="bold" />
-            {!isCollapsed && <span>For Approval</span>}
-            {getNavCount('/for-approval') > 0 && (
-              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
-                {getNavCount('/for-approval')}
-              </span>
-            )}
-          </NavLink>
-        )}
+
 
         {isAdmin && (
           <NavLink

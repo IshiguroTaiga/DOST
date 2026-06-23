@@ -7,7 +7,7 @@ import ModernDateTimePicker from '../components/ModernDateTimePicker'
 import { useEvents } from '../contexts/EventContext'
 import Button from '../components/Button'
 import LoadingSpinner from '../components/LoadingSpinner'
-import api from '../lib/api'
+import api, { resolvePdfUrl } from '../lib/api'
 import { LGU_NAMES, getBarangaysForCity, getCityForBarangay, getLguNames } from '../data/locations'
 import { getProvinceForCity, PROVINCE_NAMES } from '../data/provinces'
 import { generateRelatedIncidentsPdf } from '../lib/generateRelatedIncidentsPdf'
@@ -654,6 +654,54 @@ export default function AddReport() {
   const [lguSubmissionRemarks, setLguSubmissionRemarks] = useState(null)
   const [submittingLgu, setSubmittingLgu] = useState(false)
   const currentGeneratingSitRepId = useRef(null)
+
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [historyReports, setHistoryReports] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [expandedReportId, setExpandedReportId] = useState(null)
+  const [lguSubmissionsList, setLguSubmissionsList] = useState({})
+  const [loadingLguSubmissions, setLoadingLguSubmissions] = useState({})
+
+  const handleOpenHistoryModal = async () => {
+    setShowHistoryModal(true)
+    setLoadingHistory(true)
+    try {
+      const params = {}
+      if (selectedEvent?.id) {
+        params.event_id = selectedEvent.id
+      } else {
+        params.event_id = 'all'
+      }
+      const { data } = await api.get('/situational-reports', { params })
+      setHistoryReports(data || [])
+    } catch (err) {
+      console.error('Error fetching history logs:', err)
+      showToast('Error', 'Failed to load history logs.', 'danger')
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  const toggleExpandReport = async (reportId) => {
+    if (expandedReportId === reportId) {
+      setExpandedReportId(null)
+      return
+    }
+    setExpandedReportId(reportId)
+    if (lguSubmissionsList[reportId]) return
+    
+    setLoadingLguSubmissions(prev => ({ ...prev, [reportId]: true }))
+    try {
+      const { data } = await api.get('/lgu-submissions/list', {
+        params: { situational_report_id: reportId }
+      })
+      setLguSubmissionsList(prev => ({ ...prev, [reportId]: data || [] }))
+    } catch (err) {
+      console.error('Error fetching LGU submissions:', err)
+    } finally {
+      setLoadingLguSubmissions(prev => ({ ...prev, [reportId]: false }))
+    }
+  }
 
   const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isLGU = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
@@ -3380,12 +3428,21 @@ useEffect(() => {
     <div className="page consolidated-report-page">
       <div className="consolidated-report-card">
         <div className="consolidated-report-toolbar">
-          <div className="consolidated-report-header-stack">
+          <div className="consolidated-report-header-stack" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <h1 className="consolidated-report-title">
               {view === 'events' ? 'Situational Reports' :
                 view === 'versions' ? (selectedEvent?.name || 'Report Versions') :
                   (currentSituationalReport?.title || 'Report Entries')}
             </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenHistoryModal()}
+              title="View Report History & Approval Logs"
+              style={{ padding: '6px', borderRadius: '50%', minWidth: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <ClockCounterClockwise size={20} weight="bold" />
+            </Button>
           </div>
 
           <div className="consolidated-report-toolbar-controls">
@@ -3666,6 +3723,14 @@ useEffect(() => {
                                  style={{ cursor: 'pointer' }}
                                ></span>
                              )}
+                             {((isProvincial && sr.status === 'Pending Provincial Review') || 
+                               ((isRegional || isSuperAdmin) && sr.status === 'Pending Approval')) && (
+                               <span 
+                                 className="table-ping" 
+                                 title="Needs Your Review/Approval"
+                                 style={{ background: '#f59e0b' }}
+                               ></span>
+                             )}
                             {sr.title}
                           </div>
                           {sr.rejection_remarks && (
@@ -3710,6 +3775,15 @@ useEffect(() => {
 
                             {/* Review Button: visible to Provincial users for LGU reports pending review */}
                             {isProvincial && sr.status === 'Pending Provincial Review' && (
+                              <Button variant="solid" color="warning" size="sm"
+                                onClick={() => handleOpenReviewModal(sr)}
+                                icon={<Eye size={14} />}>
+                                Review
+                              </Button>
+                            )}
+
+                            {/* Review Button: visible to Regional/Super Admin users for Provincial reports pending approval */}
+                            {(isRegional || isSuperAdmin) && sr.status === 'Pending Approval' && (
                               <Button variant="solid" color="warning" size="sm"
                                 onClick={() => handleOpenReviewModal(sr)}
                                 icon={<Eye size={14} />}>
@@ -5102,7 +5176,7 @@ useEffect(() => {
               <div style={{ flex: 1, background: '#e2e8f0', overflow: 'hidden', minHeight: 0, borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 {(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url) ? (
                   <iframe
-                    src={reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url}
+                    src={resolvePdfUrl(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url)}
                     title="Situational Report PDF"
                     style={{ width: '100%', height: '100%', border: 'none' }}
                   />
@@ -5186,6 +5260,182 @@ useEffect(() => {
           </div>
         )}
       </HeaderFooterModal>
+
+      {showHistoryModal && (
+        <HeaderFooterModal
+          isOpen={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          title="Report History & Approval Logs"
+          maxWidth="850px"
+          footer={<Button variant="subtle" onClick={() => setShowHistoryModal(false)}>Close</Button>}
+        >
+          <div style={{ maxHeight: '65vh', overflowY: 'auto', paddingRight: '4px' }}>
+            {loadingHistory ? (
+              <LoadingSpinner label="Loading history logs..." />
+            ) : historyReports.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                No reports found in history.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {historyReports.map((sr) => {
+                  const isExpanded = expandedReportId === sr.id
+                  const lgus = lguSubmissionsList[sr.id] || []
+                  const loadingLgus = loadingLguSubmissions[sr.id]
+                  
+                  return (
+                    <div 
+                      key={sr.id} 
+                      style={{ 
+                        border: '1px solid var(--border-color, #e2e8f0)', 
+                        borderRadius: '12px',
+                        background: 'var(--bg-card, #ffffff)',
+                        overflow: 'hidden',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      {/* Report Header Row */}
+                      <div 
+                        onClick={() => toggleExpandReport(sr.id)}
+                        style={{ 
+                          padding: '16px', 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          cursor: 'pointer',
+                          background: 'var(--bg-card-header, #f8fafc)',
+                          borderBottom: isExpanded ? '1px solid var(--border-color, #e2e8f0)' : 'none',
+                          transition: 'background 0.2s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main, #1e293b)' }}>
+                            {sr.title}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)' }}>
+                            Event: <strong>{sr.events?.name || 'Unknown'}</strong> 
+                            {sr.province && ` · Province: ${sr.province}`}
+                          </span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <span className={`status-pill status-${(sr.status || 'draft').toLowerCase().replace(/\s+/g, '-')}`}>
+                            {sr.status}
+                          </span>
+                          <CaretDown 
+                            size={16} 
+                            style={{ 
+                              transform: isExpanded ? 'rotate(180deg)' : 'none', 
+                              transition: 'transform 0.2s',
+                              color: 'var(--text-muted)'
+                            }} 
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Expanded Content */}
+                      {isExpanded && (
+                        <div style={{ padding: '16px', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {/* Logs Details */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                Creation Log
+                              </div>
+                              <div style={{ fontSize: '0.875rem', color: '#1e293b', lineHeight: '1.5' }}>
+                                <div>Created By: <strong>{sr.creator_email || 'System'}</strong></div>
+                                <div>Name: {sr.creator_name || 'System Admin'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                                  Date: {new Date(sr.created_at).toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                Approval Log
+                              </div>
+                              {sr.status === 'Approved' ? (
+                                <div style={{ fontSize: '0.875rem', color: '#166534', lineHeight: '1.5' }}>
+                                  <div>Approved By: <strong>{sr.approver_email || 'System'}</strong></div>
+                                  <div>Name: {sr.approver_name || 'System Admin'}</div>
+                                  <div style={{ fontSize: '0.75rem', color: '#166534', marginTop: '4px' }}>
+                                    Date: {sr.approved_at ? new Date(sr.approved_at).toLocaleString() : 'N/A'}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ fontSize: '0.875rem', color: '#9a3412', fontStyle: 'italic', display: 'flex', alignItems: 'center', height: '100%', paddingBottom: '12px' }}>
+                                  This report is not yet approved. (Status: {sr.status})
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* LGU Submissions Logs */}
+                          <div>
+                            <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>
+                              LGU Submission Tracking
+                            </h4>
+                            {loadingLgus ? (
+                              <LoadingSpinner small label="Loading LGU submission statuses..." />
+                            ) : lgus.length === 0 ? (
+                              <div style={{ fontSize: '0.8125rem', color: '#94a3b8', fontStyle: 'italic', padding: '8px 0' }}>
+                                No LGU submissions recorded for this report.
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {lgus.map((lgu) => (
+                                  <div 
+                                    key={lgu.city} 
+                                    style={{ 
+                                      display: 'flex', 
+                                      justifyContent: 'space-between', 
+                                      alignItems: 'center', 
+                                      fontSize: '0.8125rem',
+                                      padding: '8px 12px',
+                                      background: '#f8fafc',
+                                      borderRadius: '6px',
+                                      border: '1px solid #f1f5f9'
+                                    }}
+                                  >
+                                    <div>
+                                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{lgu.city}</span>
+                                      {lgu.submitter_email && (
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                                          Submitted by: <strong>{lgu.submitter_email}</strong> 
+                                          {lgu.submitter_name && ` (${lgu.submitter_name})`}
+                                        </div>
+                                      )}
+                                      {lgu.approver_email && lgu.status === 'Approved' && (
+                                        <div style={{ fontSize: '0.75rem', color: '#166534', marginTop: '2px' }}>
+                                          Approved by: <strong>{lgu.approver_email}</strong>
+                                          {lgu.approver_name && ` (${lgu.approver_name})`}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                      <span className={`status-pill status-${(lgu.status || 'draft').toLowerCase().replace(/\s+/g, '-')}`} style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
+                                        {lgu.status}
+                                      </span>
+                                      <span style={{ fontSize: '0.6875rem', color: '#94a3b8' }}>
+                                        {new Date(lgu.updated_at).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </HeaderFooterModal>
+      )}
 
       <ConfirmationModal
         isOpen={showRegenerateConfirm}

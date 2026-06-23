@@ -52,6 +52,29 @@ async function initDatabase() {
       END $$;
     `);
 
+    // approved_by & approved_at columns
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='situational_reports' AND column_name='approved_by') THEN
+          ALTER TABLE public.situational_reports ADD COLUMN approved_by UUID REFERENCES public.users(id) ON DELETE SET NULL;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='situational_reports' AND column_name='approved_at') THEN
+          ALTER TABLE public.situational_reports ADD COLUMN approved_at TIMESTAMPTZ;
+        END IF;
+      END $$;
+    `);
+
+    // created_by column on users
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='created_by') THEN
+          ALTER TABLE public.users ADD COLUMN created_by UUID REFERENCES public.users(id) ON DELETE SET NULL;
+        END IF;
+      END $$;
+    `);
+
     // cloned_from_id, cloned_at, auto_cloned tracking columns
     await pool.query(`
       DO $$ 

@@ -8,7 +8,7 @@ import {
   CaretDown,
   Warning
 } from '@phosphor-icons/react'
-import api from '../lib/api'
+import api, { resolvePdfUrl } from '../lib/api'
 import { useEvents } from '../contexts/EventContext'
 import Button from '../components/Button'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -193,7 +193,7 @@ export default function ForApproval() {
               <div style={{ flex: 1, background: '#e2e8f0', overflow: 'hidden', minHeight: 0, borderRadius: '8px', border: '1px solid #cbd5e1' }}>
                 {(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url) ? (
                   <iframe
-                    src={`${reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url}#toolbar=0`}
+                    src={`${resolvePdfUrl(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url)}#toolbar=0`}
                     style={{ width: '100%', height: '100%', border: 'none' }}
                     title="PDF Review"
                   />

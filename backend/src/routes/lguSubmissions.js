@@ -328,7 +328,15 @@ router.get('/list', authenticate, async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT city, status, rejection_remarks, updated_at FROM lgu_submissions WHERE situational_report_id = $1',
+      `SELECT ls.city, ls.status, ls.rejection_remarks, ls.updated_at,
+              concat(sub.first_name, ' ', sub.last_name) as submitter_name,
+              sub.email as submitter_email,
+              concat(appr.first_name, ' ', appr.last_name) as approver_name,
+              appr.email as approver_email
+       FROM lgu_submissions ls
+       LEFT JOIN users sub ON ls.submitted_by = sub.id
+       LEFT JOIN users appr ON ls.approved_by = appr.id
+       WHERE ls.situational_report_id = $1`,
       [situational_report_id]
     );
     res.json(rows);

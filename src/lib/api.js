@@ -33,4 +33,14 @@ api.interceptors.response.use(
   }
 )
 
+export const resolvePdfUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('blob:')) return url
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+  const backendBaseUrl = API_URL.replace(/\/api$/, '')
+  const parts = url.split('/')
+  const filename = parts[parts.length - 1]
+  return `${backendBaseUrl}/uploads/${filename}`
+}
+
 export default api

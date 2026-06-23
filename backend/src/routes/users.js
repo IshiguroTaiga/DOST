@@ -10,20 +10,23 @@ const router = express.Router();
 router.get('/', authenticate, async (req, res) => {
   const user = req.user;
   try {
-    let query = `SELECT id, email, first_name, last_name, phone, city, role, status,
-      created_at, account_type, province, must_change_password, theme FROM users`;
+    let query = `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.city, u.role, u.status,
+      u.created_at, u.account_type, u.province, u.must_change_password, u.theme,
+      creator.email AS creator_email
+      FROM users u
+      LEFT JOIN users creator ON u.created_by = creator.id`;
     const params = [];
     const conditions = [];
 
     if (user.account_type === 'Provincial Admin') {
-      conditions.push(`province = $${params.length + 1}`);
+      conditions.push(`u.province = $${params.length + 1}`);
       params.push(user.province);
-      conditions.push(`account_type = ANY($${params.length + 1}::text[])`);
+      conditions.push(`u.account_type = ANY($${params.length + 1}::text[])`);
       params.push(['Provincial Admin','Provincial Approver','Provincial','LGU Admin','LGU','LGU Approver']);
     } else if (user.account_type === 'LGU Admin') {
-      conditions.push(`city = $${params.length + 1}`);
+      conditions.push(`u.city = $${params.length + 1}`);
       params.push(user.city);
-      conditions.push(`account_type = ANY($${params.length + 1}::text[])`);
+      conditions.push(`u.account_type = ANY($${params.length + 1}::text[])`);
       params.push(['LGU Admin','LGU']);
     }
     // Regional Admin / Super Admin → all users
@@ -31,7 +34,7 @@ router.get('/', authenticate, async (req, res) => {
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY u.created_at DESC';
 
     const { rows } = await pool.query(query, params);
     res.json(rows);
@@ -45,7 +48,7 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/pending-count', authenticate, async (req, res) => {
   const user = req.user;
   try {
-    let query = `SELECT COUNT(*) AS count FROM users WHERE (status = 'Pending' OR must_change_password = TRUE)`;
+    let query = `SELECT COUNT(*) AS count FROM users WHERE status = 'Pending'`;
     const params = [];
 
     if (user.account_type === 'Provincial Admin') {
@@ -78,9 +81,9 @@ router.post('/', authenticate, async (req, res) => {
     }
     const hash = await bcrypt.hash(tempPassword, 12);
     const { rows } = await pool.query(
-      `INSERT INTO users (email, first_name, last_name, phone, city, province, account_type, role, password_hash, status, must_change_password)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10, TRUE) RETURNING id, email, first_name, last_name, phone, city, role, status, created_at, account_type, province, must_change_password, theme`,
-      [email.toLowerCase().trim(), first_name, last_name, phone || '', city || '', province || '', account_type || 'LGU', role || 'Viewer', hash, status || 'Active']
+      `INSERT INTO users (email, first_name, last_name, phone, city, province, account_type, role, password_hash, status, must_change_password, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10, TRUE, $11) RETURNING id, email, first_name, last_name, phone, city, role, status, created_at, account_type, province, must_change_password, theme, created_by`,
+      [email.toLowerCase().trim(), first_name, last_name, phone || '', city || '', province || '', account_type || 'LGU', role || 'Viewer', hash, status || 'Active', req.user.id]
     );
 
     const user = rows[0];

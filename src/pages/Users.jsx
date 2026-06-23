@@ -535,6 +535,7 @@ export default function Users() {
                         <SortIcon columnKey="account_type" />
                       </Button>
                     </th>
+                    <th>Created By</th>
                     <th>Status</th>
                     <th className="col-action">Actions</th>
                   </tr>
@@ -568,6 +569,7 @@ export default function Users() {
                             <td>{user.province || '-'}</td>
                           )}
                           <td>{user.account_type || '-'}</td>
+                          <td>{user.creator_email || 'System'}</td>
                           <td>
                             <span className={`users-status users-status-${(user.status || 'Active').toLowerCase()}`}>
                               {user.status || 'Active'}
@@ -819,6 +821,13 @@ export default function Users() {
                   {viewDetailsUser.province || '—'}
                   {viewDetailsUser.city ? `, ${viewDetailsUser.city}` : ''}
                 </span>
+              </div>
+              <div className="details-row">
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserCircle size={18} color="var(--text-muted)" />
+                  Created By
+                </span>
+                <span>{viewDetailsUser.creator_email || 'System'}</span>
               </div>
             </div>
           </div>
