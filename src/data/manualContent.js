@@ -4,6 +4,7 @@ export const MANUAL_CATEGORIES = [
   { id: 'reporting', title: 'Reporting & Data', icon: 'FilePlus' },
   { id: 'review', title: 'Review & Analysis', icon: 'CheckCircle' },
   { id: 'developer', title: 'Developers Profile', icon: 'User' },
+  { id: 'handbook', title: 'Project Handbook', icon: 'BookOpen' },
   { id: 'logs_v2', title: 'Update Logs V2 (Current)', icon: 'ClipboardText' },
   { id: 'logs_v1', title: 'Update Logs V1 (Legacy)', icon: 'History' }
 ];
@@ -248,6 +249,51 @@ export const MANUAL_SECTIONS = [
       }
     ]
   },
+  {
+    id: 'project-handbook',
+    category: 'handbook',
+    title: 'Project Handbook',
+    roles: ['All'],
+    description: 'Comprehensive guide covering project objectives, manual vs. PROACT comparison, features, and workflows.',
+    steps: [
+      {
+        title: '1. What is PROACT?',
+        text: 'PROACT (formerly SIREN) is an automated web-based disaster risk reduction and management (DRRM) system tailored for DOST Region 1. It links LGUs, Provinces, and Region into a unified reporting pipeline.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '2. Purpose & Problem Statements',
+        text: 'Developed to resolve delayed reporting cycles, fragmented communication, data silos, transcription errors, and manual consolidation bottlenecks between different government tiers during disaster responses.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '3. Benefits & Addressable Needs',
+        text: 'Provides real-time validation, automatic multi-LGU consolidation, auto-cloning of data across SitReps, secure location-based scoping, live geolocation weather tracking, and one-click AI executive summaries.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '4. Manual vs. PROACT Process',
+        text: 'Manual: Slow copy-pasting of LGU sheets, repetitive manual logs, static/slow weather monitoring, and manual briefing reports.\nPROACT: Instant automated consolidation, auto-cloning of logs, live local weather widgets, and instant AI summary briefs.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '5. NSTP / NSDB Alignment & Uniqueness',
+        text: 'Aligned with the National Science Development Board guidelines on localization of resilient technology and data-driven emergency management. PROACT is a unique, first-of-its-kind nested system tailored for Philippine administrative hierarchy.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '6. Features & Usage Workflow',
+        text: '1. Regional admin deploys the event context.\n2. LGU admins fill in 15 damage/displacement categories, upload signed reports, and submit.\n3. Provincial admins verify and approve consolidated logs.\n4. Regional dashboard updates instantly with verified data for monitoring and AI briefs.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      }
+    ]
+  },
 
 // --- UPDATE LOGS V2 (CURRENT SUMMARY) ---
   {
@@ -277,7 +323,7 @@ export const MANUAL_SECTIONS = [
       },
       {
         title: 'Week 4: Final Permissions & Context Synchronization',
-        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**Day 14:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows.',
+        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**Day 14:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows; integrated a comprehensive Project Handbook under Help & Manual (Developer Profiles) and exported the root-level handbook.md.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }

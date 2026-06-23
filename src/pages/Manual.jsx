@@ -131,7 +131,9 @@ export default function Manual() {
                   {section.steps.map((step, idx) => (
                     <div key={idx} className="manual-step-item">
                       <div className="manual-step-content">
-                        <span className="manual-step-number">STEP {idx + 1}</span>
+                        {['events', 'reporting', 'review'].includes(section.category) && (
+                          <span className="manual-step-number">STEP {idx + 1}</span>
+                        )}
                         <h3 className="manual-step-title">{step.title}</h3>
                         <p className="manual-step-text">{parseStepText(step.text)}</p>
                       </div>
