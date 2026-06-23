@@ -2103,7 +2103,7 @@ CHRONOLOGY OF EVENTS`;
               </div>
               <div className="meta-content">
                 <span className="meta-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Temperature <Pencil size={12} style={{ opacity: 0.6 }} />
+                  Weather <Pencil size={12} style={{ opacity: 0.6 }} />
                 </span>
                 <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
                   {weather ? (
