@@ -177,9 +177,9 @@ router.get('/weather', authenticate, ensureSettingsTable, async (req, res) => {
 
 // PUT /api/settings/weather (Super Admin only)
 router.put('/weather', authenticate, requireSuperAdmin, ensureSettingsTable, async (req, res) => {
-  const { condition, icon } = req.body;
+  const { condition, icon, temp, isManual } = req.body;
   try {
-    const config = { condition, icon };
+    const config = { condition, icon, temp: temp !== undefined ? parseFloat(temp) : null, isManual: !!isManual };
     await pool.query(`
       INSERT INTO settings (key, value, updated_at) 
       VALUES ('weather_config', $1, NOW())
