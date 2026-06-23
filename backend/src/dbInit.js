@@ -71,6 +71,40 @@ async function initDatabase() {
     // Index idx_sitrep_cloned_from
     await pool.query('CREATE INDEX IF NOT EXISTS idx_sitrep_cloned_from ON public.situational_reports(cloned_from_id)');
 
+    // 4.5. Ensure events columns exist (location, wind_gust, movement, coordinates)
+    console.log('[DB Init] Checking events columns...');
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='events' AND column_name='location') THEN
+          ALTER TABLE public.events ADD COLUMN location TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='events' AND column_name='wind_gust') THEN
+          ALTER TABLE public.events ADD COLUMN wind_gust TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='events' AND column_name='movement') THEN
+          ALTER TABLE public.events ADD COLUMN movement TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='events' AND column_name='coordinates') THEN
+          ALTER TABLE public.events ADD COLUMN coordinates TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // 4.6. Ensure report_rows columns exist (city, remarks)
+    console.log('[DB Init] Checking report_rows columns...');
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_rows' AND column_name='city') THEN
+          ALTER TABLE public.report_rows ADD COLUMN city TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_rows' AND column_name='remarks') THEN
+          ALTER TABLE public.report_rows ADD COLUMN remarks TEXT DEFAULT '';
+        END IF;
+      END $$;
+    `);
+
     // 5. Ensure monitoring_stations table exists
     console.log('[DB Init] Ensuring monitoring_stations table exists...');
     await pool.query(`
