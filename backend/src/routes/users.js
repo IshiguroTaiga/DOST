@@ -107,11 +107,10 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// PATCH /api/users/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   const { 
-    first_name, last_name, phone, city, province, 
+    email, first_name, last_name, phone, city, province, 
     account_type, role, status, theme, password,
     currentPassword
   } = req.body;
@@ -160,28 +159,32 @@ router.patch('/:id', authenticate, async (req, res) => {
     let passwordHash = null;
     if (password && typeof password === 'string' && password.length > 0) {
       console.log(`[Users/PATCH] Password change requested for: ${targetUser.email}`);
-      console.log(`[Users/PATCH] currentPassword length: ${currentPassword ? currentPassword.length : 0}`);
       
-      if (!currentPassword || typeof currentPassword !== 'string' || currentPassword.length === 0) {
-        console.warn(`[Users/PATCH] Password change REJECTED: Missing currentPassword for ${targetUser.email}`);
-        return res.status(400).json({ error: 'Current password is required to update passwords' });
+      if (isSelf) {
+        console.log(`[Users/PATCH] currentPassword validation for self-change`);
+        if (!currentPassword || typeof currentPassword !== 'string' || currentPassword.length === 0) {
+          console.warn(`[Users/PATCH] Password change REJECTED: Missing currentPassword for self-edit of ${targetUser.email}`);
+          return res.status(400).json({ error: 'Current password is required to update your own password.' });
+        }
+
+        if (!targetUser.password_hash) {
+          console.error(`[Users/PATCH] CRITICAL: User ${targetUser.email} has NO password_hash in database!`);
+          return res.status(500).json({ error: 'Database integrity error: Target user has no stored password hash.' });
+        }
+
+        // Verify the TARGET user's current password
+        console.log(`[Users/PATCH] Verifying current password against stored hash...`);
+        const isCurrentValid = await bcrypt.compare(currentPassword, targetUser.password_hash);
+        
+        if (isCurrentValid !== true) {
+          console.warn(`[Users/PATCH] Password change REJECTED: Incorrect currentPassword for ${targetUser.email}`);
+          return res.status(401).json({ error: 'Incorrect current password. Changes not saved.' });
+        }
+      } else {
+        console.log(`[Users/PATCH] Admin resetting password for ${targetUser.email} (current password bypassed)`);
       }
 
-      if (!targetUser.password_hash) {
-        console.error(`[Users/PATCH] CRITICAL: User ${targetUser.email} has NO password_hash in database!`);
-        return res.status(500).json({ error: 'Database integrity error: Target user has no stored password hash.' });
-      }
-
-      // Verify the TARGET user's current password
-      console.log(`[Users/PATCH] Verifying current password against stored hash...`);
-      const isCurrentValid = await bcrypt.compare(currentPassword, targetUser.password_hash);
-      
-      if (isCurrentValid !== true) {
-        console.warn(`[Users/PATCH] Password change REJECTED: Incorrect currentPassword for ${targetUser.email}`);
-        return res.status(401).json({ error: 'Incorrect current password for the user being edited. Changes not saved.' });
-      }
-
-      console.log(`[Users/PATCH] Password verified successfully for ${targetUser.email}. Hashing new password...`);
+      console.log(`[Users/PATCH] Hashing new password...`);
       passwordHash = await bcrypt.hash(password, 12);
     }
 
@@ -189,6 +192,7 @@ router.patch('/:id', authenticate, async (req, res) => {
     const fields = [];
     const values = [];
 
+    if (email) { fields.push(`email = $${fields.length + 1}`); values.push(email.toLowerCase().trim()); }
     if (first_name) { fields.push(`first_name = $${fields.length + 1}`); values.push(first_name); }
     if (last_name) { fields.push(`last_name = $${fields.length + 1}`); values.push(last_name); }
     if (phone) { fields.push(`phone = $${fields.length + 1}`); values.push(phone); }

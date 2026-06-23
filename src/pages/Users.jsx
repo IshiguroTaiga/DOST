@@ -354,8 +354,10 @@ export default function Users() {
         showToast('Validation Error', 'New password and Confirm password do not match.', 'warning')
         return
       }
-      if (!form.currentPassword) {
-        showToast('Validation Error', 'Current password is required to update passwords.', 'warning')
+      // Only require current password if the user is editing their own account
+      const isSelf = editingUser.id === currentUser?.id
+      if (isSelf && !form.currentPassword) {
+        showToast('Validation Error', 'Current password is required to update your own password.', 'warning')
         return
       }
     }
@@ -372,6 +374,7 @@ export default function Users() {
     setSubmittingEdit(true)
     try {
       const payload = {
+        email: form.email.trim(),
         first_name: form.firstName.trim(),
         last_name: form.lastName.trim(),
         phone: form.phone.trim() || null,
@@ -385,7 +388,9 @@ export default function Users() {
       }
       if (form.password) {
         payload.password = form.password
-        payload.currentPassword = form.currentPassword
+        if (editingUser.id === currentUser?.id) {
+          payload.currentPassword = form.currentPassword
+        }
       }
       
       // 1. Perform the update

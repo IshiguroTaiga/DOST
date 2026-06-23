@@ -84,6 +84,8 @@
 - **Event Selection Refined**: Removed the legacy logic on the dashboard that forced automatic selection resets back to the active deployed event, allowing sticky selection of any event.
 - **Auto-Refresh Optimization**: Refined the page auto-refresh behavior across system views to improve state stability.
 
+## Week 4: Final Permissions and Real-Time Synchronization
+
 ### **Day 13** (June 22)
 - **LGU Station Permissions Reverted**: Restored LGU users' ability to add and edit monitoring stations on both the frontend Interactive Map and backend API routes.
 - **Interactive Map Pre-population**: Configured the Province select and LGU Name input fields in the station drawer to automatically pre-populate and disable for LGU users to enforce mapping coordinates and prevent cross-jurisdictional updates.
@@ -95,3 +97,4 @@
 - **Sidebar Navigation Rearrangement**: Moved the Interactive Map navigation item below the "Users" link and above the "Hazard Information" dropdown in the sidebar to streamline admin layout hierarchy.
 - **User Edit Modal Location Fix**: Fixed a bug in the user editor where changing a user's role/account type within the same tier (e.g., LGU Admin <-> LGU or Provincial Admin <-> Provincial) would reset their province and city/municipality to blank. The system now retains their location details.
 - **User Management Auto-Refresh**: Resolved the issue where the Users table did not automatically sync changes upon mutations without a manual page reload. Added Socket.io broadcasts (`users:changed`) to the backend `POST`, `PATCH`, and `DELETE` endpoints, and optimized frontend data-fetching in `Users.jsx` to refresh the user list in the background silently without screen flashing.
+- **User Email & Password Update Fix**: Fixed a bug where changing user emails or passwords did not update the PostgreSQL database. Added the `email` field to frontend/backend update payload structures and bypassed target user `currentPassword` verification for administrator resets, while keeping it active for self-edits.
