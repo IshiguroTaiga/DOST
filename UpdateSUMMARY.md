@@ -1,4 +1,4 @@
-# PROACT System Update Summary (June 1 - June 15, 2026)
+# PROACT System Update Summary (June 1 - June 23, 2026)
 
 This document summarizes the development, refactoring, and feature implementation performed during the initial 15-day period of the PROACT (formerly SIREN) system overhaul.
 
@@ -72,10 +72,15 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Manage Event White Alert Level Default Indicator Color**: Fixed a bug where creating events with "White (Normal)" alert status defaulted to a blue/indigo circle icon (`#6366f1`). Changed the default color in form state and the `blankForm()` constructor in `ManageEvents.jsx` to `#94a3b8` (gray/white) to match.
 - **Davis Instruments API Token**: Provided clarification regarding the default API token (`5ECABC5CB8824E5D86D12115782CE2EC`) for weather stations.
 
+## 9. System Adjustments & Bug Fixes (June 23, 2026 - Day 14)
+- **Sidebar Navigation Rearrangement:** Moved the Interactive Map navigation item below the "Users" link and above the "Hazard Information" dropdown in the sidebar to streamline admin layout hierarchy.
+- **User Edit Modal Location Fix:** Fixed a bug in the user editor where changing a user's role/account type within the same tier (e.g., LGU Admin <-> LGU or Provincial Admin <-> Provincial) would reset their province and city/municipality to blank. The system now retains their location details.
+- **User Management Auto-Refresh:** Resolved the issue where the Users table did not automatically sync changes upon mutations without a manual page reload. Added Socket.io broadcasts (`users:changed`) to the backend `POST`, `PATCH`, and `DELETE` endpoints, and optimized frontend data-fetching in `Users.jsx` to refresh the user list in the background silently without screen flashing.
+
 ---
 **Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities, GIS mapping, and AI-assisted reporting.
 
-## 9. System Flow Comparison (Old vs. New)
+## 10. System Flow Comparison (Old vs. New)
 
 | Feature | Legacy Flow (SIREN) | New Flow (PROACT) |
 | :--- | :--- | :--- |

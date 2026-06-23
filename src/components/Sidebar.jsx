@@ -101,14 +101,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </span>
           )}
         </NavLink>
-        <NavLink
-          to="/map"
-          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          title={isCollapsed ? 'Interactive Map' : ''}
-        >
-          <MapTrifold size={16} weight="bold" />
-          {!isCollapsed && <span>Interactive Map</span>}
-        </NavLink>
         {(isAdmin || isRegional || isProvincial) && (
           <NavLink
             to="/manage-events"
@@ -187,6 +179,15 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
+
+        <NavLink
+          to="/map"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          title={isCollapsed ? 'Interactive Map' : ''}
+        >
+          <MapTrifold size={16} weight="bold" />
+          {!isCollapsed && <span>Interactive Map</span>}
+        </NavLink>
 
         {/* ── Hazard Information Dropdown ── */}
         <div className="sidebar-item-with-sub">

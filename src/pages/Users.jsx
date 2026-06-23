@@ -98,22 +98,22 @@ export default function Users() {
   const [copied, setCopied] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (showLoading = false) => {
     try {
       setError(null)
-      setLoading(true)
+      if (showLoading) setLoading(true)
       const { data } = await api.get('/users')
       setUsers(data || [])
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load users')
       setUsers([])
     } finally {
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchUsers()
+    fetchUsers(users.length === 0)
   }, [lastUsersUpdate])
 
   const filteredUsers = useMemo(() => {
@@ -897,16 +897,40 @@ export default function Users() {
                 options={allowedAccountTypes}
                 onChange={(e) => {
                   const newType = e.target.value
+                  const oldType = form.accountType
                   handleChange('accountType', newType)
+
+                  const wasLgu = oldType?.includes('LGU')
+                  const wasProvincial = oldType?.includes('Provincial')
+                  const isNewLgu = newType?.includes('LGU')
+                  const isNewProvincial = newType?.includes('Provincial')
+
                   if (isProvincial || isLgu) {
                     handleChange('province', currentUser?.province || '')
                   } else {
-                    handleChange('province', '')
+                    if (isNewLgu || isNewProvincial) {
+                      if (wasLgu || wasProvincial) {
+                        // Keep current province as is
+                      } else {
+                        handleChange('province', '')
+                      }
+                    } else {
+                      handleChange('province', '')
+                    }
                   }
+
                   if (isLgu) {
                     handleChange('city', currentUser?.city || '')
                   } else {
-                    handleChange('city', '')
+                    if (isNewLgu) {
+                      if (wasLgu) {
+                        // Keep current city as is
+                      } else {
+                        handleChange('city', '')
+                      }
+                    } else {
+                      handleChange('city', '')
+                    }
                   }
                 }}
                 placeholder="Select type..."

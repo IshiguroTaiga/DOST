@@ -87,6 +87,12 @@ router.post('/', authenticate, async (req, res) => {
     
     // Attempt to send email
     const emailResult = await sendWelcomeEmail(user.email, user.first_name, tempPassword);
+
+    // Emit socket event for real-time auto-refresh
+    const io = req.app.locals.io;
+    if (io) {
+      io.emit('users:changed');
+    }
     
     res.status(201).json({ 
       ...user, 
@@ -210,6 +216,13 @@ router.patch('/:id', authenticate, async (req, res) => {
     const { rows } = await pool.query(query, values);
     
     console.log(`[Users/PATCH] Successfully updated user ${id}`);
+
+    // Emit socket event for real-time auto-refresh
+    const io = req.app.locals.io;
+    if (io) {
+      io.emit('users:changed');
+    }
+
     res.status(200).json(rows[0]);
   } catch (err) {
     console.error('[Users/PATCH] ERROR:', err.message);
@@ -221,6 +234,13 @@ router.patch('/:id', authenticate, async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+
+    // Emit socket event for real-time auto-refresh
+    const io = req.app.locals.io;
+    if (io) {
+      io.emit('users:changed');
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error('[Users/DELETE]', err);
