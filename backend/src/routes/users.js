@@ -236,8 +236,25 @@ router.patch('/:id', authenticate, async (req, res) => {
 
 // DELETE /api/users/:id
 router.delete('/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const client = await pool.connect();
   try {
-    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    await client.query('BEGIN');
+    
+    // 1. Delete referencing activity logs
+    await client.query('DELETE FROM public.activity_logs WHERE user_id = $1', [id]);
+    
+    // 2. Set nullable user foreign key references to NULL to preserve data
+    await client.query('UPDATE public.lgu_submissions SET submitted_by = NULL WHERE submitted_by = $1', [id]);
+    await client.query('UPDATE public.lgu_submissions SET approved_by = NULL WHERE approved_by = $1', [id]);
+    await client.query('UPDATE public.situational_reports SET created_by = NULL WHERE created_by = $1', [id]);
+    await client.query('UPDATE public.event_deployments SET deployed_by = NULL WHERE deployed_by = $1', [id]);
+    await client.query('UPDATE public.event_signals SET assigned_by = NULL WHERE assigned_by = $1', [id]);
+    
+    // 3. Delete the user
+    await client.query('DELETE FROM public.users WHERE id = $1', [id]);
+    
+    await client.query('COMMIT');
 
     // Emit socket event for real-time auto-refresh
     const io = req.app.locals.io;
@@ -247,8 +264,11 @@ router.delete('/:id', authenticate, async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('[Users/DELETE]', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  } finally {
+    client.release();
   }
 });
 
