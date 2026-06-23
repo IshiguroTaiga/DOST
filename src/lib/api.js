@@ -1,6 +1,26 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+// Determine backend API URL dynamically at runtime
+const getApiUrl = () => {
+  // If explicitly configured at build time (e.g. in .env or Vercel settings), use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+
+  // Otherwise, inspect the current runtime window location
+  if (typeof window !== 'undefined') {
+    const { hostname, origin } = window.location
+    // If not running on localhost, default to the current domain + /api
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${origin}/api`
+    }
+  }
+
+  // Fallback for local development
+  return 'http://localhost:4000/api'
+}
+
+const API_URL = getApiUrl()
 
 if (import.meta.env.MODE === 'production') {
   console.log(`[API] Initialized with Base URL: ${API_URL}`);
