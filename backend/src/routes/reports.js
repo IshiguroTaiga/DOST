@@ -124,7 +124,7 @@ router.get('/all-types', authenticate, async (req, res) => {
       }
 
       // Keep visibility check: non-LGUs and non-Admins only see Approved data
-      if (!isLgu && !isSuperAdmin) {
+      if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin) {
         conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
           SELECT 1 FROM lgu_submissions ls 
           WHERE ls.situational_report_id = t.situational_report_id 
@@ -158,7 +158,7 @@ router.get('/all-types', authenticate, async (req, res) => {
         const cleanCity = user.city.replace(/\s*\(.*\)\s*$/, '').trim();
         rowsParams.push(cleanCity);
         rowsConditions.push(cityCondition('t', rowsParams.length));
-      } else if (!isLgu && !isSuperAdmin) {
+      } else if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin) {
         // Keep visibility check from remote: non-LGUs and non-Admins only see Approved data
         rowsConditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
           SELECT 1 FROM lgu_submissions ls 
@@ -566,4 +566,3 @@ router.delete('/:table/:id', authenticate, async (req, res) => {
 });
 
 module.exports = router;
-;
