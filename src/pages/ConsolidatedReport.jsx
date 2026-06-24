@@ -15,7 +15,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import HeaderFooterModal from '../components/HeaderFooterModal'
 import ConfirmationModal from '../components/ConfirmationModal'
 import { generateConsolidatedCsv } from '../lib/generateConsolidatedCsv'
-import { parseDromicExcel, transformDromicToProAct } from '../lib/dromicParser'
+// import { parseDromicExcel, transformDromicToProAct } from '../lib/dromicParser'
 import { generateAISummary } from '../openai/summaryService'
 import '../styles/pages/PageStyles.css'
 import '../styles/pages/ConsolidatedReport.css'
@@ -173,17 +173,20 @@ export default function ConsolidatedReport() {
       setLoadingActive(true)
       showToast('Processing', 'Parsing DROMIC Excel file...', 'info')
       
-      const dromicSheets = await parseDromicExcel(file)
-      const proActData = transformDromicToProAct(dromicSheets)
+      // Commented out as it is currently not functional:
+      // const dromicSheets = await parseDromicExcel(file)
+      // const proActData = transformDromicToProAct(dromicSheets)
+      
+      showToast('Warning', 'DROMIC parsing is currently disabled.', 'warning')
+      setLoadingActive(false)
+      return;
 
+      /*
       // Validate that we actually got some data
       const hasData = proActData.affectedPopulationDetails.length > 0 || 
                       proActData.damagedHousesDetails.length > 0 || 
                       proActData.assistanceProvidedDetails.length > 0;
-
-      if (!hasData) {
-          throw new Error('No valid location data found. Ensure "Reg_Code_updated" column starts with "PH".')
-      }
+      */
 
       // Store in state (optional, for UI persistence if needed)
       setDromicImportData(proActData)
@@ -1975,7 +1978,7 @@ export default function ConsolidatedReport() {
               suggestions={events.map(e => e.name)}
               className="consolidated-report-search-box"
             />
-            {/* DROMIC Import Button */}
+            {/* DROMIC Import Button (Currently disabled/hidden)
             <input
               type="file"
               id="dromic-upload"
@@ -1992,6 +1995,7 @@ export default function ConsolidatedReport() {
             >
               Import DROMIC
             </Button>
+            */}
             
             {/* Status filters removed */}
             {view === 'lgus' && (
