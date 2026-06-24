@@ -67,7 +67,7 @@ Rather than replacing existing systems, PROACT sits on top of them as an integra
 | :--- | :--- | :--- | :--- | :--- |
 | **Primary Focus** | Manual Situational Report consolidation | Relief goods, evacuee statistics, and aid distribution | Weather telemetry and hazard mapping (sensors) | **Hierarchical consolidation + sensor telemetry + AI analysis** |
 | **Data Flow Medium** | Excel, Word, Viber, and Email (manual copy-paste) | Standardized Excel templates sent via email | Automated API feeds (sensor data only) | **Real-time secure database with WebSockets (Socket.io) sync** |
-| **Scope of Data** | Broad, but compiled manually over hours/days | Limited to evacuations, families, and social welfare | Strictly meteorological (rain, wind, temperature) | **All 14 sectors** (Infrastructure, Agriculture, Roads/Bridges, Utilities, evacuees, etc.) |
+| **Scope of Data** | Broad, but compiled manually over hours/days | Limited to evacuations, families, and social welfare | Strictly meteorological (rain, wind, temperature) | **All 15 sectors** (Infrastructure, Agriculture, Roads/Bridges, Utilities, evacuees, etc.) |
 | **Approval Workflow** | Paper-based or PDF scanning and emailing | Manual submission from social workers to DSWD offices | No administrative approvals (automated feed) | **Digital workflow (Draft → LGU Submit → Prov Review → Approved)** |
 | **AI Integration** | None | None | None | **Live metric-to-text executive summaries (Gemini/OpenAI integration)** |
 
