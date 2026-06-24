@@ -80,7 +80,7 @@ Rather than replacing existing systems, PROACT sits on top of them as an integra
 
 ---
 
-## 7. Alignment with the National Science & Technology Plan (NSDB)
+## 7. Alignment with the National Science & Technology Plan (NSTP)
 PROACT aligns with the core objectives of the **National Science and Technology Plan (NSTP) / National Science Development Board (NSDB)** guidelines on disaster resilience and climate adaptation:
 * **Science-Based Decision Making:** Integrates real-time weather stations and environmental sensors to provide data-driven warnings.
 * **Localization of Technology:** Deploys accessible digital tools to local community leaders (LGUs) to build grass-roots resilience.
