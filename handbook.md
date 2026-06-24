@@ -101,3 +101,147 @@ PROACT aligns with the core objectives of the **National Science and Technology 
 3. **Provincial Admin** reviews LGU data, consolidation occurs, and clicks **Approve** (or rejects with remarks).
 4. **Regional Dashboard** updates automatically with verified consolidated data.
 5. **AI Summarizer** processes data to produce briefing executive summaries.
+
+---
+
+## 10. User Role Hierarchy & Management (Users Page)
+
+The **Users Page** is the central console where authorized administrators create, approve, configure, reset passwords for, and manage user accounts. To preserve strict data ownership and security, PROACT operates a **role-based administrative hierarchy**.
+
+Under this system, each tier only has access to accounts and data within its specific operational scope. The database permissions scale downward as follows:
+
+```mermaid
+graph TD
+    SA["Super Admin (Global System Controller)"] --> RA["Regional Admin (Region 1 Command)"]
+    RA --> PA["Provincial Admin (Province Command)"]
+    PA --> LA["LGU Admin (Municipal/City Command)"]
+    LA --> LE["LGU Encoder (Local Ground Encoder)"]
+    
+    style SA fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style RA fill:#0f766e,stroke:#0d9488,stroke-width:2px,color:#fff
+    style PA fill:#b45309,stroke:#d97706,stroke-width:2px,color:#fff
+    style LA fill:#15803d,stroke:#16a34a,stroke-width:2px,color:#fff
+    style LE fill:#475569,stroke:#64748b,stroke-width:2px,color:#fff
+```
+
+### Admin Levels & Privileges:
+
+1. **Super Admin (Global Master Control)**
+   - **Operational Purpose:** System owners, server administrators, and IT managers. They ensure the hardware, APIs, and network integrations (SMTP, AI) function correctly.
+   - **Account Scoping:** Global visibility. They can access and edit data for any city, municipality, province, or region.
+   - **Privileges:**
+     - Fully manage all accounts, including creating or deleting other Super Admin, Regional, Provincial, and LGU profiles.
+     - Deploy, modify, and close global warning alerts and events.
+     - View all System Event Logs, Map Logs, and Email Config Logs.
+     - Access exclusive settings tabs: **Maintenance** (backups/restores), **SMTP Configuration**, and **AI API Keys**.
+
+2. **Regional Admin (Regional Command Center - Region 1)**
+   - **Operational Purpose:** Disaster coordinators for the Regional Disaster Risk Reduction and Management Council (RDRRMC) Region 1. They monitor the storm track, coordinate responses, and consolidate data.
+   - **Account Scoping:** Regional scope. They see aggregated totals for the entire region and can drill down into specific provinces.
+   - **Privileges:**
+     - Deploy active warning events (Red, Blue, or White alerts) and signal level updates.
+     - Review, consolidate, and finalize reports submitted by all provinces.
+     - Upload/override official signed Situational Reports (PDFs) and assign approved signatories.
+     - Create and manage accounts for **Regional Encoders, Provincial Admins, Provincial Encoders, LGU Admins, and LGU Encoders**.
+     - **Limitation:** Cannot access SMTP credentials, AI API keys, or system-wide backup controls in the Settings panel.
+
+3. **Provincial Admin (Provincial DRRM Command)**
+   - **Operational Purpose:** Coordinates activities for a specific province (e.g., La Union, Pangasinan, Ilocos Norte, or Ilocos Sur). They verify municipal figures before they go regional.
+   - **Account Scoping:** Strictly locked to their assigned province. A Provincial Admin for *Ilocos Sur* cannot view drafts, modify reports, or manage users for *La Union*.
+   - **Privileges:**
+     - Monitor, review, reject (with custom remarks), or approve incoming SitReps submitted by municipalities (LGUs) within their province.
+     - Create and manage accounts for **Provincial Encoders, LGU Admins, and LGU Encoders** within their province.
+     - Pushes verified provincial summaries up to the Regional Dashboard.
+
+4. **LGU Admin (Municipal/City DRRMO)**
+   - **Operational Purpose:** Ground-level reporting units representing individual cities and municipalities. They report direct observations of disasters on the ground.
+   - **Account Scoping:** Locked strictly to their municipal boundary (e.g., Paoay, Dagupan, San Fernando). They cannot see drafts or edit details for neighboring towns, maintaining a solid database partition.
+   - **Privileges:**
+     - Initiate new SitRep drafts using the automated **Auto-Cloning** mechanism to avoid tedious copy-pasting from previous periods.
+     - Input real-time telemetry, casualties, lifeline interruptions, and agricultural/infrastructure damages.
+     - Create and manage municipal-tier encoder accounts for their town.
+     - Submit draft SitReps up to the Province for validation and approval.
+
+---
+
+## 11. System Settings & Configuration (Settings Panel)
+
+The **Settings Panel** (accessible via the sidebar gear icon) acts as the control panel for personal preferences, system integrations, and audit logs. The options visible in this panel adapt depending on your role.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Settings & Profile                                          │
+├───────────────────┬─────────────────────────────────────────┤
+│ 🛡️ Security       │ Change Password                         │
+│ 🎨 Appearance     │ Ensure your account is secure.          │
+│ 💾 Maintenance*   ├─────────────────────────────────────────┤
+│ ✉️ Email Config*   │ Current Password:                       │
+│ 🕒 Email Logs*    │ [********************************]      │
+│ 🌐 AI Config*     │ New Password:                           │
+│ 🕒 System Logs    │ [********************************]      │
+│ 📍 Map Logs       │                                         │
+│ ℹ️ Help Manual    │ [          Update Password            ] │
+└───────────────────┴─────────────────────────────────────────┘
+ * Restricted to Super Admin accounts only
+```
+
+### Settings Tab Breakdown:
+
+#### **A. Security (All Users)**
+- **Purpose:** Keeps account access secure.
+- **Functionality:** 
+  - Allows any user to change their account password.
+  - Enforces strict complexity parameters: passwords must be at least 8 characters long and contain both uppercase, lowercase, and numeric characters.
+  - For safety, once a password is successfully updated, the user is automatically logged out and returned to the Login screen.
+
+#### **B. Appearance (All Users)**
+- **Purpose:** Tailors the visual layout of the application.
+- **Functionality:** 
+  - Allows users to choose their layout theme.
+  - Users can select the **Modern** theme, which applies the project's brand guidelines—featuring a premium blue color scheme, sleek gradients, and comfortable typography.
+
+#### **C. Maintenance (Super Admin Only)**
+- **Purpose:** System safety netting, backups, and recovery procedures.
+- **Functionality:** 
+  - Provides options to create a **Full System Backup** (exporting all database lines and uploaded signatory files into a single consolidated ZIP archive) or **Restore from Backup** using a previously exported archive.
+  - *Note: Backup & restore features are disabled when the server runs in local SQLite database mode to prevent file corruption.*
+
+#### **D. Email Configuration (SMTP Setup) (Super Admin Only)**
+- **Purpose:** Sets up the mail-sending parameters so the platform can automatically dispatch alert notifications to local officers when events are deployed.
+- **Functionality:** 
+  - Supports standard providers such as **Gmail**, **Outlook / Office 365**, and **Custom SMTP**.
+  - Allows configuration of the display name (e.g., "DOST PROACT Notification") and sender email.
+  - **Critical Tip:** If the email account has 2FA (Two-Factor Verification) active, you must configure a Google/Microsoft **App Password** in this panel instead of your master password to allow successful connection.
+
+#### **E. Email Config Logs (Super Admin Only)**
+- **Purpose:** Monitors changes to the email delivery system.
+- **Functionality:**
+  - Displays a chronological list of every adjustment made to the SMTP configurations.
+  - Shows the date, the email of the administrator who made the change, the mail provider, and host details.
+  - Crucial for diagnosing why system notifications are failing to reach users.
+
+#### **F. AI Configuration (Super Admin Only)**
+- **Purpose:** Connects the platform to Artificial Intelligence models for instant text-based summaries of complex data.
+- **Functionality:**
+  - Lets you choose the active summarization engine: **Google Gemini** or **Groq (Llama 3)**.
+  - Provides inputs for API credentials (e.g., Gemini `AIzaSy...` keys or Groq `gsk_...` keys).
+  - Powering this enables the "AI Summarizer" on the dashboard to turn hundreds of rows of casualties, crop damage, and landslide incidents into a 3-paragraph executive brief in seconds.
+
+#### **G. System Event Logs (All Users)**
+- **Purpose:** The platform's master audit trail to ensure accountability and trace mistakes.
+- **Functionality:**
+  - Standard users can access their own activity logs, while higher admins can search logs across users.
+  - Logs critical actions such as:
+    - Login and logout timings.
+    - Creating, submitting, or approving/rejecting situational reports.
+    - Adding or updating warnings.
+    - Modifying user accounts.
+  - Records the Action, Author, Account Type, Details, and exact Date, and allows direct export to a CSV file.
+
+#### **H. Map Activity Logs (All Users)**
+- **Purpose:** Tracks modifications made to the weather and sensor telemetry stations.
+- **Functionality:**
+  - Displays a history of modifications made to the GIS Map console.
+  - Captures when a station is created, updated (e.g., coordinate corrections or sensor replacement), or deleted from the system.
+  - Shows who performed the edit, the date, and the specific station name/coordinates, ensuring coordinate errors or accidental station removals can be easily tracked and corrected.
+

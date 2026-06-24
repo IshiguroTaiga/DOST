@@ -291,6 +291,18 @@ export const MANUAL_SECTIONS = [
         text: '1. Regional admin deploys the event context.\n2. LGU admins fill in 15 damage/displacement categories, upload signed reports, and submit.\n3. Provincial admins verify and approve consolidated logs.\n4. Regional dashboard updates instantly with verified data for monitoring and AI briefs.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
+      },
+      {
+        title: '7. User Role Hierarchy & Management',
+        text: 'PROACT operates a strict nested role structure:\n- **Super Admin**: Global access, server controls, and settings configuration (SMTP, AI, Backups).\n- **Regional Admin**: Broad oversight, event deployment, and user approval for regional and lower tiers.\n- **Provincial Admin**: Locked to their assigned province, reviews/approves local SitReps, and manages provincial/LGU users.\n- **LGU Admin**: Limited strictly to their municipality, enters telemetry/damage metrics, and submits SitReps.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
+      },
+      {
+        title: '8. System Settings & Configuration Logs',
+        text: 'The Settings gear icon accesses visual preferences and backend diagnostic integrations:\n- **Security**: Complex password requirements and automatic session expiration on update.\n- **Appearance**: Theme selection (Classic vs. Modern style guide).\n- **Maintenance**: Database backups (restricted to Super Admin; disabled in local SQLite mode).\n- **Email Config & Logs**: Setup SMTP credentials (utilizing App Passwords for 2FA validation) and view history logs.\n- **AI Configuration**: Toggle between Groq and Google Gemini API keys for instant summaries.\n- **System Event Logs**: Full screen table of all admin operations (logins, uploads, approvals).\n- **Map Logs**: Tracks creation, coordinates update, and removal of stations.',
+        visual: '/assets/help/dashboard_demo.webp',
+        type: 'video'
       }
     ]
   },
@@ -323,7 +335,7 @@ export const MANUAL_SECTIONS = [
       },
       {
         title: 'Week 4: Final Permissions & Context Synchronization',
-        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**Day 14:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows; integrated a comprehensive Project Handbook under Help & Manual (Developer Profiles) and exported the root-level handbook.md.',
+        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**Day 14:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows; integrated a comprehensive Project Handbook under Help & Manual (Developer Profiles) and exported the root-level handbook.md.\n**Day 15:** Exposed "Add Report" tab in sidebar to Regional users; added dedicated "For Approval" link in sidebar for approvers; updated backend routing to allow creators to fetch and edit their own unapproved draft reports; made SitRep auto-cloning permanent in the frontend; constrained backend auto-clone lookup by report province; scoped database replication during auto-cloning by city boundaries from region1_barangays.json to prevent cross-province data leaks; expanded the Project Handbook and Help Manual with user hierarchy role descriptions and settings panel configurations.',
         visual: '/assets/help/dashboard_demo.webp',
         type: 'video'
       }
