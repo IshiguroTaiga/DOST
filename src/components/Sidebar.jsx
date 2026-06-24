@@ -19,7 +19,8 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   // Any admin type (can see Users sidebar)
   const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
   const navigate = useNavigate()
-  const { notifications, pendingUsersCount, pendingApprovalsCount } = useEvents()
+  const location = useLocation()
+  const { notifications, pendingUsersCount, pendingApprovalsCount, markNotificationsByTypeAsRead } = useEvents()
   
   const unreadNotifs = notifications?.filter(n => !n.is_read) || []
   
@@ -62,6 +63,26 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
     onLogout?.()
     navigate('/login', { replace: true })
   }
+
+  useEffect(() => {
+    if (!user) return
+    const path = location.pathname
+    if (path === '/dashboard') {
+      markNotificationsByTypeAsRead(['event_deployment'])
+    } else if (path === '/consolidated-report') {
+      markNotificationsByTypeAsRead(['sitrep_submission', 'sitrep_approval'])
+    } else if (path === '/add-report') {
+      markNotificationsByTypeAsRead([
+        'sitrep_rejection',
+        'sitrep_assignment',
+        'sitrep_submission',
+        'sitrep_approval',
+        'lgu_sitrep_submission'
+      ])
+    } else if (path === '/users') {
+      markNotificationsByTypeAsRead(['user_created'])
+    }
+  }, [location.pathname, notifications, user, markNotificationsByTypeAsRead])
 
   useEffect(() => {
     if (!showLogoutModal) return

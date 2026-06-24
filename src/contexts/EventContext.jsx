@@ -369,6 +369,20 @@ export function EventProvider({ children, user }) {
     }
   }, [user, notifications])
 
+  const markNotificationsByTypeAsRead = useCallback(async (types) => {
+    if (!user || !types || types.length === 0) return
+    try {
+      const relevantNotifs = notifications.filter(n => !n.is_read && types.includes(n.type))
+      if (relevantNotifs.length === 0) return
+      const ids = relevantNotifs.map(n => n.id)
+      await api.post('/notifications/mark-many-read', { ids })
+      setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - ids.length))
+    } catch (err) {
+      console.error('Error marking notifications by type as read:', err)
+    }
+  }, [user, notifications])
+
   // 4.5. Data Refresh Effect
   useEffect(() => {
     if (!user) return
@@ -987,6 +1001,7 @@ setEventSignals(Object.values(deduplicated))
     markSitRepNotificationsAsRead,
     markEventNotificationsAsRead,
     markUserNotificationsAsRead,
+    markNotificationsByTypeAsRead,
     fetchEvents,
     fetchNotifications,
     pendingUsersCount,
