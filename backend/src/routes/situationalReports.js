@@ -84,7 +84,10 @@ function getCloneScope(user) {
 
 function buildScopeFilter(scope) {
   if (scope.isRegional) return null;
-  if (scope.isProvincial) return { condition: `province = $3`, values: [scope.userProvince] };
+  if (scope.isProvincial) {
+    const cities = getCitiesForProvince(scope.userProvince);
+    return { condition: `city = ANY($3::text[])`, values: [cities] };
+  }
   if (scope.isLGU) return { condition: `city = $3`, values: [scope.userCity] };
   return null;
 }
@@ -279,11 +282,7 @@ router.get('/', authenticate, async (req, res) => {
       query += ` AND sr.event_id = $${params.length}`;
     }
 
-    // Regional Viewer: Only see data from APPROVED situational reports or reports they created
-    if (req.user.account_type === 'Regional' && !isSuperAdmin) {
-      params.push(req.user.id);
-      query += ` AND (sr.status = 'Approved' OR sr.created_by = $${params.length})`;
-    }
+    // Regional Viewer: Allowed to see all reports in the new update flow
 
     if (status) {
       params.push(status);

@@ -1,8 +1,29 @@
 const express = require('express');
 const pool = require('../db');
 const { authenticate } = require('../middleware/auth');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
+
+const PROVINCES_WITH_CITIES = {};
+try {
+  const regionDataPath = path.resolve(__dirname, '../../../src/data/region1_barangays.json');
+  const regionData = JSON.parse(fs.readFileSync(regionDataPath, 'utf8'));
+  if (regionData && regionData.provinces) {
+    for (const province of regionData.provinces) {
+      const cityNames = (province.cities_municipalities || []).map((c) => c.name);
+      PROVINCES_WITH_CITIES[province.name] = cityNames;
+    }
+  }
+} catch (e) {
+  console.error('[Reports] Failed to load region1_barangays.json for scoping:', e.message);
+}
+
+function getCitiesForProvince(provinceName) {
+  if (!provinceName) return [];
+  return PROVINCES_WITH_CITIES[provinceName] || [];
+}
 
 // Generic helper – handles all 13 report sub-tables + reports/report_rows
 const ALLOWED_TABLES = new Set([
@@ -69,22 +90,7 @@ router.get('/all-types', authenticate, async (req, res) => {
 
   console.log(`[Reports/all-types] User: ${user.email} (Type: ${user.account_type}), SR: ${situational_report_id}, isSuperAdmin: ${isSuperAdmin}`);
 
-  // Check if report is approved if user is a basic Regional viewer
-  if (user.account_type === 'Regional' && !isSuperAdmin) {
-    try {
-      const { rows: srRows } = await pool.query('SELECT status, created_by FROM situational_reports WHERE id = $1', [situational_report_id]);
-      if (srRows.length > 0 && srRows[0].status !== 'Approved' && srRows[0].created_by !== user.id) {
-        console.warn(`[Reports/all-types] Forbidden: Regional viewer ${user.email} accessing unapproved SR ${situational_report_id}`);
-        return res.status(403).json({ 
-          error: 'This report has not been approved by the Province yet.',
-          debug_reason: 'REGIONAL_VIEWER_UNAPPROVED_REPORT',
-          user: { email: user.email, account_type: user.account_type, isSuperAdmin }
-        });
-      }
-    } catch (err) {
-      console.error('[Reports/all-types] Status check failed:', err);
-    }
-  }
+  // Regional viewer restriction removed in the new update flow
 
   const results = [];
   try {
@@ -120,6 +126,12 @@ router.get('/all-types', authenticate, async (req, res) => {
           params.push(user.province);
           // Allow seeing own province OR Regional reports
           conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL OR sr.province = 'Region 1')`);
+          
+          const provinceCities = getCitiesForProvince(user.province);
+          if (provinceCities.length > 0) {
+            params.push(provinceCities);
+            conditions.push(`t.city = ANY($${params.length}::text[])`);
+          }
         }
       }
 
@@ -158,6 +170,12 @@ router.get('/all-types', authenticate, async (req, res) => {
         const cleanCity = user.city.replace(/\s*\(.*\)\s*$/, '').trim();
         rowsParams.push(cleanCity);
         rowsConditions.push(cityCondition('t', rowsParams.length));
+      } else if (isProvincial && user.province) {
+        const provinceCities = getCitiesForProvince(user.province);
+        if (provinceCities.length > 0) {
+          rowsParams.push(provinceCities);
+          rowsConditions.push(`t.city = ANY($${rowsParams.length}::text[])`);
+        }
       } else if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin) {
         // Keep visibility check from remote: non-LGUs and non-Admins only see Approved data
         rowsConditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
@@ -232,6 +250,14 @@ router.get('/consolidated', authenticate, async (req, res) => {
         } else if (user.province && !isRegional) {
           params.push(user.province);
           conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
+          
+          if (table !== 'reports') {
+            const provinceCities = getCitiesForProvince(user.province);
+            if (provinceCities.length > 0) {
+              params.push(provinceCities);
+              conditions.push(`t.city = ANY($${params.length}::text[])`);
+            }
+          }
         }
 
         if (!isLgu && !isProvincial && table !== 'reports' && !isRegional && !isSuperAdmin) {
@@ -260,6 +286,12 @@ router.get('/consolidated', authenticate, async (req, res) => {
           if (isLgu && user.city) {
             rrParams.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
             rrQuery += ` AND ${cityCondition('rr', rrParams.length)}`;
+          } else if (isProvincial && user.province) {
+            const provinceCities = getCitiesForProvince(user.province);
+            if (provinceCities.length > 0) {
+              rrParams.push(provinceCities);
+              rrQuery += ` AND rr.city = ANY($${rrParams.length}::text[])`;
+            }
           } else if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin) {
             rrQuery += ` AND (rr.city IS NULL OR rr.city = '' OR EXISTS (
               SELECT 1 FROM lgu_submissions ls 
@@ -340,11 +372,7 @@ router.get('/:table', authenticate, async (req, res) => {
   const conditions = [];
   const params = [];
 
-  // Check if report is approved if user is a basic Regional viewer
-  if (user.account_type === 'Regional' && !isSuperAdmin) {
-    params.push(user.id);
-    conditions.push(`(sr.status = 'Approved' OR sr.created_by = $${params.length})`);
-  }
+  // Regional viewer check removed to allow viewing Draft/Pending reports
 
   if (!isSuperAdmin) {
     const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
@@ -358,6 +386,13 @@ router.get('/:table', authenticate, async (req, res) => {
     } else if (user.province && !isRegional) {
       params.push(user.province);
       conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
+      if (!['reports', 'roads_and_bridges_sections'].includes(table)) {
+        const provinceCities = getCitiesForProvince(user.province);
+        if (provinceCities.length > 0) {
+          params.push(provinceCities);
+          conditions.push(`t.city = ANY($${params.length}::text[])`);
+        }
+      }
     }
 
     if (!isLgu && !isProvincial && !isRegional && !isSuperAdmin && !['reports', 'report_rows', 'roads_and_bridges_sections'].includes(table)) {

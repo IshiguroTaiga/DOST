@@ -3732,6 +3732,19 @@ useEffect(() => {
                                ></span>
                              )}
                             {sr.title}
+                            {sr.created_at && new Date(sr.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                              <span style={{ 
+                                backgroundColor: '#ef4444', 
+                                color: 'white', 
+                                fontSize: '0.625rem', 
+                                padding: '2px 6px', 
+                                borderRadius: '4px', 
+                                marginLeft: '8px', 
+                                fontWeight: 'bold',
+                                display: 'inline-block',
+                                verticalAlign: 'middle'
+                              }}>NEW</span>
+                            )}
                           </div>
                           {sr.rejection_remarks && (
                             <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -3843,6 +3856,19 @@ useEffect(() => {
                             <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '12.5px' }}>
                               {item.location || item.city || 'Entry'}
                             </span>
+                            {(item.created_at || item.timestamp) && new Date(item.created_at || item.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                              <span style={{ 
+                                backgroundColor: '#ef4444', 
+                                color: 'white', 
+                                fontSize: '0.6rem', 
+                                padding: '1px 4px', 
+                                borderRadius: '3px', 
+                                marginLeft: '6px', 
+                                fontWeight: 'bold',
+                                display: 'inline-block',
+                                verticalAlign: 'middle'
+                              }}>NEW</span>
+                            )}
                           </div>
                         </td>
                         <td style={{ color: '#475569', fontSize: '12.5px', fontWeight: 700, verticalAlign: 'middle', textTransform: 'uppercase', padding: '8px 12px' }}>
@@ -3891,7 +3917,11 @@ useEffect(() => {
                   ) : (
                     <tr>
                       <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                        No entries found for this situational report. Click "Add Entry" to start.
+                        {isLGU && currentSituationalReport?.creator_city && currentSituationalReport.creator_city !== user?.city ? (
+                          `Cannot view entries for other LGUs. You are restricted to viewing and adding entries for your assigned city/municipality (${user?.city || ''}).`
+                        ) : (
+                          `No entries found for this situational report. Click "Add Entry" to start.`
+                        )}
                       </td>
                     </tr>
                   )}

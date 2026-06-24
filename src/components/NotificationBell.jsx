@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/components/NotificationBell.css'
 
 export default function NotificationBell({ onNotificationClick }) {
-  const { notifications, unreadCount, markNotificationAsRead } = useEvents()
+  const { notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead } = useEvents()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
@@ -64,9 +64,31 @@ export default function NotificationBell({ onNotificationClick }) {
 
       {isOpen && (
         <div className="notification-dropdown glass-card">
-          <div className="notification-header">
-            <h3>Notifications</h3>
-            {unreadCount > 0 && <span className="notification-count">{unreadCount} unread</span>}
+          <div className="notification-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3>Notifications</h3>
+              {unreadCount > 0 && <span className="notification-count">{unreadCount} unread</span>}
+            </div>
+            {unreadCount > 0 && (
+              <button 
+                className="mark-all-read-btn" 
+                onClick={(e) => { e.stopPropagation(); markAllNotificationsAsRead(); }}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'var(--primary, #3b82f6)', 
+                  fontSize: '0.75rem', 
+                  fontWeight: 600, 
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
+                }}
+                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+              >
+                Mark all as read
+              </button>
+            )}
           </div>
           
           <div className="notification-list">
@@ -80,6 +102,13 @@ export default function NotificationBell({ onNotificationClick }) {
                   key={notif.id} 
                   className={`notification-item ${notif.is_read ? 'read' : 'unread'}`}
                   onClick={() => handleItemClick(notif)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    if (!notif.is_read) {
+                      markNotificationAsRead(notif.id);
+                    }
+                  }}
+                  title="Left-click to view, Right-click to mark as read"
                 >
                   <div className="notification-icon-wrap">
                     {notif.type === 'event_deployment' ? <PaperPlaneRight size={16} /> : <Info size={16} />}

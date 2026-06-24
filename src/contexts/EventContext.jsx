@@ -300,6 +300,18 @@ export function EventProvider({ children, user }) {
     }
   }, [])
 
+  const markAllNotificationsAsRead = useCallback(async () => {
+    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id)
+    if (unreadIds.length === 0) return
+    try {
+      await api.post('/notifications/mark-many-read', { ids: unreadIds })
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      setUnreadCount(0)
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err)
+    }
+  }, [notifications])
+
   const markSitRepNotificationsAsRead = useCallback(async (sitRepId) => {
     if (!user || !sitRepId) return
     try {
@@ -376,6 +388,23 @@ export function EventProvider({ children, user }) {
       setUserSignal(null)
     }
   }, [user, currentEventId, fetchUserSignal])
+
+  // Default currentEventId to active deployed event if not set or invalid
+  useEffect(() => {
+    if (events.length > 0) {
+      const isValid = currentEventId && events.some(e => e.id === currentEventId);
+      if (!isValid) {
+        const activeEvent = events.find(e => e.isDeployed);
+        if (activeEvent) {
+          setCurrentEventId(activeEvent.id);
+          localStorage.setItem('selectedEventId', activeEvent.id);
+        } else {
+          setCurrentEventId(events[0].id);
+          localStorage.setItem('selectedEventId', events[0].id);
+        }
+      }
+    }
+  }, [events, currentEventId])
 
   // 5. Computed State
   const defaultEvent = {
@@ -954,6 +983,7 @@ setEventSignals(Object.values(deduplicated))
     notifications,
     unreadCount,
     markNotificationAsRead,
+    markAllNotificationsAsRead,
     markSitRepNotificationsAsRead,
     markEventNotificationsAsRead,
     markUserNotificationsAsRead,
