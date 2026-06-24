@@ -327,15 +327,16 @@ Token expiry: **7 days**
 ---
 
 #### `GET /users`
-- Scoped: Provincial Admin sees own province's users; LGU Admin sees own city; Regional/Super Admin sees all
+- Scoped: Provincial Admin sees own province's users; LGU Admin sees own city; Regional Admin sees all users except Super Admins. Only Super Admins themselves can view, create, edit, or delete Super Admin profiles.
 
 #### `POST /users`
 - Creates user with auto-generated temp password
 - Sends welcome email via Brevo/Nodemailer
 - Sets `must_change_password = TRUE`
+- Restricted: Non-Super Admin users cannot create or assign a Super Admin account type or role.
 
 #### `PATCH /users/:id` / `DELETE /users/:id`
-- Standard update/delete
+- Standard update/delete with RBAC locks. Super Admin accounts can only be updated/deleted by another Super Admin or themselves. Non-Super Admins cannot promote users to Super Admin or delete Super Admin profiles. Self-deletion is strictly blocked.
 
 ---
 

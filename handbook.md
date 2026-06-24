@@ -147,7 +147,7 @@ graph TD
    - **Operational Purpose:** System owners, server administrators, and IT managers. They ensure the hardware, APIs, and network integrations (SMTP, AI) function correctly.
    - **Account Scoping:** Global visibility. They can access and edit data for any city, municipality, province, or region.
    - **Privileges:**
-     - Fully manage all accounts, including creating or deleting other Super Admin, Regional, Provincial, and LGU profiles.
+     - Fully manage all accounts, including creating, editing, or deleting other Super Admin, Regional, Provincial, and LGU profiles. (Only Super Admins can see, create, modify, or delete other Super Admin accounts).
      - Deploy, modify, and close global warning alerts and events.
      - View all System Event Logs, Map Logs, and Email Config Logs.
      - Access exclusive settings tabs: **Maintenance** (backups/restores), **SMTP Configuration**, and **AI API Keys**.
@@ -160,7 +160,7 @@ graph TD
      - Review, consolidate, and finalize reports submitted by all provinces.
      - Upload/override official signed Situational Reports (PDFs) and assign approved signatories.
      - Create and manage accounts for **Regional Encoders, Provincial Admins, Provincial Encoders, LGU Admins, and LGU Encoders**.
-     - **Limitation:** Cannot access SMTP credentials, AI API keys, or system-wide backup controls in the Settings panel.
+     - **Security Limitations:** Cannot view, edit, create, or delete Super Admin profiles, nor elevate any account to a Super Admin role. Also cannot access SMTP credentials, AI API keys, or system-wide backup controls in the Settings panel.
 
 3. **Provincial Admin (Provincial DRRM Command)**
    - **Operational Purpose:** Coordinates activities for a specific province (e.g., La Union, Pangasinan, Ilocos Norte, or Ilocos Sur). They verify municipal figures before they go regional.
@@ -168,6 +168,7 @@ graph TD
    - **Privileges:**
      - Monitor, review, reject (with custom remarks), or approve incoming SitReps submitted by municipalities (LGUs) within their province.
      - Create and manage accounts for **Provincial Encoders, LGU Admins, and LGU Encoders** within their province.
+     - **Security Limitations:** Cannot view, edit, create, or delete Super Admin or Regional Admin accounts, nor assign these roles.
      - Pushes verified provincial summaries up to the Regional Dashboard.
 
 4. **LGU Admin (Municipal/City DRRMO)**
@@ -177,6 +178,7 @@ graph TD
      - Initiate new SitRep drafts using the automated **Auto-Cloning** mechanism to avoid tedious copy-pasting from previous periods.
      - Input real-time telemetry, casualties, lifeline interruptions, and agricultural/infrastructure damages.
      - Create and manage municipal-tier encoder accounts for their town.
+     - **Security Limitations:** Cannot view, edit, create, or delete any accounts outside their town boundary, including Super Admin, Regional Admin, or Provincial Admin accounts.
      - Submit draft SitReps up to the Province for validation and approval.
 
 ---

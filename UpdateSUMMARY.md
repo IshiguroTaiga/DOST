@@ -81,7 +81,7 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Tropical Cyclone Monitor Details:** Replaced the generic active event hero description on the Dashboard with user-configured Location, Wind/Gust, Movement, Coordinates, and a dynamic real-time clock (HH:MM) that updates every minute for Tropical Cyclone (`typhoon`) events. Added these form inputs to both the main event manager (`ManageEvents.jsx`) and the Dashboard's edit event modal.
 - **Project Handbook Integration:** Designed a comprehensive Project Handbook containing system purpose, background, addressed needs, manual-to-digital comparison, NSTP/NSDB integration, key features, and operational flows. Integrated this handbook under *Settings > Help & Manual (Developer Profiles)* and exported it to the root project directory as `handbook.md`.
 
-## 10. Day 15 Permissions & Auto-Cloning Overhaul (June 24, 2026)
+## 10. Day 15 Permissions, Auto-Cloning Overhaul, & User Security Scoping (June 24, 2026)
 - **Regional Report Authoring:** Exposed the "Add Report" tab in `Sidebar.jsx` to Regional users, allowing them to author and manage situational reports.
 - **Dedicated "For Approval" Route:** Added a clean "For Approval" link in the sidebar for all system approvers (`Super Admin`, `Regional`, `Regional Admin`, `Regional Approver`, `Provincial Approver`) to isolate the report signing and validation workflows.
 - **Backend Creator Privileges:** Overrode backend reading restrictions in `reports.js` and `situationalReports.js` so that Regional creator accounts can access and modify unapproved draft reports they created themselves.
@@ -89,6 +89,9 @@ This document summarizes the development, refactoring, and feature implementatio
     - Made auto-cloning permanent in the frontend (`AddReport.jsx`), displaying it as a non-toggleable, active system feature while leaving source select functionality active.
     - Scoped the backend auto-clone lookup by report province so that reports do not accidentally inherit data from a different province's timeline.
     - Scoped data replication during the clone process by matching cities in `region1_barangays.json` with target report provinces, guaranteeing complete data separation and preventing overlaps.
+- **Super Admin Profile Hiding (Security Scoping):** Hidden Super Admin user profiles from the user listings (`GET /api/users` and `/api/users/pending-count`) for all non-Super Admin roles (Regional Admin, Provincial Admin, LGU Admin, etc.). Only Super Admins can view other Super Admin accounts.
+- **Role Elevation Prevention:** Blocked non-Super Admin roles from assigning or promoting any user to the `Super Admin` role via the user creation (`POST /api/users`) or modification (`PATCH /api/users/:id`) API routes.
+- **Super Admin Edit/Delete Locks:** Enforced backend checks to ensure Super Admin profiles can only be edited or deleted by another Super Admin or by themselves. Added a secure authorization verification query inside the user deletion transaction.
 
 ---
 **Status:** System is optimized for provincial-level consolidation and regional-level oversight, with enhanced real-time capabilities, GIS mapping, and AI-assisted reporting.
