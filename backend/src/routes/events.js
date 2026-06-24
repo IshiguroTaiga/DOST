@@ -62,6 +62,10 @@ router.get('/:id', authenticate, async (req, res) => {
 
 // POST /api/events
 router.post('/', authenticate, async (req, res) => {
+  const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+  if (!isSuperAdmin) {
+    return res.status(403).json({ error: 'Forbidden: Only Super Admins can manage events' });
+  }
   const { name, color, start_date, end_date, event_type, alert_status, alert_level,
     pinged_report_types, summary, affected_provinces, location, wind_gust, movement, coordinates } = req.body;
   try {
@@ -127,6 +131,10 @@ router.post('/', authenticate, async (req, res) => {
 
 // PATCH /api/events/:id
 router.patch('/:id', authenticate, async (req, res) => {
+  const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+  if (!isSuperAdmin) {
+    return res.status(403).json({ error: 'Forbidden: Only Super Admins can manage events' });
+  }
   const fields = req.body;
   const allowed = ['name','color','start_date','end_date','event_type','alert_status',
     'alert_level','pinged_report_types','summary','affected_provinces',
@@ -217,6 +225,9 @@ router.patch('/:id', authenticate, async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
+  if (!isSuperAdmin) {
+    return res.status(403).json({ error: 'Forbidden: Only Super Admins can manage events' });
+  }
   
   if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
     return res.status(400).json({ error: 'Invalid event ID format' });

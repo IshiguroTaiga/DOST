@@ -109,7 +109,7 @@ This document summarizes the development, refactoring, and feature implementatio
 | **Cyclone Monitoring** | Static generic subtitle "Monitoring active for this event.". | **Dynamic Details:** Admins enter Location, Wind/Gust, Movement, and Coordinates, rendering a live real-time clock under the title. |
 
 ### New Operational Workflow Summary:
-1. **Regional Admin** creates an Event (Notifications sent).
+1. **Super Admin** creates an Event (Notifications sent).
 2. **LGU** creates a Report -> Adds data -> Uploads signed PDF -> **Sends to Province**.
 3. **Province** reviews LGU submission -> Consolidates all LGU data -> Uploads Provincial signed PDF -> Marks as **Approved**.
 4. **Regional Dashboard** automatically populates with verified data from all Approved provincial reports.
