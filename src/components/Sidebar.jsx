@@ -37,7 +37,9 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           n.type === 'sitrep_approval' ||
           n.type === 'lgu_sitrep_submission'
         ).length
-        return unreadAddReportCount + (pendingApprovalsCount || 0)
+        return unreadAddReportCount
+      case '/for-approval':
+        return pendingApprovalsCount || 0
       case '/users':
         const unreadUserCount = unreadNotifs.filter(n => n.type === 'user_created').length
         return unreadUserCount + (pendingUsersCount || 0)
@@ -134,7 +136,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </NavLink>
           </div>
         )}
-        {!isRegional && accountType !== 'Provincial Approver' && !isLguApprover && (
+        {accountType !== 'Provincial Approver' && !isLguApprover && (
           <NavLink
             to="/add-report"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -145,6 +147,21 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             {getNavCount('/add-report') > 0 && (
               <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
                 {getNavCount('/add-report')}
+              </span>
+            )}
+          </NavLink>
+        )}
+        {(isSuperAdmin || isRegional || accountType === 'Regional Approver' || accountType === 'Provincial Approver') && (
+          <NavLink
+            to="/for-approval"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title={isCollapsed ? 'For Approval' : ''}
+          >
+            <CheckSquareOffset size={16} weight="bold" />
+            {!isCollapsed && <span>For Approval</span>}
+            {getNavCount('/for-approval') > 0 && (
+              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                {getNavCount('/for-approval')}
               </span>
             )}
           </NavLink>

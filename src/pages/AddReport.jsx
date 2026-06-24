@@ -4376,38 +4376,33 @@ useEffect(() => {
               gap: '0.75rem',
               padding: '0.875rem 1rem',
               borderRadius: '10px',
-              border: `1px solid ${shouldInheritData ? '#3b82f6' : '#e2e8f0'}`,
-              background: shouldInheritData ? 'rgba(59,130,246,0.05)' : '#f8fafc',
-              cursor: 'pointer',
+              border: '1px solid #3b82f6',
+              background: 'rgba(59,130,246,0.05)',
               transition: 'all 0.2s'
             }}
-              onClick={() => setShouldInheritData(prev => !prev)}
             >
               <div style={{
                 width: '18px',
                 height: '18px',
                 borderRadius: '4px',
-                border: `2px solid ${shouldInheritData ? '#3b82f6' : '#cbd5e1'}`,
-                background: shouldInheritData ? '#3b82f6' : '#fff',
+                border: '2px solid #3b82f6',
+                background: '#3b82f6',
                 flexShrink: 0,
                 marginTop: '1px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s'
+                justifyContent: 'center'
               }}>
-                {shouldInheritData && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
               <div>
-                <div style={{ fontSize: '0.875rem', fontWeight: '600', color: shouldInheritData ? '#1e40af' : '#334155' }}>
-                  Auto-clone data from previous report
+                <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e40af' }}>
+                  Auto-clone data from previous report (Enabled)
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                  Automatically copies data from a selected previous report. Based on your role, only relevant data will be cloned.
+                  Auto-cloning is permanent. It copies data from a selected previous report. Based on your role, only relevant data will be cloned.
                 </div>
               </div>
             </div>

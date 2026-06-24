@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const pool = require('../db');
 const { authenticate } = require('../middleware/auth');
 
@@ -46,6 +48,25 @@ router.post('/:id/summaries', authenticate, async (req, res) => {
 
 // --- HELPER FUNCTIONS FOR AUTO-CLONE ---
 
+const PROVINCES_WITH_CITIES = {};
+try {
+  const regionDataPath = path.resolve(__dirname, '../../../src/data/region1_barangays.json');
+  const regionData = JSON.parse(fs.readFileSync(regionDataPath, 'utf8'));
+  if (regionData && regionData.provinces) {
+    for (const province of regionData.provinces) {
+      const cityNames = (province.cities_municipalities || []).map((c) => c.name);
+      PROVINCES_WITH_CITIES[province.name] = cityNames;
+    }
+  }
+} catch (e) {
+  console.error('[SitReps] Failed to load region1_barangays.json for auto-cloning scoping:', e.message);
+}
+
+function getCitiesForProvince(provinceName) {
+  if (!provinceName) return [];
+  return PROVINCES_WITH_CITIES[provinceName] || [];
+}
+
 function getCloneScope(user) {
   const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
   const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(user.account_type);
@@ -68,7 +89,7 @@ function buildScopeFilter(scope) {
   return null;
 }
 
-async function cloneTable(client, tableName, sourceSitRepId, newSitRepId, eventId, scopeFilter) {
+async function cloneTable(client, tableName, sourceSitRepId, newSitRepId, eventId, reportProvince) {
   const columnsQuery = `
     SELECT column_name FROM information_schema.columns 
     WHERE table_name = $1 AND column_name NOT IN ('id', 'created_at', 'updated_at')
@@ -79,11 +100,20 @@ async function cloneTable(client, tableName, sourceSitRepId, newSitRepId, eventI
   if (columns.length === 0) return 0;
 
   let whereClause = `situational_report_id = $1 AND event_id = $2`;
-  let params = [sourceSitRepId, eventId];
-  
-  if (scopeFilter && columns.includes(scopeFilter.condition.split(' ')[0])) {
-    whereClause += ` AND ${scopeFilter.condition}`;
-    params.push(...scopeFilter.values);
+  const params = [sourceSitRepId, eventId];
+
+  // If a target province is set, filter by city or province
+  if (reportProvince && reportProvince !== 'Region 1') {
+    if (columns.includes('city')) {
+      const cities = getCitiesForProvince(reportProvince);
+      if (cities.length > 0) {
+        params.push(cities);
+        whereClause += ` AND REGEXP_REPLACE(city, '\\s*\\(.*\\)\\s*$', '') = ANY($${params.length}::text[])`;
+      }
+    } else if (columns.includes('province')) {
+      params.push(reportProvince);
+      whereClause += ` AND province = $${params.length}`;
+    }
   }
 
   const selectQuery = `SELECT ${columns.join(', ')} FROM ${tableName} WHERE ${whereClause}`;
@@ -103,11 +133,7 @@ async function cloneTable(client, tableName, sourceSitRepId, newSitRepId, eventI
   return sourceData.rows.length;
 }
 
-async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId, user, client) {
-  // Always clone all data from the previous SitRep, regardless of the user's scope.
-  // Data visibility (province isolation) is handled at the presentation/UI layer,
-  // ensuring the SitRep itself acts as a comprehensive historical record.
-  const scopeFilter = null; 
+async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId, user, client, reportProvince) {
   let totalCloned = 0;
 
   const simpleTables = [
@@ -118,22 +144,36 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
   ];
 
   for (const table of simpleTables) {
-    totalCloned += await cloneTable(client, table, sourceSitRepId, newSitRepId, eventId, scopeFilter);
+    totalCloned += await cloneTable(client, table, sourceSitRepId, newSitRepId, eventId, reportProvince);
   }
 
   // Clone 'reports' (Affected Population) and their child 'report_rows'
-  let reportWhere = `situational_report_id = $1 AND event_id = $2`;
-  let reportParams = [sourceSitRepId, eventId];
-  if (scopeFilter) {
-    reportWhere += ` AND ${scopeFilter.condition}`;
-    reportParams.push(...scopeFilter.values);
-  }
-
-  const { rows: sourceReports } = await client.query(`SELECT * FROM reports WHERE ${reportWhere}`, reportParams);
+  const { rows: sourceReports } = await client.query(
+    `SELECT * FROM reports WHERE situational_report_id = $1 AND event_id = $2`,
+    [sourceSitRepId, eventId]
+  );
   
   if (sourceReports.length > 0) {
-    totalCloned += sourceReports.length;
     for (const report of sourceReports) {
+      let rrQuery = `SELECT * FROM report_rows WHERE report_id = $1`;
+      const rrParams = [report.id];
+      
+      if (reportProvince && reportProvince !== 'Region 1') {
+        const cities = getCitiesForProvince(reportProvince);
+        if (cities.length > 0) {
+          rrParams.push(cities);
+          rrQuery += ` AND REGEXP_REPLACE(city, '\\s*\\(.*\\)\\s*$', '') = ANY($${rrParams.length}::text[])`;
+        }
+      }
+      
+      const { rows: sourceReportRows } = await client.query(rrQuery, rrParams);
+      
+      // Skip report wrappers that don't belong to the target province
+      if (reportProvince && reportProvince !== 'Region 1' && sourceReportRows.length === 0) {
+        continue;
+      }
+      
+      totalCloned += 1;
       const rCols = Object.keys(report).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
       const rVals = rCols.map(k => k === 'situational_report_id' ? newSitRepId : report[k]);
       const rPlaceholders = rVals.map((_, i) => `$${i + 1}`).join(', ');
@@ -143,13 +183,9 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
         rVals
       );
       const newReportId = newReportRows[0].id;
-
-      const { rows: sourceReportRows } = await client.query(
-        `SELECT * FROM report_rows WHERE report_id = $1::uuid`,
-        [report.id]
-      );
       
       if (sourceReportRows.length > 0) {
+        totalCloned += sourceReportRows.length;
         for (const rrow of sourceReportRows) {
           const rrCols = Object.keys(rrow).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
           const rrVals = rrCols.map(k => k === 'report_id' ? newReportId : rrow[k]);
@@ -164,7 +200,16 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
   }
 
   // Clone 'roads_and_bridges' and their child 'roads_and_bridges_sections'
-  const { rows: sourceRoads } = await client.query(`SELECT * FROM roads_and_bridges WHERE ${reportWhere}`, reportParams);
+  let rbQuery = `SELECT * FROM roads_and_bridges WHERE situational_report_id = $1 AND event_id = $2`;
+  const rbParams = [sourceSitRepId, eventId];
+  if (reportProvince && reportProvince !== 'Region 1') {
+    const cities = getCitiesForProvince(reportProvince);
+    if (cities.length > 0) {
+      rbParams.push(cities);
+      rbQuery += ` AND REGEXP_REPLACE(city, '\\s*\\(.*\\)\\s*$', '') = ANY($${rbParams.length}::text[])`;
+    }
+  }
+  const { rows: sourceRoads } = await client.query(rbQuery, rbParams);
   
   if (sourceRoads.length > 0) {
     totalCloned += sourceRoads.length;
@@ -185,6 +230,7 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
       );
       
       if (sourceSections.length > 0) {
+        totalCloned += sourceSections.length;
         for (const sec of sourceSections) {
           const sCols = Object.keys(sec).filter(k => k !== 'id' && k !== 'created_at' && k !== 'updated_at');
           const sVals = sCols.map(k => k === 'report_id' ? newRoadId : sec[k]);
@@ -233,9 +279,10 @@ router.get('/', authenticate, async (req, res) => {
       query += ` AND sr.event_id = $${params.length}`;
     }
 
-    // Regional Viewer: Only see data from APPROVED situational reports
+    // Regional Viewer: Only see data from APPROVED situational reports or reports they created
     if (req.user.account_type === 'Regional' && !isSuperAdmin) {
-      query += " AND sr.status = 'Approved'";
+      params.push(req.user.id);
+      query += ` AND (sr.status = 'Approved' OR sr.created_by = $${params.length})`;
     }
 
     if (status) {
@@ -289,7 +336,7 @@ router.get('/:id', authenticate, async (req, res) => {
     
     const report = rows[0];
     // Check access for basic Regional viewers
-    if (req.user.account_type === 'Regional' && report.status !== 'Approved' && !isSuperAdmin) {
+    if (req.user.account_type === 'Regional' && report.status !== 'Approved' && report.created_by !== req.user.id && !isSuperAdmin) {
       console.warn(`[SitReps/GET/:id] Forbidden: Regional viewer ${req.user.email} accessing unapproved SR ${req.params.id}`);
       return res.status(403).json({ 
         error: 'Forbidden',
@@ -350,19 +397,29 @@ router.post('/', authenticate, async (req, res) => {
       let totalCloned = 0;
 
       if (!sourceToClone && req.body.skip_auto_clone !== true) {
-        // Auto-detect latest SitRep - Global for the event
-        const latestRes = await client.query(
-          `SELECT id FROM situational_reports 
-           WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2
-           ORDER BY created_at DESC LIMIT 1`,
-          [event_id, sitRep.id]
-        );
+        // Auto-detect latest SitRep - Scoped by province
+        let latestQuery = `
+          SELECT id FROM situational_reports 
+          WHERE event_id = $1 AND status NOT IN ('Draft') AND id != $2
+        `;
+        const latestParams = [event_id, sitRep.id];
+        
+        if (reportProvince && reportProvince !== 'Region 1') {
+          latestParams.push(reportProvince);
+          latestQuery += ` AND (province = $3 OR province = 'Region 1' OR province IS NULL)`;
+        } else {
+          // If creating a regional report, only clone from a previous regional report
+          latestQuery += ` AND (province = 'Region 1' OR province IS NULL)`;
+        }
+        latestQuery += ` ORDER BY created_at DESC LIMIT 1`;
+
+        const latestRes = await client.query(latestQuery, latestParams);
         sourceToClone = latestRes.rows[0]?.id || null;
       }
 
       if (sourceToClone) {
         console.log(`[SitReps/POST] Auto-cloning from ${sourceToClone} to ${sitRep.id} (Province: ${reportProvince})`);
-        totalCloned = await cloneAllDataTablesWithClient(sourceToClone, sitRep.id, event_id, req.user, client);
+        totalCloned = await cloneAllDataTablesWithClient(sourceToClone, sitRep.id, event_id, req.user, client, reportProvince);
         
         // Update the new sitrep to mark it as cloned
         await client.query(

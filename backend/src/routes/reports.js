@@ -72,8 +72,8 @@ router.get('/all-types', authenticate, async (req, res) => {
   // Check if report is approved if user is a basic Regional viewer
   if (user.account_type === 'Regional' && !isSuperAdmin) {
     try {
-      const { rows: srRows } = await pool.query('SELECT status FROM situational_reports WHERE id = $1', [situational_report_id]);
-      if (srRows.length > 0 && srRows[0].status !== 'Approved') {
+      const { rows: srRows } = await pool.query('SELECT status, created_by FROM situational_reports WHERE id = $1', [situational_report_id]);
+      if (srRows.length > 0 && srRows[0].status !== 'Approved' && srRows[0].created_by !== user.id) {
         console.warn(`[Reports/all-types] Forbidden: Regional viewer ${user.email} accessing unapproved SR ${situational_report_id}`);
         return res.status(403).json({ 
           error: 'This report has not been approved by the Province yet.',
@@ -342,7 +342,8 @@ router.get('/:table', authenticate, async (req, res) => {
 
   // Check if report is approved if user is a basic Regional viewer
   if (user.account_type === 'Regional' && !isSuperAdmin) {
-    conditions.push("sr.status = 'Approved'");
+    params.push(user.id);
+    conditions.push(`(sr.status = 'Approved' OR sr.created_by = $${params.length})`);
   }
 
   if (!isSuperAdmin) {
