@@ -18,6 +18,12 @@ router.get('/', authenticate, async (req, res) => {
     const params = [];
     const conditions = [];
 
+    const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+    if (!isSuperAdmin) {
+      conditions.push(`u.account_type <> 'Super Admin'`);
+      conditions.push(`u.role <> 'Super Admin'`);
+    }
+
     if (user.account_type === 'Provincial Admin') {
       conditions.push(`u.province = $${params.length + 1}`);
       params.push(user.province);
@@ -51,11 +57,16 @@ router.get('/pending-count', authenticate, async (req, res) => {
     let query = `SELECT COUNT(*) AS count FROM users WHERE status = 'Pending'`;
     const params = [];
 
+    const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
+    if (!isSuperAdmin) {
+      query += ` AND account_type <> 'Super Admin' AND role <> 'Super Admin'`;
+    }
+
     if (user.account_type === 'Provincial Admin') {
-      query += ` AND province = $1 AND account_type = ANY($2::text[])`;
+      query += ` AND province = $${params.length + 1} AND account_type = ANY($${params.length + 2}::text[])`;
       params.push(user.province, ['Provincial Admin','Provincial Approver','Provincial','LGU Admin','LGU','LGU Approver']);
     } else if (user.account_type === 'LGU Admin') {
-      query += ` AND city = $1 AND account_type = ANY($2::text[])`;
+      query += ` AND city = $${params.length + 1} AND account_type = ANY($${params.length + 2}::text[])`;
       params.push(user.city, ['LGU Admin','LGU']);
     }
 
@@ -73,6 +84,36 @@ router.post('/', authenticate, async (req, res) => {
   if (!email || !first_name || !last_name) {
     return res.status(400).json({ error: 'email, first_name, and last_name are required' });
   }
+
+  const requester = req.user;
+  const isSuperAdmin = requester.role === 'Super Admin' || requester.account_type === 'Super Admin';
+  const isRegionalAdmin = requester.account_type === 'Regional Admin';
+  const isProvincialAdmin = requester.account_type === 'Provincial Admin';
+  const isLguAdmin = requester.account_type === 'LGU Admin';
+
+  let allowed = false;
+  if (isSuperAdmin) {
+    allowed = true;
+  } else if (isRegionalAdmin) {
+    if (account_type !== 'Super Admin' && role !== 'Super Admin') {
+      allowed = true;
+    }
+  } else if (isProvincialAdmin) {
+    const allowedTypes = ['Provincial Admin', 'Provincial', 'LGU Admin', 'LGU', 'LGU Approver', 'Provincial Approver'];
+    if (allowedTypes.includes(account_type) && province === requester.province) {
+      allowed = true;
+    }
+  } else if (isLguAdmin) {
+    const allowedTypes = ['LGU Admin', 'LGU', 'LGU Approver'];
+    if (allowedTypes.includes(account_type) && city === requester.city && province === requester.province) {
+      allowed = true;
+    }
+  }
+
+  if (!allowed) {
+    return res.status(403).json({ error: 'Forbidden: You do not have permission to create this type of user' });
+  }
+
   try {
     let tempPassword = password;
     if (!tempPassword) {
@@ -124,6 +165,10 @@ router.patch('/:id', authenticate, async (req, res) => {
   const isProvincialAdmin = requester.account_type === 'Provincial Admin';
   const isLguAdmin = requester.account_type === 'LGU Admin';
 
+  if ((account_type === 'Super Admin' || role === 'Super Admin') && !isSuperAdmin) {
+    return res.status(403).json({ error: 'Forbidden: Only Super Admins can assign the Super Admin role' });
+  }
+
   console.log(`[Users/PATCH] Requester ${requester.email} updating user ${id}...`);
   
   try {
@@ -136,19 +181,29 @@ router.patch('/:id', authenticate, async (req, res) => {
 
     // 2. RBAC: Who can edit whom?
     const isSelf = requester.id === id;
-    let canEdit = isSuperAdmin || isRegionalAdmin || isSelf;
-
-    if (!canEdit) {
-      if (isProvincialAdmin) {
-        // Provincial Admin can edit users in their province, except Regional/Super Admins
-        const restrictedTypes = ['Super Admin', 'Regional Admin', 'Regional'];
-        if (targetUser.province === requester.province && !restrictedTypes.includes(targetUser.account_type)) {
-          canEdit = true;
-        }
-      } else if (isLguAdmin) {
-        // LGU Admin can edit users in their city
-        if (targetUser.city === requester.city && targetUser.account_type === 'LGU') {
-          canEdit = true;
+    const targetIsSuperAdmin = targetUser.role === 'Super Admin' || targetUser.account_type === 'Super Admin';
+    
+    let canEdit = false;
+    
+    if (targetIsSuperAdmin) {
+      // Only Super Admin can edit Super Admin, or the Super Admin can edit themselves
+      canEdit = isSuperAdmin || isSelf;
+    } else {
+      // Regional Admin or Super Admin can edit non-Super Admin
+      canEdit = isSuperAdmin || isRegionalAdmin || isSelf;
+      
+      if (!canEdit) {
+        if (isProvincialAdmin) {
+          // Provincial Admin can edit users in their province, except Regional/Super Admins
+          const restrictedTypes = ['Super Admin', 'Regional Admin', 'Regional'];
+          if (targetUser.province === requester.province && !restrictedTypes.includes(targetUser.account_type)) {
+            canEdit = true;
+          }
+        } else if (isLguAdmin) {
+          // LGU Admin can edit users in their city
+          if (targetUser.city === requester.city && targetUser.account_type === 'LGU') {
+            canEdit = true;
+          }
         }
       }
     }
@@ -242,6 +297,52 @@ router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   const client = await pool.connect();
   try {
+    // 1. Fetch target user to check permissions
+    const { rows: targetRows } = await client.query('SELECT * FROM users WHERE id = $1', [id]);
+    if (targetRows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const targetUser = targetRows[0];
+
+    const requester = req.user;
+    const isSuperAdmin = requester.role === 'Super Admin' || requester.account_type === 'Super Admin';
+    const isRegionalAdmin = requester.account_type === 'Regional Admin';
+    const isProvincialAdmin = requester.account_type === 'Provincial Admin';
+    const isLguAdmin = requester.account_type === 'LGU Admin';
+
+    const isSelf = requester.id === id;
+    if (isSelf) {
+      client.release();
+      return res.status(400).json({ error: 'You cannot delete your own account.' });
+    }
+
+    const targetIsSuperAdmin = targetUser.role === 'Super Admin' || targetUser.account_type === 'Super Admin';
+    let canDelete = false;
+
+    if (targetIsSuperAdmin) {
+      canDelete = isSuperAdmin;
+    } else {
+      canDelete = isSuperAdmin || isRegionalAdmin;
+      if (!canDelete) {
+        if (isProvincialAdmin) {
+          const restrictedTypes = ['Super Admin', 'Regional Admin', 'Regional'];
+          if (targetUser.province === requester.province && !restrictedTypes.includes(targetUser.account_type)) {
+            canDelete = true;
+          }
+        } else if (isLguAdmin) {
+          if (targetUser.city === requester.city && targetUser.account_type === 'LGU') {
+            canDelete = true;
+          }
+        }
+      }
+    }
+
+    if (!canDelete) {
+      client.release();
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to delete this user' });
+    }
+
     await client.query('BEGIN');
     
     // 1. Delete referencing activity logs
