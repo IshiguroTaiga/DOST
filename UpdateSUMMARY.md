@@ -72,7 +72,7 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Manage Event White Alert Level Default Indicator Color**: Fixed a bug where creating events with "White (Normal)" alert status defaulted to a blue/indigo circle icon (`#6366f1`). Changed the default color in form state and the `blankForm()` constructor in `ManageEvents.jsx` to `#94a3b8` (gray/white) to match.
 - **Davis Instruments API Token**: Provided clarification regarding the default API token (`5ECABC5CB8824E5D86D12115782CE2EC`) for weather stations.
 
-## 9. System Adjustments & Bug Fixes (June 23, 2026 - Day 14)
+## 9. System Adjustments & Bug Fixes (June 23, 2026)
 - **Sidebar Navigation Rearrangement:** Moved the Interactive Map navigation item below the "Users" link and above the "Hazard Information" dropdown in the sidebar to streamline admin layout hierarchy.
 - **User Edit Modal Location Fix:** Fixed a bug in the user editor where changing a user's role/account type within the same tier (e.g., LGU Admin <-> LGU or Provincial Admin <-> Provincial) would reset their province and city/municipality to blank. The system now retains their location details.
 - **User Management Auto-Refresh:** Resolved the issue where the Users table did not automatically sync changes upon mutations without a manual page reload. Added Socket.io broadcasts (`users:changed`) to the backend `POST`, `PATCH`, and `DELETE` endpoints, and optimized frontend data-fetching in `Users.jsx` to refresh the user list in the background silently without screen flashing.
@@ -81,7 +81,7 @@ This document summarizes the development, refactoring, and feature implementatio
 - **Tropical Cyclone Monitor Details:** Replaced the generic active event hero description on the Dashboard with user-configured Location, Wind/Gust, Movement, Coordinates, and a dynamic real-time clock (HH:MM) that updates every minute for Tropical Cyclone (`typhoon`) events. Added these form inputs to both the main event manager (`ManageEvents.jsx`) and the Dashboard's edit event modal.
 - **Project Handbook Integration:** Designed a comprehensive Project Handbook containing system purpose, background, addressed needs, manual-to-digital comparison, NSTP/NSDB integration, key features, and operational flows. Integrated this handbook under *Settings > Help & Manual (Developer Profiles)* and exported it to the root project directory as `handbook.md`.
 
-## 10. Day 15 Permissions, Auto-Cloning Overhaul, & User Security Scoping (June 24, 2026)
+## 10. Permissions, Auto-Cloning Overhaul, & User Security Scoping (June 24, 2026)
 - **Regional Report Authoring:** Exposed the "Add Report" tab in `Sidebar.jsx` to Regional users, allowing them to author and manage situational reports.
 - **Dedicated "For Approval" Route:** Added a clean "For Approval" link in the sidebar for all system approvers (`Super Admin`, `Regional`, `Regional Admin`, `Regional Approver`, `Provincial Approver`) to isolate the report signing and validation workflows.
 - **Backend Creator Privileges:** Overrode backend reading restrictions in `reports.js` and `situationalReports.js` so that Regional creator accounts can access and modify unapproved draft reports they created themselves.
