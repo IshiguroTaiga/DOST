@@ -61,6 +61,23 @@ It respects the distinct operational scopes of:
 
 Rather than replacing existing systems, PROACT sits on top of them as an integration layer, connecting weather telemetry (Davis WeatherLink), manual reporting, and AI summarization in a secure database structure.
 
+### Comparison Matrix
+
+| Aspect / Capability | Standard OCD / RDRRMC Workflow | DSWD DROMIC | Project NOAH / PhilSensors | PROACT System |
+| :--- | :--- | :--- | :--- | :--- |
+| **Primary Focus** | Manual Situational Report consolidation | Relief goods, evacuee statistics, and aid distribution | Weather telemetry and hazard mapping (sensors) | **Hierarchical consolidation + sensor telemetry + AI analysis** |
+| **Data Flow Medium** | Excel, Word, Viber, and Email (manual copy-paste) | Standardized Excel templates sent via email | Automated API feeds (sensor data only) | **Real-time secure database with WebSockets (Socket.io) sync** |
+| **Scope of Data** | Broad, but compiled manually over hours/days | Limited to evacuations, families, and social welfare | Strictly meteorological (rain, wind, temperature) | **All 14 sectors** (Infrastructure, Agriculture, Roads/Bridges, Utilities, evacuees, etc.) |
+| **Approval Workflow** | Paper-based or PDF scanning and emailing | Manual submission from social workers to DSWD offices | No administrative approvals (automated feed) | **Digital workflow (Draft → LGU Submit → Prov Review → Approved)** |
+| **AI Integration** | None | None | None | **Live metric-to-text executive summaries (Gemini/OpenAI integration)** |
+
+### Core Proofs of Uniqueness
+
+1. **Digitalizing RA 10121 Administrative Hierarchy:** Under the Philippine DRRM Act of 2010 (Republic Act 10121), disaster data must flow from the lowest unit (Barangay/LGU) up to the Region. Traditional workflows rely on manual document transmission (emailing Word docs). PROACT is the first platform that mirrors this exact hierarchy in a digital database with location-locked scoping (LGUs see LGU scope, Provinces see provincial scope, Regions see regional scope).
+2. **Bridging Telemetry and Human Impact:** Traditional systems like Project NOAH show weather variables (scientific data) but do not trace human-impact indicators like suspensions or evacuations. PROACT aggregates weather station data (Davis WeatherLink) with LGU-submitted damage indicators on a single interactive map.
+3. **Dynamic Data Validation (ExcelJS):** Excel templates generated via ExcelJS restrict manual entries using dependent location dropdowns (automatically filtering barangays based on selected cities) to prevent formatting mismatches before importing.
+4. **Automated AI Briefings:** Connects database metrics directly to LLMs (Gemini/OpenAI) to generate draft-ready executive summaries with a single click.
+
 ---
 
 ## 7. Alignment with the National Science & Technology Plan (NSDB)
