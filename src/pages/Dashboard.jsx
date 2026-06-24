@@ -968,10 +968,6 @@ const handleNotificationClick = (notif) => {
         if (!details.byCity[city]) {
           details.byCity[city] = { persons: 0, families: 0, inside: 0, outside: 0, dmg: 0, served: 0, ecs: 0, powerInt: 0, powerRes: 0, roadsNotPassable: 0, roadsPassable: 0, brgys: new Set() };
         }
-        if (brgy) {
-          details.byProvince[province].brgys.add(brgy);
-          details.byCity[city].brgys.add(brgy);
-        }
 
         if (category === 'damagedHouses') {
           const total = Number(row.totally_damaged || 0);
