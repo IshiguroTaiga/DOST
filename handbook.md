@@ -89,7 +89,7 @@ PROACT aligns with the core objectives of the **National Science and Technology 
 ---
 
 ## 8. Core Features
-* **Active Event Deployment:** Super Admins can declare active alerts (Red, Blue, White) and define which provinces are inside the warning scope.
+* **Active Event Deployment:** Regional admins can declare active alerts (Red, Blue, White) and define which provinces are inside the warning scope.
 * **Situational Reports (SitReps):** Track 15 distinct categories of information:
   1. Affected Population (families/persons inside/outside evacuation centers)
   2. Damaged Houses (totally/partially damaged)
@@ -113,7 +113,7 @@ PROACT aligns with the core objectives of the **National Science and Technology 
 ---
 
 ## 9. Operational Process Flow
-1. **Super Admin** deploys an Event (Notifications & Emails sent).
+1. **Regional Admin** deploys an Event (Notifications & Emails sent).
 2. **LGU Admin** creates a SitRep Draft, updates data, and clicks **Submit to Province**.
 3. **Provincial Admin** reviews LGU data, consolidation occurs, and clicks **Approve** (or rejects with remarks).
 4. **Regional Dashboard** updates automatically with verified consolidated data.
@@ -156,7 +156,7 @@ graph TD
    - **Operational Purpose:** Disaster coordinators for the Regional Disaster Risk Reduction and Management Council (RDRRMC) Region 1. They monitor the storm track, coordinate responses, and consolidate data.
    - **Account Scoping:** Regional scope. They see aggregated totals for the entire region and can drill down into specific provinces.
    - **Privileges:**
-     - Manage warning alerts and signal level updates on active events (creation and warning scopes of events are managed by Super Admins).
+     - Deploy active warning events (Red, Blue, or White alerts) and signal level updates.
      - Review, consolidate, and finalize reports submitted by all provinces.
      - Upload/override official signed Situational Reports (PDFs) and assign approved signatories.
      - Create and manage accounts for **Regional Encoders, Provincial Admins, Provincial Encoders, LGU Admins, and LGU Encoders**.

@@ -85,8 +85,6 @@ export default function ManageEvents() {
     eventSignals, loadingSignals, loading, showConfirm, showSuccess, showToast
   } = useEvents()
 
-  const canManageEvents = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
-
   const [searchTerm, setSearchTerm] = useState('')
   const [pageSize, setPageSize] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
@@ -466,7 +464,7 @@ const handleApplyAll = async (signal) => {
              <div className="consolidated-report-search-box">
                <SearchInput placeholder="Search incidents..." value={searchTerm} onChange={val => { setSearchTerm(val); setCurrentPage(1) }} />
              </div>
-             {canManageEvents && (
+             {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
                <Button 
                  variant="solid" 
                  color="primary" 
@@ -530,7 +528,7 @@ const handleApplyAll = async (signal) => {
                   </td>
                   <td className="col-action">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                      {!event.isDeployed && canManageEvents && (
+                      {!event.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
                         <Button 
                           variant="solid"
                           color="success"
@@ -605,7 +603,7 @@ const handleApplyAll = async (signal) => {
         footer={
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div>
-               {editingId && canManageEvents && (
+               {editingId && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
                  <Button 
                    variant="outline" 
                    color="danger"
@@ -624,7 +622,7 @@ const handleApplyAll = async (signal) => {
               
               {modalMode === 'view' ? (
                 <>
-                  {editingId && !events.find(e => e.id === editingId)?.isDeployed && canManageEvents && (
+                  {editingId && !events.find(e => e.id === editingId)?.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
                     <Button 
                       variant="solid"
                       color="success"
@@ -635,7 +633,7 @@ const handleApplyAll = async (signal) => {
                       Deploy
                     </Button>
                   )}
-                  {(canManageEvents || user.account_type === 'Regional Admin' || user.account_type === 'Provincial Admin' || user.account_type === 'Provincial' || user.account_type === 'LGU Admin' || user.account_type === 'LGU') && (
+                  {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.account_type === 'Provincial Admin' || user.account_type === 'Provincial' || user.account_type === 'LGU Admin' || user.account_type === 'LGU') && (
                     <Button 
                       variant="solid"
                       color="primary"
@@ -651,12 +649,12 @@ const handleApplyAll = async (signal) => {
                 <Button 
                   variant="solid"
                   color="primary"
-                  onClick={(canManageEvents || !editingId) ? handleSubmit : () => setModalMode('view')} 
-                  disabled={(canManageEvents || !editingId) && !form.name.trim()}
+                  onClick={(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || !editingId) ? handleSubmit : () => setModalMode('view')} 
+                  disabled={(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || !editingId) && !form.name.trim()}
                   style={{ height: '42px', padding: '0 24px' }}
                   leftIcon={<CheckCircle size={18} weight="fill" />}
                 >
-                  {(canManageEvents || !editingId) ? (editingId ? 'Save Changes' : 'Create Event') : 'Done Editing'}
+                  {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || !editingId) ? (editingId ? 'Save Changes' : 'Create Event') : 'Done Editing'}
                 </Button>
               )}
             </div>
@@ -666,7 +664,7 @@ const handleApplyAll = async (signal) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* ══════════════ DETAILS VIEW (SUMMARY) ══════════════ */}
-          {editingId && (modalMode === 'view' || !canManageEvents) && (
+          {editingId && (modalMode === 'view' || (user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin')) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Event Summary Card */}
               <div style={{ background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
@@ -771,7 +769,7 @@ const handleApplyAll = async (signal) => {
           )}
 
           {/* ══════════════ EDIT FORM FIELDS (REGIONAL ONLY) ══════════════ */}
-          {((modalMode === 'edit' && canManageEvents) || !editingId) && (
+          {((modalMode === 'edit' && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin')) || !editingId) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
                 <label style={LABEL_STYLE}>Category</label>
@@ -781,7 +779,7 @@ const handleApplyAll = async (signal) => {
                       key={value}
                       type="button"
                       onClick={() => setForm({ ...form, eventType: value })}
-                      disabled={editingId && !canManageEvents}
+                      disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                       style={{
                         padding: '12px 8px', borderRadius: '12px', border: '1.5px solid',
                         borderColor: form.eventType === value ? '#6366f1' : '#f1f5f9',
@@ -810,7 +808,7 @@ const handleApplyAll = async (signal) => {
                       setForm({ ...form, name: val.charAt(0).toUpperCase() + val.slice(1) });
                     }}
                     style={INPUT_STYLE}
-                    disabled={editingId && !canManageEvents}
+                    disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                   />
                 </div>
 
@@ -826,7 +824,7 @@ const handleApplyAll = async (signal) => {
                         key={item.value}
                         type="button"
                         onClick={() => setForm({ ...form, alertStatus: item.value, color: item.color })}
-                        disabled={editingId && !canManageEvents}
+                        disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         style={{
                           flex: 1,
                           padding: '10px 14px',
@@ -843,7 +841,7 @@ const handleApplyAll = async (signal) => {
                           justifyContent: 'center',
                           gap: '8px',
                           transition: 'all 0.2s',
-                          opacity: (editingId && !canManageEvents) ? 0.7 : 1
+                          opacity: (editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') ? 0.7 : 1
                         }}
                       >
                         <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: item.color, border: '1px solid rgba(0,0,0,0.1)' }} />
@@ -865,7 +863,7 @@ const handleApplyAll = async (signal) => {
                       value={form.magnitude}
                       onChange={e => setForm({ ...form, magnitude: e.target.value })}
                       style={INPUT_STYLE}
-                      disabled={editingId && !canManageEvents}
+                      disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                     />
 ) : (
                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -884,7 +882,7 @@ const handleApplyAll = async (signal) => {
                                setForm({ ...form, typhoonCategory: lvl.value })
                              }
                            }}
-                           disabled={editingId && !canManageEvents}
+                           disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                            title={lvl.desc}
                            style={{
                              padding: '10px 14px', borderRadius: '10px', border: '1.5px solid',
@@ -928,7 +926,7 @@ const handleApplyAll = async (signal) => {
                           value={form.location}
                           onChange={e => setForm({ ...form, location: e.target.value })}
                           style={INPUT_STYLE}
-                          disabled={editingId && !canManageEvents}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         />
                       </div>
                       <div>
@@ -939,7 +937,7 @@ const handleApplyAll = async (signal) => {
                           value={form.windGust}
                           onChange={e => setForm({ ...form, windGust: e.target.value })}
                           style={INPUT_STYLE}
-                          disabled={editingId && !canManageEvents}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         />
                       </div>
                       <div>
@@ -950,7 +948,7 @@ const handleApplyAll = async (signal) => {
                           value={form.movement}
                           onChange={e => setForm({ ...form, movement: e.target.value })}
                           style={INPUT_STYLE}
-                          disabled={editingId && !canManageEvents}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         />
                       </div>
                       <div>
@@ -961,7 +959,7 @@ const handleApplyAll = async (signal) => {
                           value={form.coordinates}
                           onChange={e => setForm({ ...form, coordinates: e.target.value })}
                           style={INPUT_STYLE}
-                          disabled={editingId && !canManageEvents}
+                          disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         />
                       </div>
                     </div>
@@ -983,7 +981,7 @@ const handleApplyAll = async (signal) => {
                         key={prov}
                         type="button"
                         onClick={() => handleToggleProvince(prov)}
-                        disabled={editingId && !canManageEvents}
+                        disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                         style={{
                           flex: 1, padding: '14px 10px', borderRadius: '12px', border: '1.5px solid',
                           borderColor: form.affectedProvinces.includes(prov) ? '#6366f1' : '#f1f5f9',
@@ -991,7 +989,7 @@ const handleApplyAll = async (signal) => {
                           color: form.affectedProvinces.includes(prov) ? '#6366f1' : '#64748b',
                           fontSize: '0.8125rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                          opacity: (editingId && !canManageEvents) ? 0.7 : 1
+                          opacity: (editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin') ? 0.7 : 1
                         }}
                       >
                         {form.affectedProvinces.includes(prov) && <CheckCircle size={16} weight="fill" />}
@@ -1005,7 +1003,7 @@ const handleApplyAll = async (signal) => {
           )}
 
           {/* EVENT TIME (EDIT MODE - REGIONAL ONLY) */}
-          {modalMode === 'edit' && canManageEvents && (
+          {modalMode === 'edit' && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
             <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem' }}>
               <label style={LABEL_STYLE}>Event Time</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
@@ -1015,7 +1013,7 @@ const handleApplyAll = async (signal) => {
                     value={form.startDate}
                     onChange={val => setForm({ ...form, startDate: val })}
                     placeholder="Start Date & Time"
-                    disabled={editingId && !canManageEvents}
+                    disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1024,7 +1022,7 @@ const handleApplyAll = async (signal) => {
                     value={form.endDate}
                     onChange={val => setForm({ ...form, endDate: val })}
                     placeholder="End Date & Time (Optional)"
-                    disabled={editingId && !canManageEvents}
+                    disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                   />
                 </div>
               </div>
