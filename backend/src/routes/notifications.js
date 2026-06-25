@@ -71,33 +71,44 @@ router.post('/', authenticate, async (req, res) => {
 // POST /api/notifications/bulk
 router.post('/bulk', authenticate, async (req, res) => {
   const notifications = req.body;
-  if (!Array.isArray(notifications)) {
-    return res.status(400).json({ error: 'Array of notifications required' });
+  if (!Array.isArray(notifications) || notifications.length === 0) {
+    return res.status(400).json({ error: 'Non-empty array of notifications required' });
   }
   
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    const results = [];
-    const io = req.app.locals.io;
+    const values = [];
+    const valuePlaceholders = [];
+    let paramIndex = 1;
 
     for (const n of notifications) {
-      const { rows } = await client.query(
-        'INSERT INTO notifications (user_id, type, title, message, data) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-        [n.user_id, n.type, n.title, n.message || '', JSON.stringify(n.data || {})]
+      valuePlaceholders.push(`($${paramIndex}, $${paramIndex+1}, $${paramIndex+2}, $${paramIndex+3}, $${paramIndex+4}::jsonb)`);
+      values.push(
+        n.user_id,
+        n.type || 'info',
+        n.title || '',
+        n.message || '',
+        JSON.stringify(n.data || {})
       );
-      results.push(rows[0]);
-      if (io) io.emit(`notification:${n.user_id}`, rows[0]);
+      paramIndex += 5;
     }
+
+    const query = `INSERT INTO notifications (user_id, type, title, message, data) 
+                   VALUES ${valuePlaceholders.join(', ')} 
+                   RETURNING *`;
+                   
+    const { rows } = await pool.query(query, values);
     
-    await client.query('COMMIT');
-    res.status(201).json(results);
+    const io = req.app.locals.io;
+    if (io) {
+      for (const row of rows) {
+        io.emit(`notification:${row.user_id}`, row);
+      }
+    }
+
+    res.status(201).json(rows);
   } catch (err) {
-    await client.query('ROLLBACK');
     console.error('[Notifications/POST/bulk]', err);
     res.status(500).json({ error: 'Server error' });
-  } finally {
-    client.release();
   }
 });
 

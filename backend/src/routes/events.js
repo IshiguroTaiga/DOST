@@ -94,15 +94,25 @@ router.post('/', authenticate, async (req, res) => {
           <strong>Start Date:</strong> ${start_date ? new Date(start_date).toLocaleString() : 'N/A'}
         `;
 
-        for (const user of allUsers.rows) {
-          // System Notification
-          const notifRes = await pool.query(
-            'INSERT INTO notifications (user_id, type, title, message, data) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-            [user.id, 'event_created', 'New Event Created', `A new event "${name}" has been created.`, JSON.stringify({ event_id: rows[0].id })]
-          );
-          if (io) io.emit(`notification:${user.id}`, notifRes.rows[0]);
+        // Bulk insert system notifications in a single database roundtrip
+        const notifResult = await pool.query(
+          `INSERT INTO notifications (user_id, type, title, message, data)
+           SELECT id, $1, $2, $3, $4::jsonb
+           FROM users
+           WHERE status = 'Active'
+           RETURNING *`,
+          ['event_created', 'New Event Created', `A new event "${name}" has been created.`, JSON.stringify({ event_id: rows[0].id })]
+        );
 
-          // Email Notification (Background)
+        // Emit realtime notifications via socket
+        if (io) {
+          for (const notifRow of notifResult.rows) {
+            io.emit(`notification:${notifRow.user_id}`, notifRow);
+          }
+        }
+
+        // Email Notification (Background)
+        for (const user of allUsers.rows) {
           sendEventNotificationEmail(user.email, name, eventDetails).catch(e => 
             console.error(`[Events] Failed to send email to ${user.email}:`, e.message)
           );
@@ -176,27 +186,21 @@ router.patch('/:id', authenticate, async (req, res) => {
     if (fields.is_deployed === true) {
       io.emit('events:refresh_needed'); 
       
-      // Notify all active users about deployment
+      // Notify all active users about deployment in a single bulk database query
       try {
-        const usersToNotify = await pool.query(
-          `SELECT id FROM users WHERE status = 'Active'`
+        const notifResult = await pool.query(
+          `INSERT INTO notifications (user_id, type, title, message, data)
+           SELECT id, $1, $2, $3, $4::jsonb
+           FROM users
+           WHERE status = 'Active'
+           RETURNING *`,
+          ['event_deployed', 'Event Deployed', `The event "${rows[0].name}" has been deployed. Please start reporting as needed.`, JSON.stringify({ event_id: rows[0].id })]
         );
-        
-        if (usersToNotify.rows.length > 0) {
-          const notifications = usersToNotify.rows.map(u => ({
-            user_id: u.id,
-            type: 'event_deployed',
-            title: 'Event Deployed',
-            message: `The event "${rows[0].name}" has been deployed. Please start reporting as needed.`,
-            data: { event_id: rows[0].id }
-          }));
-          
-          for (const n of notifications) {
-            const notifRes = await pool.query(
-              'INSERT INTO notifications (user_id, type, title, message, data) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-              [n.user_id, n.type, n.title, n.message, JSON.stringify(n.data)]
-            );
-            if (io) io.emit(`notification:${n.user_id}`, notifRes.rows[0]);
+
+        // Emit realtime notifications via socket
+        if (io) {
+          for (const notifRow of notifResult.rows) {
+            io.emit(`notification:${notifRow.user_id}`, notifRow);
           }
         }
       } catch (notifErr) {
