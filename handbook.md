@@ -67,7 +67,7 @@ Rather than replacing existing systems, PROACT sits on top of them as an integra
 | :--- | :--- | :--- | :--- | :--- |
 | **Primary Focus** | Manual Situational Report consolidation | Relief goods, evacuee statistics, and aid distribution | Weather telemetry and hazard mapping (sensors) | **Hierarchical consolidation + sensor telemetry + AI analysis** |
 | **Data Flow Medium** | Excel, Word, Viber, and Email (manual copy-paste) | Standardized Excel templates sent via email | Automated API feeds (sensor data only) | **Real-time secure database with WebSockets (Socket.io) sync** |
-| **Scope of Data** | Broad, but compiled manually over hours/days | Limited to evacuations, families, and social welfare | Strictly meteorological (rain, wind, temperature) | **All 14 sectors** (Infrastructure, Agriculture, Roads/Bridges, Utilities, evacuees, etc.) |
+| **Scope of Data** | Broad, but compiled manually over hours/days | Limited to evacuations, families, and social welfare | Strictly meteorological (rain, wind, temperature) | **All 15 sectors** (Infrastructure, Agriculture, Roads/Bridges, Utilities, evacuees, etc.) |
 | **Approval Workflow** | Paper-based or PDF scanning and emailing | Manual submission from social workers to DSWD offices | No administrative approvals (automated feed) | **Digital workflow (Draft → LGU Submit → Prov Review → Approved)** |
 | **AI Integration** | None | None | None | **Live metric-to-text executive summaries (Gemini/OpenAI integration)** |
 
@@ -80,7 +80,7 @@ Rather than replacing existing systems, PROACT sits on top of them as an integra
 
 ---
 
-## 7. Alignment with the National Science & Technology Plan (NSDB)
+## 7. Alignment with the National Science & Technology Plan (NSTP)
 PROACT aligns with the core objectives of the **National Science and Technology Plan (NSTP) / National Science Development Board (NSDB)** guidelines on disaster resilience and climate adaptation:
 * **Science-Based Decision Making:** Integrates real-time weather stations and environmental sensors to provide data-driven warnings.
 * **Localization of Technology:** Deploys accessible digital tools to local community leaders (LGUs) to build grass-roots resilience.
