@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authenticate, async (req, res) => {
   const { user_id, limit = 100 } = req.query;
   try {
-    let query = `SELECT al.*, u.first_name, u.last_name, u.email
+    let query = `SELECT al.*, u.first_name, u.last_name, u.email, u.account_type, u.role
       FROM activity_logs al
       LEFT JOIN users u ON al.user_id = u.id`;
     const params = [];
@@ -19,7 +19,18 @@ router.get('/', authenticate, async (req, res) => {
     query += ` ORDER BY al.created_at DESC LIMIT $${params.length + 1}`;
     params.push(parseInt(limit));
     const { rows } = await pool.query(query, params);
-    res.json(rows);
+    
+    const mappedRows = rows.map(row => ({
+      ...row,
+      users: row.first_name || row.last_name || row.email ? {
+        first_name: row.first_name,
+        last_name: row.last_name,
+        email: row.email,
+        account_type: row.account_type || row.role
+      } : null
+    }));
+
+    res.json(mappedRows);
   } catch (err) {
     console.error('[ActivityLogs/GET]', err);
     res.status(500).json({ error: 'Server error' });
