@@ -422,6 +422,30 @@ CREATE TABLE IF NOT EXISTS public.pre_emptive_evacuation_reports (
 );
 
 -- ============================================================
+-- TABLE: evacuation_centers_reports
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.evacuation_centers_reports (
+  id UUID NOT NULL DEFAULT gen_random_uuid(),
+  event_id UUID,
+  situational_report_id UUID,
+  city TEXT DEFAULT '',
+  barangay TEXT DEFAULT '',
+  evacuation_center_name TEXT DEFAULT '',
+  evacuation_center_address TEXT DEFAULT '',
+  inside_families_cum INTEGER DEFAULT 0,
+  inside_families_now INTEGER DEFAULT 0,
+  inside_persons_cum INTEGER DEFAULT 0,
+  inside_persons_now INTEGER DEFAULT 0,
+  origin_of_idps TEXT DEFAULT '',
+  status TEXT DEFAULT 'Active',
+  remarks TEXT DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT evac_centers_pkey PRIMARY KEY (id),
+  CONSTRAINT evac_centers_event_fkey FOREIGN KEY (event_id) REFERENCES public.events(id) ON DELETE CASCADE,
+  CONSTRAINT evac_centers_sitrep_fkey FOREIGN KEY (situational_report_id) REFERENCES public.situational_reports(id) ON DELETE CASCADE
+);
+
+-- ============================================================
 -- TABLE: roads_and_bridges
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.roads_and_bridges (
