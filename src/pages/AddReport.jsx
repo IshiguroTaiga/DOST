@@ -1503,11 +1503,14 @@ useEffect(() => {
     if (!reviewSitRep) return
     setProcessingReview(true)
     try {
+      const newStatus = isProvincial ? 'Pending Approval' : 'Approved'
+      const isPending = isProvincial
+
       await api.patch(`/situational-reports/${reviewSitRep.id}`, { 
-        status: 'Approved', 
+        status: newStatus, 
         rejection_remarks: null,
-        approved_pdf_url: reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url,
-        pending_pdf_url: null
+        approved_pdf_url: !isPending ? (reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url) : null,
+        pending_pdf_url: isPending ? (reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url) : null
       })
 
       // Notify the creator (LGU or Provincial)
@@ -1517,19 +1520,49 @@ useEffect(() => {
           if (creator) {
             const notifData = {
               user_id: creator.id,
-              type: 'sitrep_approval',
-              title: 'Situational Report Approved',
-              message: `Your report "${reviewSitRep.title}" has been approved by the Province.`,
+              type: isProvincial ? 'sitrep_submission' : 'sitrep_approval',
+              title: isProvincial ? 'Situational Report Reviewed' : 'Situational Report Approved',
+              message: isProvincial
+                ? `Your report "${reviewSitRep.title}" has been reviewed by the Province and sent to Regional for approval.`
+                : `Your report "${reviewSitRep.title}" has been approved by the Province.`,
               data: { sitrep_id: reviewSitRep.id, event_id: selectedEvent?.id }
             }
             await api.post('/notifications', notifData)
           }
         }
+
+        // If reviewed by Provincial, notify Regional / Super Admins
+        if (isProvincial) {
+          const { data: admins } = await api.get('/users', {
+            params: { 
+              account_type: ['Super Admin', 'Regional Admin', 'Regional'],
+              status: 'Active'
+            }
+          })
+          
+          const targetUsers = (admins || []).filter(u => u.id !== user?.id)
+
+          if (targetUsers.length > 0) {
+            const notifications = targetUsers.map(u => ({
+              user_id: u.id,
+              type: 'sitrep_submission',
+              title: 'New SitRep Pending Approval',
+              message: `A report "${reviewSitRep.title}" has been reviewed by ${user?.province || 'Province'} and is pending your approval.`,
+              data: { sitrep_id: reviewSitRep.id, event_id: selectedEvent?.id }
+            }))
+            await api.post('/notifications/bulk', notifications)
+          }
+        }
       } catch (notifErr) {
-        console.error('Failed to send approval notification to creator:', notifErr)
+        console.error('Failed to send approval/submission notifications:', notifErr)
       }
 
-      showSuccess('Approved', `"${reviewSitRep.title}" has been approved successfully.`)
+      const successTitle = isProvincial ? 'Reviewed & Submitted' : 'Approved'
+      const successMessage = isProvincial
+        ? `"${reviewSitRep.title}" has been reviewed and submitted to the Region for final approval.`
+        : `"${reviewSitRep.title}" has been approved successfully.`
+
+      showSuccess(successTitle, successMessage)
       setShowReviewModal(false)
       await markSitRepNotificationsAsRead(reviewSitRep.id)
       if (selectedEvent) fetchSituationalReports(selectedEvent.id)
