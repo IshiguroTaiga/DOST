@@ -176,12 +176,10 @@ router.patch('/:id', authenticate, async (req, res) => {
     if (fields.is_deployed === true) {
       io.emit('events:refresh_needed'); 
       
-      // Notify users about deployment
+      // Notify all active users about deployment
       try {
-        const affectedProvinces = rows[0].affected_provinces || [];
         const usersToNotify = await pool.query(
-          `SELECT id FROM users WHERE province = ANY($1::text[]) OR account_type IN ('Regional Admin', 'Regional')`,
-          [affectedProvinces]
+          `SELECT id FROM users WHERE status = 'Active'`
         );
         
         if (usersToNotify.rows.length > 0) {
