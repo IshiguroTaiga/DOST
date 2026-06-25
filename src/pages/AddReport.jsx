@@ -80,10 +80,10 @@ const REPORT_CATEGORIES = [
   { id: 'houses', title: 'Damaged Houses', icon: <House size={24} />, color: '#f43f5e', description: 'Totally and partially damaged homes' },
   { id: 'class', title: 'Class Suspension', icon: <CalendarX size={24} />, color: '#8b5cf6', description: 'School/Class cancellation logs' },
   { id: 'work', title: 'Work Suspension', icon: <FileText size={24} />, color: '#64748b', description: 'Government/Private work status' },
-   { id: 'calamity', title: 'State of Calamity', icon: <ShieldWarning size={24} />, color: '#d946ef', description: 'Official LGU calamity declarations' },
+  { id: 'calamity', title: 'State of Calamity', icon: <ShieldWarning size={24} />, color: '#d946ef', description: 'Official LGU calamity declarations' },
   { id: 'preemptive', title: 'Pre-emptive Evac', icon: <Pulse size={24} />, color: '#f59e0b', description: 'Early evacuation demographic data' },
-  { id: 'evacuationCenters', title: 'Evacuation Centers', icon: <House size={24} />, color: '#ec4899', description: 'Monitor evacuation center statuses' },
-  { id: 'assistance', title: 'Assistance Provided', icon: <Handshake size={24} />, color: '#10b981', description: 'Relief distribution and PNFI' },
+  { id: 'assistance', title: 'Assistance Provided', icon: <Handshake size={24} />, color: '#10b981', description: 'Relief distribution and PNFI' }, 
+  { id: 'evacuationCenters', title: 'Evacuation Centers', icon: <House size={24} />, color: '#ec4899', description: 'Monitor evacuation center statuses' }
 ]
 
 const emptyRow = (catId = 'evacuation', city = '') => {
