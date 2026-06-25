@@ -352,17 +352,17 @@ router.get('/consolidated', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
-
 // GET /api/reports/:table
 router.get('/:table', authenticate, async (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   const { table } = req.params;
   if (!ALLOWED_TABLES.has(table)) return res.status(400).json({ error: 'Unknown table' });
 
-  const { event_id, situational_report_id } = req.query;
+  const { event_id, situational_report_id, report_id, scope } = req.query;
   const user = req.user;
   const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
   const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
+  const isOverall = scope === 'overall';
 
   let baseQuery = `SELECT t.*, sr.province FROM ${table} t `;
   if (table === 'report_rows') baseQuery += `INNER JOIN reports r ON t.report_id = r.id INNER JOIN situational_reports sr ON r.situational_report_id = sr.id`;
@@ -378,19 +378,21 @@ router.get('/:table', authenticate, async (req, res) => {
     const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
     const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
 
-    if (isLgu && user.city) {
-      if (!['reports', 'roads_and_bridges_sections'].includes(table)) {
-        params.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
-        conditions.push(cityCondition('t', params.length));
-      }
-    } else if (user.province && !isRegional) {
-      params.push(user.province);
-      conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
-      if (!['reports', 'roads_and_bridges_sections'].includes(table)) {
-        const provinceCities = getCitiesForProvince(user.province);
-        if (provinceCities.length > 0) {
-          params.push(provinceCities);
-          conditions.push(`t.city = ANY($${params.length}::text[])`);
+    if (!isOverall) {
+      if (isLgu && user.city) {
+        if (!['reports', 'roads_and_bridges_sections'].includes(table)) {
+          params.push(user.city.replace(/\s*\(.*\)\s*$/, '').trim());
+          conditions.push(cityCondition('t', params.length));
+        }
+      } else if (user.province && !isRegional) {
+        params.push(user.province);
+        conditions.push(`(sr.province = $${params.length} OR sr.province IS NULL)`);
+        if (!['reports', 'roads_and_bridges_sections'].includes(table)) {
+          const provinceCities = getCitiesForProvince(user.province);
+          if (provinceCities.length > 0) {
+            params.push(provinceCities);
+            conditions.push(`t.city = ANY($${params.length}::text[])`);
+          }
         }
       }
     }
@@ -399,7 +401,7 @@ router.get('/:table', authenticate, async (req, res) => {
        conditions.push(`(t.city IS NULL OR t.city = '' OR EXISTS (
         SELECT 1 FROM lgu_submissions ls 
         WHERE ls.situational_report_id = t.situational_report_id 
-          AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$/, '') = REGEXP_REPLACE(t.city, '\\s*\\(.*\\)\\s*$', '')
+          AND REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$', '') = REGEXP_REPLACE(t.city, '\\s*\\(.*\\)\\s*$', '')
           AND ls.status = 'Approved'
       ))`);
     }
@@ -409,6 +411,13 @@ router.get('/:table', authenticate, async (req, res) => {
   if (situational_report_id) { 
     const ids = situational_report_id.split(',').filter(id => id.trim());
     if (ids.length > 0) { params.push(ids); conditions.push(table === 'report_rows' ? `r.situational_report_id = ANY($${params.length}::uuid[])` : `t.situational_report_id = ANY($${params.length}::uuid[])`); }
+  }
+  if (report_id) {
+    const ids = report_id.split(',').filter(id => id.trim());
+    if (ids.length > 0) {
+      params.push(ids);
+      conditions.push(`t.report_id = ANY($${params.length}::uuid[])`);
+    }
   }
 
   const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';

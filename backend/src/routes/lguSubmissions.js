@@ -101,24 +101,35 @@ router.post('/submit', authenticate, async (req, res) => {
   }
 });
 
-// POST /approve – LGU Approver approves LGU data
+// POST /approve – Province approves LGU data
 router.post('/approve', authenticate, async (req, res) => {
   const { situational_report_id, city } = req.body;
   if (!situational_report_id || !city) {
     return res.status(400).json({ error: 'situational_report_id and city are required' });
   }
 
-  // Ensure user has permissions (LGU Approver of the same city, or Super Admin)
+  // Ensure user has permissions (Provincial, Regional, or Super Admin)
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  if (req.user.account_type !== 'LGU Approver' && !isSuperAdmin) {
-    return res.status(403).json({ error: 'Only LGU Approvers can approve submissions' });
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(req.user.account_type);
+
+  if (!isSuperAdmin && !isRegional && !isProvincial) {
+    return res.status(403).json({ error: 'Only Provincial, Regional, or Super Admin users can approve submissions' });
   }
 
-  const cleanUserCity = (req.user.city || '').replace(/\s*\(.*\)\s*$/, '').trim();
-  const cleanTargetCity = city.replace(/\s*\(.*\)\s*$/, '').trim();
-
-  if (!isSuperAdmin && cleanUserCity !== cleanTargetCity) {
-    return res.status(403).json({ error: 'You can only approve submissions for your own city' });
+  if (isProvincial && req.user.province) {
+    try {
+      const { rows: reportRows } = await pool.query(
+        'SELECT province FROM situational_reports WHERE id = $1',
+        [situational_report_id]
+      );
+      if (reportRows.length === 0 || reportRows[0].province !== req.user.province) {
+        return res.status(403).json({ error: 'You can only approve submissions for reports in your own province' });
+      }
+    } catch (err) {
+      console.error('[LguSubmissions/approve] Permission check error:', err);
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 
   try {
@@ -194,24 +205,35 @@ router.post('/approve', authenticate, async (req, res) => {
   }
 });
 
-// POST /reject – LGU Approver rejects LGU data
+// POST /reject – Province rejects LGU data
 router.post('/reject', authenticate, async (req, res) => {
   const { situational_report_id, city, rejection_remarks } = req.body;
   if (!situational_report_id || !city) {
     return res.status(400).json({ error: 'situational_report_id and city are required' });
   }
 
-  // Ensure user has permissions (LGU Approver of the same city, or Super Admin)
+  // Ensure user has permissions (Provincial, Regional, or Super Admin)
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  if (req.user.account_type !== 'LGU Approver' && !isSuperAdmin) {
-    return res.status(403).json({ error: 'Only LGU Approvers can reject submissions' });
-  }
-  
-  const cleanUserCity = (req.user.city || '').replace(/\s*\(.*\)\s*$/, '').trim();
-  const cleanTargetCity = city.replace(/\s*\(.*\)\s*$/, '').trim();
+  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(req.user.account_type);
 
-  if (!isSuperAdmin && cleanUserCity !== cleanTargetCity) {
-    return res.status(403).json({ error: 'You can only reject submissions for your own city' });
+  if (!isSuperAdmin && !isRegional && !isProvincial) {
+    return res.status(403).json({ error: 'Only Provincial, Regional, or Super Admin users can reject submissions' });
+  }
+
+  if (isProvincial && req.user.province) {
+    try {
+      const { rows: reportRows } = await pool.query(
+        'SELECT province FROM situational_reports WHERE id = $1',
+        [situational_report_id]
+      );
+      if (reportRows.length === 0 || reportRows[0].province !== req.user.province) {
+        return res.status(403).json({ error: 'You can only reject submissions for reports in your own province' });
+      }
+    } catch (err) {
+      console.error('[LguSubmissions/reject] Permission check error:', err);
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 
   try {

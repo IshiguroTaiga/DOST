@@ -3732,7 +3732,7 @@ useEffect(() => {
                                ></span>
                              )}
                             {sr.title}
-                            {sr.created_at && new Date(sr.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                            {sr.created_at && new Date(sr.created_at) > new Date(Date.now() - 2 * 60 * 60 * 1000) && (
                               <span style={{ 
                                 backgroundColor: '#ef4444', 
                                 color: 'white', 
@@ -3856,7 +3856,7 @@ useEffect(() => {
                             <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '12.5px' }}>
                               {item.location || item.city || 'Entry'}
                             </span>
-                            {(item.created_at || item.timestamp) && new Date(item.created_at || item.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                            {(item.created_at || item.timestamp) && new Date(item.created_at || item.timestamp) > new Date(Date.now() - 2 * 60 * 60 * 1000) && (
                               <span style={{ 
                                 backgroundColor: '#ef4444', 
                                 color: 'white', 

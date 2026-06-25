@@ -301,6 +301,7 @@ export default function Dashboard() {
   const [selectedEventIdToEdit, setSelectedEventIdToEdit] = useState('')
   const [isEditingExistingEvent, setIsEditingExistingEvent] = useState(false)
   const [selectedProvinceFilter, setSelectedProvinceFilter] = useState('All')
+  const [dashboardScope, setDashboardScope] = useState('local')
 
   // Set initial province filter based on user account
   useEffect(() => {
@@ -308,6 +309,16 @@ export default function Dashboard() {
       setSelectedProvinceFilter(user.province)
     }
   }, [isProvincialUser, user?.province])
+
+  // Reset selected SitRep and filter when dashboardScope changes
+  useEffect(() => {
+    setSelectedDashboardSitRepId('')
+    if (dashboardScope === 'local' && isProvincialUser && user?.province) {
+      setSelectedProvinceFilter(user.province)
+    } else {
+      setSelectedProvinceFilter('All')
+    }
+  }, [dashboardScope, isProvincialUser, user?.province])
 
   // --- Temperature Logic ---
   const [weather, setWeather] = useState(null)
@@ -797,12 +808,13 @@ const handleNotificationClick = (notif) => {
 
     // Fetch all SitReps for this event
     const { data: allSitreps } = await api.get('/situational-reports', {
-      params: { event_id: currentEventId }
+      params: { event_id: currentEventId, scope: dashboardScope }
     })
 
     // Group by province and find latest approved for aggregation
     const latestApprovedPerProvince = (allSitreps || []).reduce((acc, sr) => {
-      if (sr.status === 'Approved') {
+      const isApproved = sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved');
+      if (isApproved) {
         const prov = sr.province || 'Unknown'
         if (!acc[prov] || new Date(sr.created_at) > new Date(acc[prov].created_at)) {
           acc[prov] = sr
@@ -815,7 +827,7 @@ const handleNotificationClick = (notif) => {
     let approvedIds = []
     if (selectedDashboardSitRepId) {
       if (selectedDashboardSitRepId === 'COMBINED') {
-        const allApproved = (allSitreps || []).filter(sr => sr.status === 'Approved')
+        const allApproved = (allSitreps || []).filter(sr => sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved'))
         approvedIds = allApproved.map(sr => sr.id)
         approvedIdsCsv = approvedIds.join(',') || '00000000-0000-0000-0000-000000000000'
       } else {
@@ -944,7 +956,8 @@ const handleNotificationClick = (notif) => {
       const { data } = await api.get(`/reports/${table}`, {
         params: { 
           event_id: currentEventId,
-          situational_report_id: approvedIdsCsv
+          situational_report_id: approvedIdsCsv,
+          scope: dashboardScope
         }
       })
 
@@ -958,8 +971,10 @@ const handleNotificationClick = (notif) => {
         const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
         const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
         
-        if (isLguUser && city !== user?.city) return
-        if (isProvincialUser && province !== user?.province) return
+        if (dashboardScope !== 'overall') {
+          if (isLguUser && city !== user?.city) return
+          if (isProvincialUser && province !== user?.province) return
+        }
 
         // Initialize province stats
         if (!details.byProvince[province]) {
@@ -1093,7 +1108,7 @@ const handleNotificationClick = (notif) => {
     const reportsPromise = (async () => {
       try {
         const { data: reportsData } = await api.get('/reports/reports', {
-          params: { event_id: currentEventId, situational_report_id: approvedIdsCsv }
+          params: { event_id: currentEventId, situational_report_id: approvedIdsCsv, scope: dashboardScope }
         })
 
         if (!reportsData || reportsData.length === 0) {
@@ -1103,7 +1118,7 @@ const handleNotificationClick = (notif) => {
 
         const reportIds = reportsData.map(r => r.id)
         const { data: rowsData } = await api.get('/reports/report_rows', {
-          params: { report_id: reportIds.join(',') }
+          params: { report_id: reportIds.join(','), scope: dashboardScope }
         })
 
         if (!rowsData) return
@@ -1129,8 +1144,10 @@ const handleNotificationClick = (notif) => {
             const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
             const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
             
-            if (isLguUser && city !== user?.city) return
-            if (isProvincialUser && province !== user?.province) return
+            if (dashboardScope !== 'overall') {
+              if (isLguUser && city !== user?.city) return
+              if (isProvincialUser && province !== user?.province) return
+            }
 
             if (!details.byProvince[province]) {
               details.byProvince[province] = { persons: 0, families: 0, inside: 0, outside: 0, dmg: 0, served: 0, ecs: 0, powerInt: 0, powerRes: 0, roadsNotPassable: 0, roadsPassable: 0, brgys: new Set() };
@@ -1193,7 +1210,8 @@ const handleNotificationClick = (notif) => {
         const { data } = await api.get('/reports/water_supply_reports', {
           params: { 
             event_id: currentEventId,
-            situational_report_id: approvedIdsCsv
+            situational_report_id: approvedIdsCsv,
+            scope: dashboardScope
           }
         })
         if (!data) return
@@ -1208,8 +1226,10 @@ const handleNotificationClick = (notif) => {
           const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
           const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
           
-          if (isLguUser && city !== user?.city) return
-          if (isProvincialUser && province !== user?.province) return
+          if (dashboardScope !== 'overall') {
+            if (isLguUser && city !== user?.city) return
+            if (isProvincialUser && province !== user?.province) return
+          }
 
           // Deduplicate water
           const key = `water-${city}-${brgy}`;
@@ -1364,7 +1384,7 @@ const handleNotificationClick = (notif) => {
     }));
 
     return { topCity, total, totalTrend, top4, categoryCards, overviewData, trendChartData, details };
-  }, [currentEventId, toCity, currentEvent, user, selectedDashboardSitRepId]);
+  }, [currentEventId, toCity, currentEvent, user, selectedDashboardSitRepId, dashboardScope, isLguUser]);
 
   useEffect(() => {
     // Guard: wait until events have finished loading before fetching dashboard data.
@@ -1374,7 +1394,7 @@ const handleNotificationClick = (notif) => {
     let cancelled = false
 
     // Serve from cache immediately (shows stale data while fresh data loads)
-    const cacheKey = currentEventId || 'default'
+    const cacheKey = `${currentEventId || 'default'}_${dashboardScope}`
     if (cacheRef.current[cacheKey]) {
       setResult(cacheRef.current[cacheKey])
       setLoading(false)
@@ -1403,7 +1423,7 @@ const handleNotificationClick = (notif) => {
     // eventsLoading is intentionally excluded from deps to prevent double-fetch.
     // fetchData already depends on currentEventId so that change triggers a refresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchData, currentEventId])
+  }, [fetchData, currentEventId, dashboardScope])
 
   // Real-time Data Subscription for Dashboard
   useEffect(() => {
@@ -2201,6 +2221,34 @@ CHRONOLOGY OF EVENTS`;
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px', borderLeft: '1px solid var(--border-color)', flexShrink: 0 }}>
 
+            {/* Scope Toggle for LGU/Provincial Users */}
+            {!isRegionalUser && (
+              <button
+                className="dash-dropdown-trigger"
+                onClick={() => setDashboardScope(s => s === 'local' ? 'overall' : 'local')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '7px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-color)',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  height: '32px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <span style={{ color: 'var(--text-muted)' }}>Scope:</span>
+                <span style={{ color: dashboardScope === 'overall' ? T.indigo : 'inherit', fontWeight: 800 }}>
+                  {dashboardScope === 'overall' ? 'Overall (Region)' : (isLguUser ? 'My City' : 'My Province')}
+                </span>
+              </button>
+            )}
+
             {/* Event Custom Dropdown */}
             <div className="dash-custom-dropdown" ref={eventDropdownRef} style={{ position: 'relative' }}>
               <button
@@ -2232,13 +2280,20 @@ CHRONOLOGY OF EVENTS`;
             {/* SitRep Custom Dropdown */}
             {(() => {
               const approvedSitReps = (result?.details?.sitRepStatus || [])
-                .filter(sr => sr.status === 'Approved')
-                .filter(sr => isProvincialUser && user?.province ? sr.province === user.province : true)
+                .filter(sr => sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved'))
+                .filter(sr => {
+                  if (dashboardScope === 'overall') return true;
+                  const userProvince = user?.province;
+                  if (userProvince && (isProvincialUser || isLguUser)) {
+                    return sr.province === userProvince || sr.province === 'Region 1' || !sr.province;
+                  }
+                  return true;
+                })
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
               const selectedSr = approvedSitReps.find(sr => sr.id === selectedDashboardSitRepId);
               const displayTitle = selectedDashboardSitRepId === 'COMBINED' 
                 ? 'Combined SitReps' 
-                : (selectedSr ? selectedSr.title : 'Latest Approved');
+                : (selectedSr ? selectedSr.title : (isLguUser ? 'Latest Active' : 'Latest Approved'));
 
               return (
                 <div className="dash-custom-dropdown" ref={sitRepDropdownRef} style={{ position: 'relative' }}>
@@ -2259,7 +2314,7 @@ CHRONOLOGY OF EVENTS`;
                         onClick={() => { setSelectedDashboardSitRepId(''); setSitRepDropdownOpen(false); }}
                       >
                         <span className="dash-dropdown-item-dot" />
-                        Latest Approved (All)
+                        {isLguUser ? 'Latest Active (All)' : 'Latest Approved (All)'}
                       </button>
                       {/*
                       <button
@@ -2279,7 +2334,12 @@ CHRONOLOGY OF EVENTS`;
                           <span className="dash-dropdown-item-dot" />
                           <span>
                             <div style={{ fontWeight: 600, fontSize: '12px' }}>{sr.title}</div>
-                            <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '1px' }}>{sr.province}</div>
+                            <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{sr.province || 'Region 1'}</span>
+                              {sr.status !== 'Approved' && sr.lgu_submission_status === 'Approved' && (
+                                <span style={{ fontSize: '8px', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '1px 4px', borderRadius: '3px', fontWeight: 800 }}>LGU APPROVED</span>
+                              )}
+                            </div>
                           </span>
                         </button>
                       ))}
@@ -2445,8 +2505,8 @@ CHRONOLOGY OF EVENTS`;
                                   color: selectedProvinceFilter === prov ? '#fff' : 'var(--text-muted)',
                                   fontWeight: 700,
                                   whiteSpace: 'nowrap',
-                                  opacity: (isProvincialUser && user?.province !== prov && prov !== 'All') ? 0.4 : 1,
-                                  pointerEvents: (isProvincialUser && user?.province !== prov && prov !== 'All') ? 'none' : 'auto'
+                                  opacity: (dashboardScope !== 'overall' && (isProvincialUser || isLguUser) && user?.province !== prov && prov !== 'All') ? 0.4 : 1,
+                                  pointerEvents: (dashboardScope !== 'overall' && (isProvincialUser || isLguUser) && user?.province !== prov && prov !== 'All') ? 'none' : 'auto'
                                 }}
                               >
                                 {prov.toUpperCase()}

@@ -255,11 +255,20 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
 
 // GET /api/situational-reports
 router.get('/', authenticate, async (req, res) => {
-  const { event_id, status, count_only } = req.query;
+  const { event_id, status, count_only, scope } = req.query;
   const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
   const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
+  const isOverall = scope === 'overall';
 
   try {
+    const params = [];
+    let lguStatusSelect = '';
+    
+    if (req.user && req.user.city) {
+      params.push(req.user.city);
+      lguStatusSelect = `, (SELECT ls.status FROM lgu_submissions ls WHERE ls.situational_report_id = sr.id AND (ls.city = $${params.length} OR REGEXP_REPLACE(ls.city, '\\s*\\(.*\\)\\s*$', '') = REGEXP_REPLACE($${params.length}, '\\s*\\(.*\\)\\s*$', ''))) as lgu_submission_status`;
+    }
+
     let query = `
       SELECT sr.*, 
              concat(u.first_name, ' ', u.last_name) as creator_name,
@@ -269,13 +278,13 @@ router.get('/', authenticate, async (req, res) => {
              appr.email as approver_email,
              e.pinged_report_types,
              json_build_object('id', e.id, 'name', e.name) as events
+             ${lguStatusSelect}
       FROM situational_reports sr
       LEFT JOIN events e ON sr.event_id = e.id
       LEFT JOIN users u ON sr.created_by = u.id
       LEFT JOIN users appr ON sr.approved_by = appr.id
       WHERE 1=1
     `;
-    const params = [];
 
     if (event_id && event_id !== 'all') {
       params.push(event_id);
@@ -290,7 +299,7 @@ router.get('/', authenticate, async (req, res) => {
     }
 
     // Provincial/LGU-level scoping
-    if (!isSuperAdmin && !isRegional) {
+    if (!isSuperAdmin && !isRegional && !isOverall) {
       if (req.user.province) {
         params.push(req.user.province);
         // Allow them to see their own province, OR Regional reports (NULL or 'Region 1')
