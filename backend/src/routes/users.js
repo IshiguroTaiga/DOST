@@ -28,7 +28,7 @@ router.get('/', authenticate, async (req, res) => {
       conditions.push(`u.province = $${params.length + 1}`);
       params.push(user.province);
       conditions.push(`u.account_type = ANY($${params.length + 1}::text[])`);
-      params.push(['Provincial Admin','Provincial Approver','Provincial','LGU Admin','LGU','LGU Approver']);
+      params.push(['Provincial Admin','Provincial','LGU Admin','LGU']);
     } else if (user.account_type === 'LGU Admin') {
       conditions.push(`u.city = $${params.length + 1}`);
       params.push(user.city);
@@ -64,7 +64,7 @@ router.get('/pending-count', authenticate, async (req, res) => {
 
     if (user.account_type === 'Provincial Admin') {
       query += ` AND province = $${params.length + 1} AND account_type = ANY($${params.length + 2}::text[])`;
-      params.push(user.province, ['Provincial Admin','Provincial Approver','Provincial','LGU Admin','LGU','LGU Approver']);
+      params.push(user.province, ['Provincial Admin','Provincial','LGU Admin','LGU']);
     } else if (user.account_type === 'LGU Admin') {
       query += ` AND city = $${params.length + 1} AND account_type = ANY($${params.length + 2}::text[])`;
       params.push(user.city, ['LGU Admin','LGU']);
@@ -99,12 +99,12 @@ router.post('/', authenticate, async (req, res) => {
       allowed = true;
     }
   } else if (isProvincialAdmin) {
-    const allowedTypes = ['Provincial Admin', 'Provincial', 'LGU Admin', 'LGU', 'LGU Approver', 'Provincial Approver'];
+    const allowedTypes = ['Provincial Admin', 'Provincial', 'LGU Admin', 'LGU'];
     if (allowedTypes.includes(account_type) && province === requester.province) {
       allowed = true;
     }
   } else if (isLguAdmin) {
-    const allowedTypes = ['LGU Admin', 'LGU', 'LGU Approver'];
+    const allowedTypes = ['LGU Admin', 'LGU'];
     if (allowedTypes.includes(account_type) && city === requester.city && province === requester.province) {
       allowed = true;
     }

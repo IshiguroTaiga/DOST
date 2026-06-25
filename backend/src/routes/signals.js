@@ -51,7 +51,7 @@ router.get('/user', authenticate, async (req, res) => {
         );
         signal = provRows[0]?.signal || null;
       }
-    } else if (user.account_type === 'Provincial' || user.account_type === 'Provincial Approver') {
+    } else if (user.account_type === 'Provincial' || user.account_type === 'Provincial Admin') {
       // Check for signals in their city (or province if no city)
       const { rows } = await pool.query(
         `SELECT signal FROM event_signals WHERE event_id = $1 AND (city = $2 OR (city IS NULL AND province = $3)) LIMIT 1`,

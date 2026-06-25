@@ -44,7 +44,8 @@ const ALLOWED_TABLES = new Set([
   'reports',
   'report_rows',
   'roads_and_bridges_sections',
-  'affected_population_reports'
+  'affected_population_reports',
+  'evacuation_centers_reports'
 ]);
 
 // Helper for robust city comparison in SQL
@@ -54,10 +55,10 @@ const cityCondition = (tableAlias, paramIndex) => {
 
 const validateReportAccess = (user, data) => {
   const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(user.account_type);
   if (isSuperAdmin || isRegional) return true;
 
-  const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
+  const isLgu = ['LGU', 'LGU Admin'].includes(user.account_type);
   const rows = Array.isArray(data) ? data : [data];
 
   if (isLgu && user.city) {
@@ -84,9 +85,9 @@ router.get('/all-types', authenticate, async (req, res) => {
   if (!situational_report_id) return res.status(400).json({ error: 'situational_report_id is required' });
 
   const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
-  const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
-  const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(user.account_type);
+  const isLgu = ['LGU', 'LGU Admin'].includes(user.account_type);
+  const isProvincial = ['Provincial', 'Provincial Admin'].includes(user.account_type);
 
   console.log(`[Reports/all-types] User: ${user.email} (Type: ${user.account_type}), SR: ${situational_report_id}, isSuperAdmin: ${isSuperAdmin}`);
 
@@ -108,7 +109,8 @@ router.get('/all-types', authenticate, async (req, res) => {
       { name: 'pre_emptive_evacuation_reports', id: 'preemptive' },
       { name: 'roads_and_bridges', id: 'roads' },
       { name: 'water_supply_reports', id: 'water' },
-      { name: 'work_suspension_reports', id: 'work' }
+      { name: 'work_suspension_reports', id: 'work' },
+      { name: 'evacuation_centers_reports', id: 'evacuationCenters' }
     ];
 
     await Promise.all(tables.map(async (table) => {
@@ -218,7 +220,7 @@ router.get('/consolidated', authenticate, async (req, res) => {
       'water_supply_reports', 'communication_lines_reports', 'damaged_houses_reports',
       'class_suspension_reports', 'work_suspension_reports', 'declaration_state_of_calamity_reports',
       'pre_emptive_evacuation_reports', 'assistance_provided_reports', 'assistance_lgus_agencies_reports',
-      'agriculture_damage_reports', 'infrastructure_damage_reports'
+      'agriculture_damage_reports', 'infrastructure_damage_reports', 'evacuation_centers_reports'
     ];
 
     const rawData = {};
@@ -232,9 +234,9 @@ router.get('/consolidated', authenticate, async (req, res) => {
 
     const user = req.user;
     const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
-    const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
-    const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
-    const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
+    const isRegional = ['Regional Admin', 'Regional'].includes(user.account_type);
+    const isLgu = ['LGU', 'LGU Admin'].includes(user.account_type);
+    const isProvincial = ['Provincial', 'Provincial Admin'].includes(user.account_type);
 
     await Promise.all(tables.map(async (table) => {
       let baseQuery = `SELECT t.*, sr.province FROM ${table} t INNER JOIN situational_reports sr ON t.situational_report_id = sr.id`;
@@ -330,6 +332,7 @@ router.get('/consolidated', authenticate, async (req, res) => {
       else if (table === 'assistance_lgus_agencies_reports') catKey = 'assistanceLgusAgencies';
       else if (table === 'agriculture_damage_reports') catKey = 'agricultureDamage';
       else if (table === 'infrastructure_damage_reports') catKey = 'infrastructureDamage';
+      else if (table === 'evacuation_centers_reports') catKey = 'evacuationCenters';
 
       mappedDetails[catKey] = rows;
       categoryTotals[catKey] = rows.length;
@@ -361,7 +364,7 @@ router.get('/:table', authenticate, async (req, res) => {
   const { event_id, situational_report_id, report_id, scope } = req.query;
   const user = req.user;
   const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(user.account_type);
   const isOverall = scope === 'overall';
 
   let baseQuery = `SELECT t.*, sr.province FROM ${table} t `;
@@ -375,8 +378,8 @@ router.get('/:table', authenticate, async (req, res) => {
   // Regional viewer check removed to allow viewing Draft/Pending reports
 
   if (!isSuperAdmin) {
-    const isLgu = ['LGU', 'LGU Admin', 'LGU Approver'].includes(user.account_type);
-    const isProvincial = ['Provincial', 'Provincial Admin', 'Provincial Approver'].includes(user.account_type);
+    const isLgu = ['LGU', 'LGU Admin'].includes(user.account_type);
+    const isProvincial = ['Provincial', 'Provincial Admin'].includes(user.account_type);
 
     if (!isOverall) {
       if (isLgu && user.city) {

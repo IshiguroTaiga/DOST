@@ -36,6 +36,7 @@ const CATEGORY_LABELS = {
   assistanceLgus: 'Assistance from LGUs/Agencies',
   agricultureDamage: 'Agriculture Damage',
   infrastructureDamage: 'Infrastructure Damage',
+  evacuationCenters: 'Evacuation Centers',
 }
 
 const CATEGORY_ORDER = [
@@ -54,6 +55,7 @@ const CATEGORY_ORDER = [
   'assistanceLgus',
   'agricultureDamage',
   'infrastructureDamage',
+  'evacuationCenters',
 ]
 
 const PAGE_SIZES = [10, 25, 50]
@@ -81,6 +83,7 @@ const CATEGORY_TO_TABLE = {
   assistanceLgus: 'assistance_lgus_agencies_reports',
   agricultureDamage: 'agriculture_damage_reports',
   infrastructureDamage: 'infrastructure_damage_reports',
+  evacuationCenters: 'evacuation_centers_reports',
 }
 
 export default function ConsolidatedReport() {
@@ -101,10 +104,9 @@ export default function ConsolidatedReport() {
   }, [unreadNotifs])
 
   const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
-  const isProvincialApprover = user?.account_type === 'Provincial Approver'
   const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
-  const isAllowed = isProvincial || isProvincialApprover || isRegional || isSuperAdmin
+  const isAllowed = isProvincial || isRegional || isSuperAdmin
 
   const location = useLocation()
 
@@ -467,12 +469,12 @@ export default function ConsolidatedReport() {
         setAvailableSignatories(mapped)
         // Auto-populate based on role
         const provincialUsers = mapped.filter(u => u.account_type === 'Provincial')
-        const approverUsers = mapped.filter(u => u.account_type === 'Provincial Approver')
+        const adminUsers = mapped.filter(u => u.account_type === 'Provincial Admin' || u.account_type === 'Regional Admin' || u.account_type === 'Super Admin')
         if (provincialUsers.length > 0) {
           setPreparedBy(provincialUsers.slice(0, 1))
           if (provincialUsers.length > 1) setNotedBy(provincialUsers[1])
         }
-        if (approverUsers.length > 0) setApprovedBy(approverUsers[0])
+        if (adminUsers.length > 0) setApprovedBy(adminUsers[0])
       }
     } catch (err) {
       console.error('Error fetching signatories:', err)
@@ -670,12 +672,26 @@ export default function ConsolidatedReport() {
       case 'infrastructureDamage':
         return (
           <tr>
-
             <th className="col-barangay">Barangay</th>
             <th>Infra Type</th>
             <th>Infrastructure Name</th>
             <th>Damage Description</th>
             <th>Estimated Cost</th>
+            <th className="col-remarks">Remarks</th>
+          </tr>
+        )
+      case 'evacuationCenters':
+        return (
+          <tr>
+            <th className="col-barangay">Barangay</th>
+            <th>Center Name</th>
+            <th>Address</th>
+            <th>Families (CUM)</th>
+            <th>Families (NOW)</th>
+            <th>Persons (CUM)</th>
+            <th>Persons (NOW)</th>
+            <th>Origin of IDPs</th>
+            <th>Status</th>
             <th className="col-remarks">Remarks</th>
           </tr>
         )
@@ -1239,6 +1255,51 @@ export default function ConsolidatedReport() {
             </td>
           </>
         )
+      case 'evacuationCenters':
+        return (
+          <>
+            <td>
+              <SearchableSelect
+                options={getBarangaysForCity(row.city || city).map(b => ({ value: b, label: b }))}
+                value={row.barangay}
+                onChange={(e) => handleRowChange(idx, 'barangay', e.target.value)}
+                placeholder="Select Barangay"
+              />
+            </td>
+            <td><input value={row.evacuation_center_name || ''} onChange={(e) => handleRowChange(idx, 'evacuation_center_name', e.target.value)} /></td>
+            <td><input value={row.evacuation_center_address || ''} onChange={(e) => handleRowChange(idx, 'evacuation_center_address', e.target.value)} /></td>
+            <td><input type="number" value={row.inside_families_cum || 0} onChange={(e) => handleRowChange(idx, 'inside_families_cum', parseInt(e.target.value) || 0)} /></td>
+            <td><input type="number" value={row.inside_families_now || 0} onChange={(e) => handleRowChange(idx, 'inside_families_now', parseInt(e.target.value) || 0)} /></td>
+            <td><input type="number" value={row.inside_persons_cum || 0} onChange={(e) => handleRowChange(idx, 'inside_persons_cum', parseInt(e.target.value) || 0)} /></td>
+            <td><input type="number" value={row.inside_persons_now || 0} onChange={(e) => handleRowChange(idx, 'inside_persons_now', parseInt(e.target.value) || 0)} /></td>
+            <td><input value={row.origin_of_idps || ''} onChange={(e) => handleRowChange(idx, 'origin_of_idps', e.target.value)} /></td>
+            <td>
+              <select value={row.status || 'Active'} onChange={(e) => handleRowChange(idx, 'status', e.target.value)}>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </td>
+            <td>
+              <div
+                className="remarks-trigger"
+                onClick={() => openTextEditorModal(idx, 'remarks', row.remarks, 'Edit Remarks')}
+              >
+                {row.remarks || <span className="placeholder">Add remarks...</span>}
+                <PencilSimple size={14} />
+              </div>
+            </td>
+            <td className="col-actions">
+              <Button
+                variant="ghost"
+                color="danger"
+                size="sm"
+                onClick={() => handleDeleteRow(idx)}
+                title="Delete Row"
+                icon={<Trash size={14} />}
+              />
+            </td>
+          </>
+        )
       default:
         return (
           <>
@@ -1375,23 +1436,18 @@ export default function ConsolidatedReport() {
         v.id === selectedSitRep.id ? { ...v, status: 'Pending Approval', pending_pdf_url: pdfUrl } : v
       ))
 
-      // Notify Approvers (Provincial Approvers in same province + Super Admins/Regional)
+      // Notify Approvers (Super Admins/Regional)
       try {
-        const userProvince = user?.province
         const { data: approvers } = await api.get('/users', {
           params: {
-            account_type: ['Provincial Approver', 'Super Admin', 'Regional Admin', 'Regional'],
             status: 'Active'
           }
         })
 
-        // Filter: Provincial Approvers must match province, others get everything
         const targetUsers = (approvers || []).filter(u => {
           if (u.id === user?.id) return false
-          if (u.account_type === 'Provincial Approver') {
-            return u.province === userProvince
-          }
-          return true // Super Admin / Regional see everything
+          const isApproverType = ['Super Admin', 'Regional Admin', 'Regional'].includes(u.account_type) || u.role === 'Super Admin'
+          return isApproverType
         })
 
         if (targetUsers.length > 0) {
@@ -1413,7 +1469,7 @@ export default function ConsolidatedReport() {
       }
 
       setShowApprovalUploadModal(false)
-      setApprovalConfirmMessage('The signed PDF has been uploaded successfully. The report is now pending approval by the Provincial Approver.')
+      setApprovalConfirmMessage('The signed PDF has been uploaded successfully. The report is now pending approval by the Regional reviewers.')
       setShowApprovalConfirmation(true)
     } catch (err) {
       showToast('Error', (err.response?.data?.error || err.message || 'Failed to upload PDF.'), 'danger')

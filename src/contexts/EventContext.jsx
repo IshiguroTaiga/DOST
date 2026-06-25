@@ -245,11 +245,11 @@ export function EventProvider({ children, user }) {
 
   const fetchPendingApprovalsCount = useCallback(async () => {
     if (!user) return
-    const isLguApprover = user.account_type === 'LGU Approver'
-    const isApprover = ['Provincial Approver', 'Super Admin', 'Regional Admin', 'Regional'].includes(user.account_type) || user.role === 'Super Admin'
+    const isProvincial = ['Provincial Admin', 'Provincial'].includes(user.account_type)
+    const isRegionalOrSuper = ['Regional Admin', 'Regional', 'Super Admin'].includes(user.account_type) || user.role === 'Super Admin'
     
-    if (isLguApprover) {
-      // LGU Approvers get count from the new lgu-submissions endpoint
+    if (isProvincial) {
+      // Provincial users get count from the lgu-submissions endpoint
       try {
         const { data } = await api.get('/lgu-submissions/pending-count')
         setPendingApprovalsCount(data?.count || 0)
@@ -259,15 +259,19 @@ export function EventProvider({ children, user }) {
       return
     }
     
-    if (!isApprover) { setPendingApprovalsCount(0); return }
-    try {
-      const { data } = await api.get('/situational-reports', {
-        params: { status: 'Pending Approval', count_only: true, event_id: 'all' }
-      })
-      setPendingApprovalsCount(Array.isArray(data) ? data.length : (data?.count || 0))
-    } catch (err) {
-      console.error('Error fetching pending approvals count:', err)
+    if (isRegionalOrSuper) {
+      try {
+        const { data } = await api.get('/situational-reports', {
+          params: { status: 'Pending Approval', count_only: true, event_id: 'all' }
+        })
+        setPendingApprovalsCount(Array.isArray(data) ? data.length : (data?.count || 0))
+      } catch (err) {
+        console.error('Error fetching pending approvals count:', err)
+      }
+      return
     }
+
+    setPendingApprovalsCount(0)
   }, [user])
 
   const fetchWeatherCondition = useCallback(async () => {

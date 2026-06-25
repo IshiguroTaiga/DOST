@@ -14,7 +14,6 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   const isRegionalAdmin = accountType === 'Regional Admin'
   const isProvincialAdmin = accountType === 'Provincial Admin'
   const isLguAdmin = accountType === 'LGU Admin'
-  const isLguApprover = accountType === 'LGU Approver'
   const isSuperAdmin = user?.role === 'Super Admin' || accountType === 'Super Admin'
   // Any admin type (can see Users sidebar)
   const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
@@ -140,7 +139,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-        {(isProvincial || isRegional || accountType === 'Provincial Approver' || isSuperAdmin) && (
+        {(isProvincial || isRegional || isSuperAdmin) && (
           <div className="sidebar-nav-group">
             <NavLink
               to="/consolidated-report"
@@ -157,22 +156,20 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </NavLink>
           </div>
         )}
-        {accountType !== 'Provincial Approver' && !isLguApprover && (
-          <NavLink
-            to="/add-report"
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            title={isCollapsed ? 'Add Report' : ''}
-          >
-            <FilePlus size={16} weight="bold" />
-            {!isCollapsed && <span>Add Report</span>}
-            {getNavCount('/add-report') > 0 && (
-              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
-                {getNavCount('/add-report')}
-              </span>
-            )}
-          </NavLink>
-        )}
-        {(isSuperAdmin || isRegional || accountType === 'Regional Approver' || accountType === 'Provincial Approver') && (
+        <NavLink
+          to="/add-report"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          title={isCollapsed ? 'Add Report' : ''}
+        >
+          <FilePlus size={16} weight="bold" />
+          {!isCollapsed && <span>Add Report</span>}
+          {getNavCount('/add-report') > 0 && (
+            <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+              {getNavCount('/add-report')}
+            </span>
+          )}
+        </NavLink>
+        {(isSuperAdmin || isRegional) && (
           <NavLink
             to="/for-approval"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}

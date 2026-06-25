@@ -1382,12 +1382,19 @@ useEffect(() => {
       })
       
       const pdfUrl = uploadData.url
-      const newStatus = isLGU ? 'Pending Provincial Review' : 'Approved'
+      let newStatus = 'Approved'
+      if (isLGU) {
+        newStatus = 'Pending Provincial Review'
+      } else if (isProvincial) {
+        newStatus = 'Pending Approval'
+      }
+
+      const isPending = isLGU || isProvincial
 
       await api.patch(`/situational-reports/${currentSituationalReport.id}`, { 
         status: newStatus, 
-        approved_pdf_url: !isLGU ? pdfUrl : null,
-        pending_pdf_url: isLGU ? pdfUrl : null,
+        approved_pdf_url: !isPending ? pdfUrl : null,
+        pending_pdf_url: isPending ? pdfUrl : null,
         rejection_remarks: null
       })
 
@@ -1442,9 +1449,14 @@ useEffect(() => {
       }
 
       setShowApprovalUploadModal(false)
-      const successMsg = isLGU 
-        ? 'The signed PDF has been uploaded and submitted to the Province for review.'
-        : 'The signed PDF has been uploaded and the report is now marked as Approved and visible to Regional users.'
+      let successMsg = 'The signed PDF has been uploaded.'
+      if (isLGU) {
+        successMsg = 'The signed PDF has been uploaded and submitted to the Province for review.'
+      } else if (isProvincial) {
+        successMsg = 'The signed PDF has been uploaded and submitted to the Region for review.'
+      } else {
+        successMsg = 'The signed PDF has been uploaded and the report is now marked as Approved and visible to Regional users.'
+      }
       setApprovalConfirmMessage(successMsg)
       setShowApprovalConfirmation(true)
     } catch (err) {
@@ -3723,8 +3735,7 @@ useEffect(() => {
                                  style={{ cursor: 'pointer' }}
                                ></span>
                              )}
-                             {((isProvincial && sr.status === 'Pending Provincial Review') || 
-                               ((isRegional || isSuperAdmin) && sr.status === 'Pending Approval')) && (
+                             {isProvincial && sr.status === 'Pending Provincial Review' && (
                                <span 
                                  className="table-ping" 
                                  title="Needs Your Review/Approval"
@@ -3795,14 +3806,6 @@ useEffect(() => {
                               </Button>
                             )}
 
-                            {/* Review Button: visible to Regional/Super Admin users for Provincial reports pending approval */}
-                            {(isRegional || isSuperAdmin) && sr.status === 'Pending Approval' && (
-                              <Button variant="solid" color="warning" size="sm"
-                                onClick={() => handleOpenReviewModal(sr)}
-                                icon={<Eye size={14} />}>
-                                Review
-                              </Button>
-                            )}
                             
                             <Button variant="ghost" color="success" size="sm"
                               onClick={() => handleReportDownload(sr)}
@@ -4842,7 +4845,13 @@ useEffect(() => {
             <span>Upload Signed PDF</span>
           </div>
         }
-        subtitle="Upload the signed situational report PDF. It will be sent to the Provincial Approver for review."
+        subtitle={
+          isLGU
+            ? "Upload the signed situational report PDF. It will be sent to the Province for review."
+            : isProvincial
+            ? "Upload the signed situational report PDF. It will be sent to the Region for review."
+            : "Upload the signed situational report PDF. It will be marked as Approved."
+        }
         maxWidth="650px"
         footer={
           <>

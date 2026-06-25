@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'rea
 import LoadingSpinner from '../components/LoadingSpinner'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
-import { ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, CaretDown, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle, CheckCircle, Thermometer, CloudSun, Sun, Cloud, CloudSnow, CloudLightning } from '@phosphor-icons/react'
+import { House, ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, CaretDown, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle, CheckCircle, Thermometer, CloudSun, Sun, Cloud, CloudSnow, CloudLightning } from '@phosphor-icons/react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -50,6 +50,7 @@ const CATEGORY_LABELS = {
   stateOfCalamity: 'Declaration of State of Calamity',
   preEmptiveEvacuation: 'Pre-emptive Evacuation',
   assistanceProvided: 'Assistance Provided to Affected Families',
+  evacuationCenters: 'Evacuation Centers',
 }
 
 const CATEGORY_ICONS = {
@@ -68,6 +69,7 @@ const CATEGORY_ICONS = {
   stateOfCalamity: <Warning size={18} />,
   preEmptiveEvacuation: <ArrowRight size={18} />,
   assistanceProvided: <Check size={18} />,
+  evacuationCenters: <House size={18} />,
 }
 
 const EVENT_TYPE_ICONS = {
@@ -222,7 +224,7 @@ export default function Dashboard() {
     return rawCurrentEvent
   }, [rawCurrentEvent])
   const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
-  const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
+  const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isRegionalUser = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin' || user?.role === 'Super Admin' || user?.account_type === 'Super Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
 
@@ -801,7 +803,8 @@ const handleNotificationClick = (notif) => {
           infraDamage: [],
           damagedHouses: [],
           commLines: [],
-          assistance: []
+          assistance: [],
+          evacuationCenters: []
         }
       }
     }
@@ -892,6 +895,7 @@ const handleNotificationClick = (notif) => {
       { table: 'assistance_lgus_agencies_reports', category: 'assistanceLgus', col: 'barangay', dateCol: 'created_at' },
       { table: 'agriculture_damage_reports', category: 'agricultureDamage', col: 'barangay', dateCol: 'created_at' },
       { table: 'infrastructure_damage_reports', category: 'infrastructureDamage', col: 'barangay', dateCol: 'created_at' },
+      { table: 'evacuation_centers_reports', category: 'evacuationCenters', col: 'barangay', dateCol: 'created_at' },
     ]
 
     const dayCounts = {}
@@ -944,6 +948,7 @@ const handleNotificationClick = (notif) => {
       populationByLgu: {},
       commLines: [],
       damagedHouses: [], // Added to fix push error
+      evacuationCenters: [],
       ageTally: { kids: 0, adults: 0, seniors: 0 },
       sitRepStatus: allSitreps || []
     }
@@ -969,7 +974,7 @@ const handleNotificationClick = (notif) => {
 
         // Hierarchical Filter Scoping
         const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
-        const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
+        const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
         
         if (dashboardScope !== 'overall') {
           if (isLguUser && city !== user?.city) return
@@ -1099,6 +1104,22 @@ const handleNotificationClick = (notif) => {
             details.infrastructure.push({ name: row.infrastructure_name || brgy, city, type: 'infrastructure', status: row.status });
           }
         }
+        if (category === 'evacuationCenters') {
+          details.evacuationCenters.push({
+            id: row.id,
+            city,
+            barangay: brgy,
+            evacuationCenterName: row.evacuation_center_name,
+            evacuationCenterAddress: row.evacuation_center_address,
+            insideFamiliesCum: Number(row.inside_families_cum || 0),
+            insideFamiliesNow: Number(row.inside_families_now || 0),
+            insidePersonsCum: Number(row.inside_persons_cum || 0),
+            insidePersonsNow: Number(row.inside_persons_now || 0),
+            originOfIdps: row.origin_of_idps,
+            status: row.status,
+            remarks: row.remarks
+          });
+        }
 
         addToStats(category, brgy, amount, row[dateCol], city)
       })
@@ -1142,7 +1163,7 @@ const handleNotificationClick = (notif) => {
 
             // Hierarchical Filter Scoping
             const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
-            const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
+            const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
             
             if (dashboardScope !== 'overall') {
               if (isLguUser && city !== user?.city) return
@@ -1224,7 +1245,7 @@ const handleNotificationClick = (notif) => {
 
           // Hierarchical Filter Scoping
           const isLguUser = user?.account_type === 'LGU' || user?.account_type === 'LGU Admin'
-          const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin' || user?.account_type === 'Provincial Approver'
+          const isProvincialUser = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
           
           if (dashboardScope !== 'overall') {
             if (isLguUser && city !== user?.city) return
@@ -2204,7 +2225,7 @@ CHRONOLOGY OF EVENTS`;
             onMouseMove={handleMouseMove}
           >
             <div className="card-tabs">
-              {['Overview', 'Agriculture', 'Incidents', 'Infrastructure', 'Assistance', 'Suspension', 'Pre-Evacuation'].map((tab) => {
+              {['Overview', 'Agriculture', 'Incidents', 'Infrastructure', 'Assistance', 'Suspension', 'Pre-Evacuation', 'Evacuation Centers'].map((tab) => {
                 const isActive = activeTab === tab || (tab === 'Overview' && activeTab === 'All Reports');
                 return (
                   <button
@@ -3607,6 +3628,85 @@ CHRONOLOGY OF EVENTS`;
                           </tbody>
                         </table>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === 'Evacuation Centers' ? (
+                <div className="category-viz-container">
+                  {/* KPI Row for Evacuation Centers */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 14 }}>
+                    <div className="kpi-card-premium blue">
+                      <div className="kpi-label-premium">Inside Families (NOW)</div>
+                      <div className="kpi-value-premium">{details.evacuationCenters.reduce((s, p) => s + p.insideFamiliesNow, 0).toLocaleString()}</div>
+                      <div className="kpi-sub-premium">Current families inside ECs</div>
+                    </div>
+                    <div className="kpi-card-premium purple">
+                      <div className="kpi-label-premium">Inside Persons (NOW)</div>
+                      <div className="kpi-value-premium">{details.evacuationCenters.reduce((s, p) => s + p.insidePersonsNow, 0).toLocaleString()}</div>
+                      <div className="kpi-sub-premium">Current persons inside ECs</div>
+                    </div>
+                    <div className="kpi-card-premium teal">
+                      <div className="kpi-label-premium">Active Centers</div>
+                      <div className="kpi-value-premium">{details.evacuationCenters.filter(c => c.status === 'Active').length}</div>
+                      <div className="kpi-sub-premium">Total active facilities</div>
+                    </div>
+                    <div className="kpi-card-premium orange">
+                      <div className="kpi-label-premium">Total Centers Registered</div>
+                      <div className="kpi-value-premium">{details.evacuationCenters.length}</div>
+                      <div className="kpi-sub-premium">Cum. centers registered</div>
+                    </div>
+                  </div>
+
+                  <div className="premium-card">
+                    <div className="premium-card-header">
+                      <div className="premium-card-title">Evacuation Centers Detail Table</div>
+                      <span style={{ fontSize: '10px', color: T.blue, background: 'rgba(59,130,246,0.15)', padding: '2px 8px', borderRadius: '4px' }}>DISPLACEMENT LIST</span>
+                    </div>
+                    <div style={{ overflowX: 'auto', maxHeight: '450px' }}>
+                      <table className="premium-table">
+                        <thead>
+                          <tr>
+                            <th>City/Municipality</th>
+                            <th>Barangay</th>
+                            <th>Center Name</th>
+                            <th>Address</th>
+                            <th>Families (CUM)</th>
+                            <th>Families (NOW)</th>
+                            <th>Persons (CUM)</th>
+                            <th>Persons (NOW)</th>
+                            <th>Origin of IDPs</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {details.evacuationCenters.length > 0 ? (
+                            details.evacuationCenters.map((ec, i) => (
+                              <tr key={i} className="trow">
+                                <td style={{ fontWeight: 600 }}>{ec.city}</td>
+                                <td>{ec.barangay}</td>
+                                <td style={{ fontWeight: 600, color: '#1e293b' }}>{ec.evacuationCenterName}</td>
+                                <td>{ec.evacuationCenterAddress || '-'}</td>
+                                <td style={{ fontFamily: 'DM Mono' }}>{ec.insideFamiliesCum.toLocaleString()}</td>
+                                <td style={{ fontFamily: 'DM Mono', fontWeight: 700, color: T.blue }}>{ec.insideFamiliesNow.toLocaleString()}</td>
+                                <td style={{ fontFamily: 'DM Mono' }}>{ec.insidePersonsCum.toLocaleString()}</td>
+                                <td style={{ fontFamily: 'DM Mono', fontWeight: 700, color: T.indigo }}>{ec.insidePersonsNow.toLocaleString()}</td>
+                                <td>{ec.originOfIdps || '-'}</td>
+                                <td>
+                                  <span className={`status-pill status-${ec.status.toLowerCase()}`}>
+                                    {ec.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="10" style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
+                                No evacuation centers data reported for this event.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>

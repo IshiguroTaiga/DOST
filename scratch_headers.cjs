@@ -7,12 +7,12 @@ try {
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
   
-  for (let r = 2; r < 8; r++) {
-    console.log(`Row ${r + 1}:`);
-    for (let c = 9; c <= 25; c++) {
-      console.log(`  Col ${c}: ${data[r][c] || ''}`);
+  const row4 = data[3] || [];
+  row4.forEach((val, c) => {
+    if (val !== undefined && val !== '') {
+      console.log(`Col ${xlsx.utils.encode_col(c)} (index ${c}): ${val}`);
     }
-  }
+  });
 } catch (e) {
-  console.error('Error reading headers:', e);
+  console.error(e);
 }

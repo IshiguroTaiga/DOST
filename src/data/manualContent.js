@@ -148,7 +148,7 @@ export const MANUAL_SECTIONS = [
     id: 'consolidated-reports-detailed',
     category: 'reporting',
     title: 'Consolidated Reports & Data Analytics',
-    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin', 'Provincial Approver'],
+    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin', 'Provincial'],
     description: 'How to verify, edit, and consolidate data from multiple LGUs into official reports.',
     steps: [
       {
@@ -183,7 +183,7 @@ export const MANUAL_SECTIONS = [
     id: 'review-workflow',
     category: 'review',
     title: 'Reviewing and Consolidating Reports',
-    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin', 'Provincial Approver'],
+    roles: ['Super Admin', 'Regional Admin', 'Provincial Admin', 'Provincial'],
     description: 'How to verify LGU data and generate consolidated regional reports.',
     steps: [
       {

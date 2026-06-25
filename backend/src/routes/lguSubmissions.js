@@ -50,12 +50,12 @@ router.post('/submit', authenticate, async (req, res) => {
   }
 
   try {
-    // Upsert submission status to 'Approved' directly
+    // Upsert submission status to 'Pending LGU Approval'
     const { rows } = await pool.query(
       `INSERT INTO lgu_submissions (situational_report_id, city, status, submitted_by, approved_by, updated_at, rejection_remarks)
-       VALUES ($1, $2, 'Approved', $3, $3, NOW(), NULL)
+       VALUES ($1, $2, 'Pending LGU Approval', $3, NULL, NOW(), NULL)
        ON CONFLICT (situational_report_id, city) 
-       DO UPDATE SET status = 'Approved', submitted_by = $3, approved_by = $3, updated_at = NOW(), rejection_remarks = NULL
+       DO UPDATE SET status = 'Pending LGU Approval', submitted_by = $3, approved_by = NULL, updated_at = NOW(), rejection_remarks = NULL
        RETURNING *`,
       [situational_report_id, city, req.user.id]
     );
@@ -79,9 +79,9 @@ router.post('/submit', authenticate, async (req, res) => {
       for (const pu of provincialUsers) {
         const notifData = {
           user_id: pu.id,
-          type: 'lgu_approval_provincial',
-          title: 'LGU Data Approved',
-          message: `${city} data is approved and ready for consolidation.`,
+          type: 'lgu_submission_provincial',
+          title: 'New LGU Submission',
+          message: `${city} has submitted their data and is pending approval.`,
           data: JSON.stringify({ situational_report_id, city })
         };
 
@@ -110,8 +110,8 @@ router.post('/approve', authenticate, async (req, res) => {
 
   // Ensure user has permissions (Provincial, Regional, or Super Admin)
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
-  const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(req.user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
 
   if (!isSuperAdmin && !isRegional && !isProvincial) {
     return res.status(403).json({ error: 'Only Provincial, Regional, or Super Admin users can approve submissions' });
@@ -214,8 +214,8 @@ router.post('/reject', authenticate, async (req, res) => {
 
   // Ensure user has permissions (Provincial, Regional, or Super Admin)
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
-  const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(req.user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
 
   if (!isSuperAdmin && !isRegional && !isProvincial) {
     return res.status(403).json({ error: 'Only Provincial, Regional, or Super Admin users can reject submissions' });
@@ -280,14 +280,12 @@ router.post('/reject', authenticate, async (req, res) => {
   }
 });
 
-// GET /pending – get pending reports list for LGU Approver's city
+// GET /pending – get pending submissions list
 router.get('/pending', authenticate, async (req, res) => {
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  const city = req.user.city;
-  
-  if (!city && !isSuperAdmin) {
-    return res.status(400).json({ error: 'User does not have an assigned city' });
-  }
+  const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
+  const isLgu = ['LGU Admin', 'LGU'].includes(req.user.account_type);
 
   try {
     let query = `
@@ -298,10 +296,18 @@ router.get('/pending', authenticate, async (req, res) => {
       WHERE ls.status = 'Pending LGU Approval'
     `;
     const params = [];
-    if (!isSuperAdmin) {
-      const cleanCity = city.replace(/\s*\(.*\)\s*$/, '').trim();
-      params.push(cleanCity);
-      query += ` AND (${cityCondition('ls', params.length)} OR ls.city = '${city}')`;
+
+    if (!isSuperAdmin && !isRegional) {
+      if (isProvincial && req.user.province) {
+        params.push(req.user.province);
+        query += ` AND sr.province = $${params.length}`;
+      } else if (isLgu && req.user.city) {
+        const cleanCity = req.user.city.replace(/\s*\(.*\)\s*$/, '').trim();
+        params.push(cleanCity);
+        query += ` AND (${cityCondition('ls', params.length)} OR ls.city = $${params.length})`;
+      } else {
+        return res.json([]);
+      }
     }
 
     query += ' ORDER BY ls.updated_at DESC';
@@ -314,23 +320,33 @@ router.get('/pending', authenticate, async (req, res) => {
   }
 });
 
-// GET /pending-count – count of pending reports for LGU Approver's city
+// GET /pending-count – count of pending reports
 router.get('/pending-count', authenticate, async (req, res) => {
   const isSuperAdmin = req.user.role === 'Super Admin' || req.user.account_type === 'Super Admin';
-  const city = req.user.city;
-
-  if (!city && !isSuperAdmin) {
-    return res.json({ count: 0 });
-  }
+  const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
+  const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
+  const isLgu = ['LGU Admin', 'LGU'].includes(req.user.account_type);
 
   try {
-    let query = "SELECT COUNT(*) as count FROM lgu_submissions WHERE status = 'Pending LGU Approval'";
+    let query = `
+      SELECT COUNT(*) as count 
+      FROM lgu_submissions ls
+      INNER JOIN situational_reports sr ON ls.situational_report_id = sr.id
+      WHERE ls.status = 'Pending LGU Approval'
+    `;
     const params = [];
     
-    if (!isSuperAdmin) {
-      const cleanCity = city.replace(/\s*\(.*\)\s*$/, '').trim();
-      params.push(cleanCity);
-      query += ` AND (${cityCondition('lgu_submissions', params.length)} OR city = '${city}')`;
+    if (!isSuperAdmin && !isRegional) {
+      if (isProvincial && req.user.province) {
+        params.push(req.user.province);
+        query += ` AND sr.province = $${params.length}`;
+      } else if (isLgu && req.user.city) {
+        const cleanCity = req.user.city.replace(/\s*\(.*\)\s*$/, '').trim();
+        params.push(cleanCity);
+        query += ` AND (${cityCondition('ls', params.length)} OR ls.city = $${params.length})`;
+      } else {
+        return res.json({ count: 0 });
+      }
     }
 
     const { rows } = await pool.query(query, params);

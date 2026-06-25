@@ -68,8 +68,8 @@ function getCitiesForProvince(provinceName) {
 }
 
 function getCloneScope(user) {
-  const isRegional = ['Regional Admin', 'Regional', 'Super Admin', 'Regional Approver'].includes(user.account_type) || user.role === 'Super Admin';
-  const isProvincial = ['Provincial Admin', 'Provincial', 'Provincial Approver'].includes(user.account_type);
+  const isRegional = ['Regional Admin', 'Regional', 'Super Admin'].includes(user.account_type) || user.role === 'Super Admin';
+  const isProvincial = ['Provincial Admin', 'Provincial'].includes(user.account_type);
   const isLGU = ['LGU', 'LGU Admin'].includes(user.account_type);
 
   return {
@@ -143,7 +143,8 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
     'related_incidents', 'agriculture_damage_reports', 'assistance_lgus_agencies_reports',
     'assistance_provided_reports', 'class_suspension_reports', 'communication_lines_reports',
     'damaged_houses_reports', 'declaration_state_of_calamity_reports', 'infrastructure_damage_reports',
-    'power_reports', 'pre_emptive_evacuation_reports', 'water_supply_reports', 'work_suspension_reports'
+    'power_reports', 'pre_emptive_evacuation_reports', 'water_supply_reports', 'work_suspension_reports',
+    'evacuation_centers_reports'
   ];
 
   for (const table of simpleTables) {
@@ -257,7 +258,7 @@ async function cloneAllDataTablesWithClient(sourceSitRepId, newSitRepId, eventId
 router.get('/', authenticate, async (req, res) => {
   const { event_id, status, count_only, scope } = req.query;
   const isSuperAdmin = req.user.account_type === 'Super Admin' || req.user.role === 'Super Admin';
-  const isRegional = ['Regional Admin', 'Regional', 'Regional Approver'].includes(req.user.account_type);
+  const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
   const isOverall = scope === 'overall';
 
   try {
@@ -574,7 +575,7 @@ router.get('/:id/report-data', authenticate, async (req, res) => {
       'damaged_houses_reports', 'declaration_state_of_calamity_reports',
       'infrastructure_damage_reports', 'power_reports', 'pre_emptive_evacuation_reports',
       'roads_and_bridges', 'water_supply_reports', 'work_suspension_reports',
-      'reports', 'roads_and_bridges_sections'
+      'reports', 'roads_and_bridges_sections', 'evacuation_centers_reports'
     ];
 
     const results = {};
@@ -649,7 +650,7 @@ router.delete('/:id', authenticate, async (req, res) => {
       'damaged_houses_reports', 'declaration_state_of_calamity_reports',
       'infrastructure_damage_reports', 'power_reports', 'pre_emptive_evacuation_reports',
       'roads_and_bridges', 'water_supply_reports', 'work_suspension_reports',
-      'reports', 'lgu_submissions'
+      'reports', 'lgu_submissions', 'evacuation_centers_reports'
     ];
     
     // 2. Delete parent records in the report tables
