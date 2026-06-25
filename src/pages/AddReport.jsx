@@ -60,6 +60,7 @@ const CATEGORY_TO_TABLE = {
   work: 'work_suspension_reports',
   calamity: 'declaration_state_of_calamity_reports',
   preemptive: 'pre_emptive_evacuation_reports',
+  evacuationCenters: 'evacuation_centers_reports',
   assistance: 'assistance_provided_reports'
 }
 
@@ -81,6 +82,7 @@ const REPORT_CATEGORIES = [
   { id: 'work', title: 'Work Suspension', icon: <FileText size={24} />, color: '#64748b', description: 'Government/Private work status' },
    { id: 'calamity', title: 'State of Calamity', icon: <ShieldWarning size={24} />, color: '#d946ef', description: 'Official LGU calamity declarations' },
   { id: 'preemptive', title: 'Pre-emptive Evac', icon: <Pulse size={24} />, color: '#f59e0b', description: 'Early evacuation demographic data' },
+  { id: 'evacuationCenters', title: 'Evacuation Centers', icon: <House size={24} />, color: '#ec4899', description: 'Monitor evacuation center statuses' },
   { id: 'assistance', title: 'Assistance Provided', icon: <Handshake size={24} />, color: '#10b981', description: 'Relief distribution and PNFI' },
 ]
 
@@ -112,6 +114,18 @@ const emptyRow = (catId = 'evacuation', city = '') => {
       return { ...base, type: '', countSoc: '', resolutionNo: '', resolutionDate: '' }
     case 'preemptive':
       return { ...base, families: '', maleCount: '', femaleCount: '', total: 0 }
+    case 'evacuationCenters':
+      return {
+        ...base,
+        evacuationCenterName: '',
+        evacuationCenterAddress: '',
+        insideFamiliesCum: '',
+        insideFamiliesNow: '',
+        insidePersonsCum: '',
+        insidePersonsNow: '',
+        originOfIdps: '',
+        status: 'Active'
+      }
     case 'assistance':
       return { ...base, noFamiliesAffected: '', noFamiliesRequiringAssistance: '', needs: '', fnfiQty: '', fnfiUnit: '', fnfiCostPerUnit: '', fnfiAmount: '', fnfiSource: '', noFamiliesAssisted: '', pctFamiliesAssisted: 0 }
     case 'communication':
@@ -303,6 +317,18 @@ const dbRowToApp = (row, category = 'evacuation') => {
         femaleCount: row.female_count?.toString() ?? '',
         total: row.total || 0
       }
+    case 'evacuationCenters':
+      return {
+        ...base,
+        evacuationCenterName: row.evacuation_center_name || '',
+        evacuationCenterAddress: row.evacuation_center_address || '',
+        insideFamiliesCum: row.inside_families_cum?.toString() ?? '',
+        insideFamiliesNow: row.inside_families_now?.toString() ?? '',
+        insidePersonsCum: row.inside_persons_cum?.toString() ?? '',
+        insidePersonsNow: row.inside_persons_now?.toString() ?? '',
+        originOfIdps: row.origin_of_idps || '',
+        status: row.status || 'Active'
+      }
     case 'assistance':
       return {
         ...base,
@@ -376,6 +402,7 @@ const CAT_ID_TO_PING_KEY = {
   work: 'workSuspension',
   calamity: 'stateOfCalamity',
   preemptive: 'preEmptiveEvacuation',
+  evacuationCenters: 'evacuationCenters',
   assistance: 'assistanceProvided',
 }
 
@@ -422,6 +449,10 @@ const enrichReportItem = (item) => {
     case 'preemptive':
       subject = `${appItem.families || 0} Families`
       summary = `${appItem.total || 0} Persons`
+      break
+    case 'evacuationCenters':
+      subject = appItem.evacuationCenterName || 'Evacuation Center'
+      summary = `${appItem.insideFamiliesNow || 0} Families | 	ext{${appItem.insidePersonsNow || 0}} Persons`
       break
     case 'assistance':
       subject = appItem.needs || 'Assistance Provided'
@@ -2038,10 +2069,60 @@ useEffect(() => {
         const wb = XLSX.read(bstr, { type: 'binary' })
         const wsname = wb.SheetNames[0]
         const ws = wb.Sheets[wsname]
-        const data = XLSX.utils.sheet_to_json(ws)
+        let importedRows = []
 
-        if (data && data.length > 0) {
-          let importedRows = data.map(config.map)
+        if (activeCategoryModal === 'evacuationCenters') {
+          const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 })
+          const isRawTemplate = rawData.length > 10 && rawData[3] && rawData[3].some(cell => cell && cell.toString().includes('EVACUATION CENTER'))
+          
+          if (isRawTemplate) {
+            let currentCity = ''
+            for (let r = 8; r < rawData.length; r++) {
+              const row = rawData[r]
+              if (!row) continue
+              
+              if (row[2] && row[2].toString().trim() && !row[2].toString().toLowerCase().includes('total')) {
+                currentCity = row[2].toString().trim()
+              }
+              
+              const ecName = row[16] ? row[16].toString().trim() : ''
+              if (!ecName || ecName.toLowerCase() === 'sub-total' || ecName.toLowerCase() === 'grand total' || ecName.toLowerCase().includes('total')) continue
+              
+              const barangay = row[9] ? row[9].toString().trim() : ''
+              const insideFamiliesCum = parseInt(row[20]) || 0
+              const insideFamiliesNow = parseInt(row[21]) || 0
+              const insidePersonsCum = parseInt(row[22]) || 0
+              const insidePersonsNow = parseInt(row[23]) || 0
+              const originOfIdps = row[18] ? row[18].toString().trim() : ''
+              const address = row[17] ? row[17].toString().trim() : ''
+              const remarks = row[26] ? row[26].toString().trim() : ''
+              const status = (insideFamiliesNow > 0 || insidePersonsNow > 0) ? 'Active' : 'Inactive'
+              
+              importedRows.push({
+                city: currentCity,
+                barangay,
+                evacuationCenterName: ecName,
+                evacuationCenterAddress: address,
+                insideFamiliesCum: insideFamiliesCum.toString(),
+                insideFamiliesNow: insideFamiliesNow.toString(),
+                insidePersonsCum: insidePersonsCum.toString(),
+                insidePersonsNow: insidePersonsNow.toString(),
+                originOfIdps,
+                status,
+                remarks
+              })
+            }
+          }
+        }
+
+        if (importedRows.length === 0) {
+          const data = XLSX.utils.sheet_to_json(ws)
+          if (data && data.length > 0) {
+            importedRows = data.map(config.map)
+          }
+        }
+
+        if (importedRows && importedRows.length > 0) {
 
           // Scope Validation: Ensure users can only import data they are authorized for
           if (!isSuperAdmin && !isRegional) {
@@ -2465,7 +2546,7 @@ useEffect(() => {
           await resetSitRepStatus()
           
           // Categories that require barangay (for LGU users) vs can be submitted at city level
-          const categoriesRequiringBarangay = ['evacuation', 'incidents', 'houses', 'class', 'work', 'calamity', 'preemptive', 'assistance']
+          const categoriesRequiringBarangay = ['evacuation', 'incidents', 'houses', 'class', 'work', 'calamity', 'preemptive', 'assistance', 'evacuationCenters']
           const validRows = rows.filter((r) => {
             if (categoriesRequiringBarangay.includes(activeCategoryModal)) {
               return r.barangay && r.barangay.trim() !== ''
@@ -2655,6 +2736,18 @@ useEffect(() => {
                     female_count: parseInt(row.femaleCount) || 0,
                     total: parseInt(row.total) || 0,
                     status: row.status || 'Completed'
+                  }
+                case 'evacuationCenters':
+                  return {
+                    ...base,
+                    evacuation_center_name: row.evacuationCenterName || '',
+                    evacuation_center_address: row.evacuationCenterAddress || '',
+                    inside_families_cum: parseInt(row.insideFamiliesCum) || 0,
+                    inside_families_now: parseInt(row.insideFamiliesNow) || 0,
+                    inside_persons_cum: parseInt(row.insidePersonsCum) || 0,
+                    inside_persons_now: parseInt(row.insidePersonsNow) || 0,
+                    origin_of_idps: row.originOfIdps || '',
+                    status: row.status || 'Active'
                   }
                 case 'assistance':
                   return {
@@ -2847,6 +2940,23 @@ useEffect(() => {
               <th style={{ textAlign: 'center' }}>Male Count</th>
               <th style={{ textAlign: 'center' }}>Female Count</th>
               <th style={{ textAlign: 'center' }}>Total Persons</th>
+              <th className="col-remarks" style={{ textAlign: 'center' }}>Remarks</th>
+              <th className="col-actions" style={{ textAlign: 'center' }}>Actions</th>
+            </tr>
+          )
+        case 'evacuationCenters':
+          return (
+            <tr>
+              {!isLGU && <th className="col-city">City</th>}
+              <th className="col-barangay">Barangay</th>
+              <th style={{ textAlign: 'center' }}>Evacuation Center Name</th>
+              <th style={{ textAlign: 'center' }}>Evacuation Center Address</th>
+              <th style={{ textAlign: 'center' }}>Inside Families CUM</th>
+              <th style={{ textAlign: 'center' }}>Inside Families NOW</th>
+              <th style={{ textAlign: 'center' }}>Inside Persons CUM</th>
+              <th style={{ textAlign: 'center' }}>Inside Persons NOW</th>
+              <th style={{ textAlign: 'center' }}>Origin of IDPs</th>
+              <th style={{ textAlign: 'center' }}>Status</th>
               <th className="col-remarks" style={{ textAlign: 'center' }}>Remarks</th>
               <th className="col-actions" style={{ textAlign: 'center' }}>Actions</th>
             </tr>
@@ -3184,6 +3294,23 @@ useEffect(() => {
               <td><input type="number" min="0" value={row.maleCount} onChange={(e) => handleRowChange(index, 'maleCount', e.target.value)} placeholder="0" /></td>
               <td><input type="number" min="0" value={row.femaleCount} onChange={(e) => handleRowChange(index, 'femaleCount', e.target.value)} placeholder="0" /></td>
               <td style={{ fontWeight: 700, textAlign: 'center' }}>{row.total}</td>
+            </>
+          )}
+          {activeCategoryModal === 'evacuationCenters' && (
+            <>
+              <td><input type="text" value={row.evacuationCenterName} onChange={(e) => handleRowChange(index, 'evacuationCenterName', e.target.value)} placeholder="EC Name" /></td>
+              <td><input type="text" value={row.evacuationCenterAddress} onChange={(e) => handleRowChange(index, 'evacuationCenterAddress', e.target.value)} placeholder="EC Address" /></td>
+              <td><input type="number" min="0" value={row.insideFamiliesCum} onChange={(e) => handleRowChange(index, 'insideFamiliesCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
+              <td><input type="number" min="0" value={row.insideFamiliesNow} onChange={(e) => handleRowChange(index, 'insideFamiliesNow', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
+              <td><input type="number" min="0" value={row.insidePersonsCum} onChange={(e) => handleRowChange(index, 'insidePersonsCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
+              <td><input type="number" min="0" value={row.insidePersonsNow} onChange={(e) => handleRowChange(index, 'insidePersonsNow', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
+              <td><input type="text" value={row.originOfIdps} onChange={(e) => handleRowChange(index, 'originOfIdps', e.target.value)} placeholder="Origin of IDPs" /></td>
+              <td>
+                <select value={row.status} onChange={(e) => handleRowChange(index, 'status', e.target.value)}>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </td>
             </>
           )}
           {activeCategoryModal === 'assistance' && (
