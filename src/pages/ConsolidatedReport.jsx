@@ -106,7 +106,7 @@ export default function ConsolidatedReport() {
   const isProvincial = user?.account_type === 'Provincial' || user?.account_type === 'Provincial Admin'
   const isRegional = user?.account_type === 'Regional' || user?.account_type === 'Regional Admin'
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
-  const isAllowed = isProvincial || isRegional || isSuperAdmin
+  const isAllowed = isProvincial || isRegional || isSuperAdmin || user?.role === 'Guest'
 
   const location = useLocation()
 
@@ -2129,7 +2129,7 @@ export default function ConsolidatedReport() {
                 ) : (
                   paginatedEvents.map((event) => (
                     <tr key={event.id}>
-                      <td className="event-name-cell">
+                      <td className="event-name-cell" data-label="Event Name">
                         {hasUnread(event.id) && (
                           <span
                             className="table-ping"
@@ -2143,7 +2143,7 @@ export default function ConsolidatedReport() {
                         )}
                         {event.name}
                       </td>
-                      <td className="event-date-cell">
+                      <td className="event-date-cell" data-label="Date of Event">
                         {event.startDate ? new Date(event.startDate).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -2151,18 +2151,18 @@ export default function ConsolidatedReport() {
                         }) : '-'}
                       </td>
                       {(isRegional || isSuperAdmin) && (
-                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 500 }} data-label="Province">
                           {event.affectedProvinces?.length > 0
                             ? event.affectedProvinces.join(', ')
                             : 'Region 1'}
                         </td>
                       )}
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }} data-label="Alert Lvl">
                         <span className={`alert-pill alert-${(event.alertStatus || 'white').toLowerCase()}`}>
                           {(event.alertStatus || 'white').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ width: '250px' }}>
+                      <td className="col-action" style={{ width: '250px' }} data-label="Actions">
                         <div className="consolidated-actions">
                           <Button
                             variant="solid"
@@ -2213,7 +2213,7 @@ export default function ConsolidatedReport() {
                 ) : (
                   filteredSitReps.map((v) => (
                     <tr key={v.id}>
-                      <td className="event-name-cell">
+                      <td className="event-name-cell" data-label="Title">
                         {hasUnread(selectedEvent?.id, v.id) && (
                           <span
                             className="table-ping"
@@ -2247,11 +2247,12 @@ export default function ConsolidatedReport() {
                               onConfirm: () => {}
                             })
                           }}
+                          data-label="Province"
                         >
                           {v.province || 'Region 1'}
                         </td>
                       )}
-                      <td className="event-date-cell">
+                      <td className="event-date-cell" data-label="Created At">
                         {new Date(v.created_at).toLocaleString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -2260,12 +2261,12 @@ export default function ConsolidatedReport() {
                           minute: '2-digit'
                         })}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }} data-label="Status">
                         <span className={`status-pill status-${(v.status || 'Draft').toLowerCase().replace(/\s+/g, '-')}`}>
                           {(v.status || 'Draft').toUpperCase()}
                         </span>
                       </td>
-                      <td className="col-action" style={{ width: '250px' }}>
+                      <td className="col-action" style={{ width: '250px' }} data-label="Actions">
                         <div className="consolidated-actions">
                           {(v.approved_pdf_url || v.pending_pdf_url) ? (
                             <Button

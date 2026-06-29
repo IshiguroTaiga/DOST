@@ -19,6 +19,15 @@ import api from './lib/api'
 import './styles/App.css'
 
 
+const GUEST_USER = {
+  id: 'guest',
+  role: 'Guest',
+  account_type: 'Guest',
+  first_name: 'Guest',
+  last_name: 'User',
+  name: 'Guest User',
+}
+
 function App() {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -29,6 +38,7 @@ function App() {
       const savedUser = localStorage.getItem('proact_user')
 
       if (!token || !savedUser) {
+        setUser(GUEST_USER)
         setIsLoading(false)
         return
       }
@@ -39,6 +49,7 @@ function App() {
         if (!fresh || fresh.status === 'Inactive') {
           localStorage.removeItem('proact_token')
           localStorage.removeItem('proact_user')
+          setUser(GUEST_USER)
           setIsLoading(false)
           return
         }
@@ -48,6 +59,7 @@ function App() {
         // Token expired or invalid
         localStorage.removeItem('proact_token')
         localStorage.removeItem('proact_user')
+        setUser(GUEST_USER)
       } finally {
         setIsLoading(false)
       }
@@ -56,7 +68,7 @@ function App() {
     restoreSession()
   }, [])
 
-  const isAuthenticated = !!user
+  const isAuthenticated = !!user && user.role !== 'Guest'
 
   const handleLogin = (loggedInUser) => {
     if (loggedInUser) {
@@ -64,7 +76,7 @@ function App() {
     } else {
       localStorage.removeItem('proact_token')
       localStorage.removeItem('proact_user')
-      setUser(null)
+      setUser(GUEST_USER)
     }
   }
 
@@ -72,7 +84,7 @@ function App() {
     localStorage.removeItem('proact_token')
     localStorage.removeItem('proact_user')
     localStorage.removeItem('selectedEventId')
-    setUser(null)
+    setUser(GUEST_USER)
   }
 
   const handleUserUpdate = (updatedUser) => {
@@ -102,7 +114,7 @@ function App() {
           <Route
             path="/"
             element={
-              isAuthenticated ? (
+              user ? (
                 <Layout user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
               ) : (
                 <Navigate to="/login" replace />
@@ -120,7 +132,7 @@ function App() {
             <Route path="manual" element={<Manual />} />
             <Route path="map" element={<InteractiveMap />} />
           </Route>
-          <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </EventProvider>
     </BrowserRouter>

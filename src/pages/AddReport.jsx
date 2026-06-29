@@ -544,7 +544,7 @@ function CategorySelectionModal({ onClose, onSelect, pingedReportTypes = [], sub
 
 export default function AddReport() {
   const { user } = useOutletContext() || {}
-  const { events, currentEventId, openSelectEventModal, selectedEventForReport, showSuccess, showConfirm, notifications, showToast, lastReportsUpdate, fetchEvents } = useEvents()
+  const { events, currentEventId, openSelectEventModal, selectedEventForReport, showSuccess, showConfirm, notifications, showToast, lastReportsUpdate, fetchEvents, mobileMode, toggleMobileMode } = useEvents()
 
   const T = {
     blue: '#3b82f6',
@@ -746,6 +746,7 @@ export default function AddReport() {
     sitRepId: generatedSummaryData?.situationalReportId 
   })
   const isSuperAdmin = user?.account_type === 'Super Admin' || user?.role === 'Super Admin'
+  const isGuest = user?.role === 'Guest'
 
   const userProvince = useMemo(() => {
     if (user?.province) return user.province;
@@ -1748,6 +1749,7 @@ useEffect(() => {
   }
 
   const handleRowChange = (rowIndex, field, value) => {
+    if (user?.role === 'Guest') return
     setRows((prev) =>
       prev.map((row, i) => {
         if (i !== rowIndex) return row
@@ -2351,11 +2353,13 @@ useEffect(() => {
   }
 
   const addRow = () => {
+    if (user?.role === 'Guest') return
     const defaultRowCity = isLGU ? user.city : defaultCity
     setRows((prev) => [...prev, emptyRow(activeCategoryModal, defaultRowCity)])
   }
 
   const removeRow = (index) => {
+    if (user?.role === 'Guest') return
     const rowToRemove = rows[index]
     if (rows.length > 1) {
       showConfirm({
@@ -2515,6 +2519,7 @@ useEffect(() => {
   }
 
   const handleUnifiedChange = (field, value) => {
+    if (user?.role === 'Guest') return
     setUnifiedForm(prev => {
       const updated = { ...prev, [field]: value }
       if (activeCategoryModal === 'houses') {
@@ -3056,7 +3061,7 @@ useEffect(() => {
         <tr key={index} className="report-table-data-row">
 
           {!isLGU && (
-            <td className="col-city">
+            <td className="col-city" data-label="City">
               <SearchableSelect
                 value={row.city}
                 options={LGU_NAMES}
@@ -3065,16 +3070,17 @@ useEffect(() => {
                   handleRowChange(index, 'barangay', '')
                 }}
                 placeholder="Select city..."
-                disabled={isLGU}
+                disabled={isLGU || isGuest}
               />
             </td>
           )}
-          <td className="col-barangay">
+          <td className="col-barangay" data-label="Barangay">
             <SearchableSelect
               value={row.barangay}
               options={getBarangaysForCity(row.city || user?.city)}
               onChange={(e) => handleRowChange(index, 'barangay', e.target.value)}
               placeholder="Select..."
+              disabled={isGuest || !row.city}
             />
           </td>
           {activeCategoryModal === 'roads' && (
@@ -3529,38 +3535,42 @@ useEffect(() => {
     
     return (
       <div className="report-table-card modern-report-container">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-            style={{ display: 'none' }}
-            onChange={handleImportCSV}
-          />
-          <Button variant="outline" size="sm" onClick={downloadTemplate}>
-            Download Template
-          </Button>
-          <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
-            Import from Excel/CSV
-          </Button>
-        </div>
+        {!isGuest && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              style={{ display: 'none' }}
+              onChange={handleImportCSV}
+            />
+            <Button variant="outline" size="sm" onClick={downloadTemplate}>
+              Download Template
+            </Button>
+            <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+              Import from Excel/CSV
+            </Button>
+          </div>
+        )}
         <div className="consolidated-report-table-wrapper">
           <table className="consolidated-report-table">
             <thead>{tableHeader()}</thead>
             <tbody>{tableRows()}</tbody>
           </table>
-          <div className="table-footer-actions">
-            <Button 
-              variant="subtle" 
-              color="primary" 
-              size="sm" 
-              onClick={addRow}
-              leftIcon={<Plus size={16} />}
-              className="add-row-bottom-btn"
-            >
-              Add New Row
-            </Button>
-          </div>
+          {!isGuest && (
+            <div className="table-footer-actions">
+              <Button 
+                variant="subtle" 
+                color="primary" 
+                size="sm" 
+                onClick={addRow}
+                leftIcon={<Plus size={16} />}
+                className="add-row-bottom-btn"
+              >
+                Add New Row
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -3628,7 +3638,7 @@ useEffect(() => {
               suggestions={view === 'events' ? events.map(e => e.name) : submittedReports.map((r) => r.location)}
               className="consolidated-report-search-box"
             />
-            {view === 'events' && (
+            {view === 'events' && !isGuest && (
               <Button 
                 variant="solid" 
                 color="primary" 
@@ -3645,7 +3655,7 @@ useEffect(() => {
               <>
                 {view === 'entries' && (
                   <>
-                    {currentSituationalReport && !isLGU && (
+                    {currentSituationalReport && !isLGU && !isGuest && (
                       <Button
                         variant="solid"
                         color="warning"
@@ -3669,7 +3679,7 @@ useEffect(() => {
                     </Button>
 
                     {/* LGU Submit button (direct submit, no approval gate) */}
-                    {(isLGU || isSuperAdmin) && currentSituationalReport && (
+                    {(isLGU || isSuperAdmin) && currentSituationalReport && !isGuest && (
                       <Button
                         variant="solid"
                         color={lguSubmissionStatus === 'Submitted' || lguSubmissionStatus === 'Approved' ? 'success' : 'primary'}
@@ -3697,7 +3707,7 @@ useEffect(() => {
                 )}
 
                 {/* Everyone can create new Situation Reports in the new flow. Everyone can add entries to an existing report. */}
-                {(view === 'entries' || view === 'versions') && (
+                {(view === 'entries' || view === 'versions') && !isGuest && (
                   <Button 
                     variant="solid" 
                     color="primary" 
@@ -3945,7 +3955,7 @@ useEffect(() => {
                             <Button variant="solid" color="primary" size="sm"
                               onClick={() => { setCurrentSituationalReport(sr); setView('entries'); setCurrentPage(1); }}
                               icon={<FileText size={14} />}>
-                              Manage
+                              {isGuest ? 'View Entries' : 'Manage'}
                             </Button>
                             
                             {/* Send Button: visible to LGU (to Province) and Provincial/Admin (to Regional/Super Admin) */}
@@ -4005,7 +4015,7 @@ useEffect(() => {
                   {paginatedRows.length > 0 ? (
                     paginatedRows.map((item, idx) => (
                       <tr key={item.id || idx} className="report-table-data-row">
-                        <td className="col-barangay" style={{ verticalAlign: 'middle', padding: '8px 12px' }}>
+                        <td className="col-barangay" style={{ verticalAlign: 'middle', padding: '8px 12px' }} data-label="Location">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '12px' }}>
                               <span style={{
@@ -4034,14 +4044,14 @@ useEffect(() => {
                             )}
                           </div>
                         </td>
-                        <td style={{ color: '#475569', fontSize: '12.5px', fontWeight: 700, verticalAlign: 'middle', textTransform: 'uppercase', padding: '8px 12px' }}>
+                        <td style={{ color: '#475569', fontSize: '12.5px', fontWeight: 700, verticalAlign: 'middle', textTransform: 'uppercase', padding: '8px 12px' }} data-label="Classification">
                           {item.categoryTitle}
                         </td>
-                        <td style={{ fontSize: '12.5px', color: '#334155', verticalAlign: 'middle', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', padding: '8px 12px' }}>
+                        <td style={{ fontSize: '12.5px', color: '#334155', verticalAlign: 'middle', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', padding: '8px 12px' }} data-label="Details">
                           <span style={{ fontWeight: 600, color: '#0f172a' }}>{item.subject}</span>
                           {item.summary && <span style={{ color: '#64748b' }}> | {item.summary}</span>}
                         </td>
-                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px 12px', fontSize: '12.5px' }}>
+                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px 12px', fontSize: '12.5px' }} data-label="Status">
                           {(() => {
                             const s = item.status || 'Resolved'
                             const slug = String(s).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'pending'
@@ -4052,27 +4062,41 @@ useEffect(() => {
                             )
                           })()}
                         </td>
-                        <td className="col-action" style={{ width: '250px', padding: '6px 12px' }}>
+                        <td className="col-action" style={{ width: '250px', padding: '6px 12px' }} data-label="Actions">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center' }}>
-                            <Button
-                              variant="solid"
-                              color="info"
-                              size="sm"
-                              onClick={() => handleEditReport(item)}
-                              icon={<FilePlus size={14} />}
-                            >
-                              Edit Entry
-                            </Button>
-                            <Button
-                              variant="solid"
-                              size="sm"
-                              color="danger"
-                              onClick={() => handleConfirmDelete(item)}
-                              title="Delete Report"
-                              icon={<Trash size={14} />}
-                            >
-                              Delete
-                            </Button>
+                            {isGuest ? (
+                              <Button
+                                variant="solid"
+                                color="info"
+                                size="sm"
+                                onClick={() => handleEditReport(item)}
+                                icon={<Eye size={14} />}
+                              >
+                                View Entry
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="solid"
+                                  color="info"
+                                  size="sm"
+                                  onClick={() => handleEditReport(item)}
+                                  icon={<FilePlus size={14} />}
+                                >
+                                  Edit Entry
+                                </Button>
+                                <Button
+                                  variant="solid"
+                                  size="sm"
+                                  color="danger"
+                                  onClick={() => handleConfirmDelete(item)}
+                                  title="Delete Report"
+                                  icon={<Trash size={14} />}
+                                >
+                                  Delete
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -4190,37 +4214,43 @@ useEffect(() => {
         }
         maxWidth="98%"
         footer={
-          <>
-            <Button variant="subtle" onClick={handleCloseActiveModal}>Cancel</Button>
-            <Button
-              variant="solid"
-              color="primary"
-              onClick={handleSubmit}
-              isLoading={submitting}
-              leftIcon={<FilePlus size={16} />}
-            >
-              Submit Report
-            </Button>
-          </>
+          isGuest ? (
+            <Button variant="solid" onClick={handleCloseActiveModal}>Close</Button>
+          ) : (
+            <>
+              <Button variant="subtle" onClick={handleCloseActiveModal}>Cancel</Button>
+              <Button
+                variant="solid"
+                color="primary"
+                onClick={handleSubmit}
+                isLoading={submitting}
+                leftIcon={<FilePlus size={16} />}
+              >
+                Submit Report
+              </Button>
+            </>
+          )
         }
       >
-        <div className="report-table-card modern-report-container">
+        <div className={`report-table-card modern-report-container ${isGuest ? 'is-guest-view' : ''}`}>
           
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-              style={{ display: 'none' }}
-              onChange={handleImportCSV}
-            />
-            <Button variant="outline" size="sm" onClick={downloadTemplate}>
-              Download Template
-            </Button>
-            <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
-              Import from Excel/CSV
-            </Button>
-          </div>
+          {!isGuest && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '16px' }}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                style={{ display: 'none' }}
+                onChange={handleImportCSV}
+              />
+              <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                Download Template
+              </Button>
+              <Button variant="solid" color="primary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                Import from Excel/CSV
+              </Button>
+            </div>
+          )}
 
           <div className="consolidated-report-table-wrapper">
             <table className="consolidated-report-table">
@@ -4262,7 +4292,7 @@ useEffect(() => {
                 {rows.map((row, rowIndex) => (
                   <tr key={rowIndex} className="report-table-data-row">
                     {!isLGU && (
-                      <td className="col-city">
+                      <td className="col-city" data-label="City">
                         <SearchableSelect
                           value={row.city}
                           options={LGU_NAMES}
@@ -4271,11 +4301,11 @@ useEffect(() => {
                             handleRowChange(rowIndex, 'barangay', '')
                           }}
                           placeholder="Select city..."
-                          disabled={isLGU}
+                          disabled={isLGU || isGuest}
                         />
                       </td>
                     )}
-                    <td className="col-barangay">
+                    <td className="col-barangay" data-label="Barangay">
                       <SearchableSelect
                         value={row.barangay}
                         options={getBarangaysForCity(row.city || user?.city)}
@@ -4283,7 +4313,7 @@ useEffect(() => {
                           handleRowChange(rowIndex, 'barangay', e.target.value)
                         }
                         placeholder="Select barangay..."
-                        disabled={!row.city}
+                        disabled={isGuest || !row.city}
                       />
                     </td>
                     <td>
@@ -4483,18 +4513,20 @@ useEffect(() => {
                 ))}
               </tbody>
             </table>
-            <div className="table-footer-actions">
-              <Button 
-                variant="subtle" 
-                color="primary" 
-                size="sm" 
-                onClick={addRow}
-                leftIcon={<Plus size={16} />}
-                className="add-row-bottom-btn"
-              >
-                Add New Row
-              </Button>
-            </div>
+            {!isGuest && (
+              <div className="table-footer-actions">
+                <Button 
+                  variant="subtle" 
+                  color="primary" 
+                  size="sm" 
+                  onClick={addRow}
+                  leftIcon={<Plus size={16} />}
+                  className="add-row-bottom-btn"
+                >
+                  Add New Row
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </HeaderFooterModal>
@@ -4512,21 +4544,25 @@ useEffect(() => {
         }
         maxWidth="98%"
         footer={
-          <>
-            <Button variant="subtle" onClick={handleCloseActiveModal}>Cancel</Button>
-            <Button
-              variant="solid"
-              color="primary"
-              onClick={handleSubmit}
-              isLoading={submitting}
-              leftIcon={<FilePlus size={18} />}
-            >
-              Submit Report
-            </Button>
-          </>
+          isGuest ? (
+            <Button variant="solid" onClick={handleCloseActiveModal}>Close</Button>
+          ) : (
+            <>
+              <Button variant="subtle" onClick={handleCloseActiveModal}>Cancel</Button>
+              <Button
+                variant="solid"
+                color="primary"
+                onClick={handleSubmit}
+                isLoading={submitting}
+                leftIcon={<FilePlus size={18} />}
+              >
+                Submit Report
+              </Button>
+            </>
+          )
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} className={isGuest ? 'is-guest-view' : ''}>
           {renderUnifiedForm()}
         </div>
       </HeaderFooterModal>

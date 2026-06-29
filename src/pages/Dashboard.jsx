@@ -2180,16 +2180,16 @@ CHRONOLOGY OF EVENTS`;
             {/* Temperature display */}
             <div 
               className="meta-item weather-item clickable-meta-item"
-              onClick={handleOpenWeatherModal}
-              style={{ cursor: 'pointer' }}
-              title="Click to set temperature manually"
+              onClick={user?.role === 'Guest' ? undefined : handleOpenWeatherModal}
+              style={{ cursor: user?.role === 'Guest' ? 'default' : 'pointer' }}
+              title={user?.role === 'Guest' ? 'Current Temperature' : 'Click to set temperature manually'}
             >
               <div className="meta-icon">
                 {weatherLoading ? <ArrowsClockwise size={18} className="animate-spin" /> : <Thermometer size={18} weight="duotone" color="black" />}
               </div>
               <div className="meta-content">
                 <span className="meta-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Weather <Pencil size={12} style={{ opacity: 0.6 }} />
+                  Weather {user?.role !== 'Guest' && <Pencil size={12} style={{ opacity: 0.6 }} />}
                 </span>
                 <span className="meta-value" style={{ whiteSpace: 'nowrap' }}>
                   {weather ? (

@@ -3,6 +3,18 @@ const jwt = require('jsonwebtoken');
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (req.method === 'GET') {
+      req.user = {
+        id: 'guest',
+        email: 'guest@proact.dost.gov.ph',
+        role: 'Guest',
+        account_type: 'Guest',
+        province: null,
+        city: null,
+        must_change_password: false
+      };
+      return next();
+    }
     console.warn(`[AuthMiddleware] Missing or invalid header for ${req.method} ${req.originalUrl}`);
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
@@ -17,6 +29,18 @@ function authenticate(req, res, next) {
     }
     next();
   } catch (err) {
+    if (req.method === 'GET') {
+      req.user = {
+        id: 'guest',
+        email: 'guest@proact.dost.gov.ph',
+        role: 'Guest',
+        account_type: 'Guest',
+        province: null,
+        city: null,
+        must_change_password: false
+      };
+      return next();
+    }
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       console.warn(`[AuthMiddleware] Token error (${err.name}) for ${req.method} ${req.originalUrl}`);
       return res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });

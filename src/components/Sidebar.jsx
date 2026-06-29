@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X, MapTrifold } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X, MapTrifold, DeviceMobile } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
@@ -19,7 +19,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
   const navigate = useNavigate()
   const location = useLocation()
-  const { notifications, pendingUsersCount, pendingApprovalsCount, markNotificationsByTypeAsRead } = useEvents()
+  const { notifications, pendingUsersCount, pendingApprovalsCount, markNotificationsByTypeAsRead, mobileMode, toggleMobileMode } = useEvents()
   
   const unreadNotifs = notifications?.filter(n => !n.is_read) || []
   
@@ -124,7 +124,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </span>
           )}
         </NavLink>
-        {(isAdmin || isRegional || isProvincial) && (
+        {(isAdmin || isRegional || isProvincial || user?.role === 'Guest') && (
           <NavLink
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -139,7 +139,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-        {(isProvincial || isRegional || isSuperAdmin) && (
+        {(isProvincial || isRegional || isSuperAdmin || user?.role === 'Guest') && (
           <div className="sidebar-nav-group">
             <NavLink
               to="/consolidated-report"
@@ -162,14 +162,14 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           title={isCollapsed ? 'Add Report' : ''}
         >
           <FilePlus size={16} weight="bold" />
-          {!isCollapsed && <span>Add Report</span>}
+          {!isCollapsed && <span>{user?.role === 'Guest' ? 'Reports' : 'Add Report'}</span>}
           {getNavCount('/add-report') > 0 && (
             <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
               {getNavCount('/add-report')}
             </span>
           )}
         </NavLink>
-        {(isSuperAdmin || isRegional) && (
+        {(isSuperAdmin || isRegional || user?.role === 'Guest') && (
           <NavLink
             to="/for-approval"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -186,7 +186,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
         )}
 
 
-        {isAdmin && (
+        {(isAdmin || user?.role === 'Guest') && (
           <NavLink
             to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -285,21 +285,28 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
 
       <div className="sidebar-footer">
         <div className="sidebar-user-profile">
-          <div className="user-avatar-small" title={isCollapsed ? displayName : ''}>
+          <div className="user-avatar-small" title={isCollapsed ? (user?.role === 'Guest' ? 'Guest' : displayName) : ''}>
             <User size={16} />
           </div>
           {!isCollapsed && (
             <div className="user-info-text">
-              <span className="user-greeting">Hello, {displayName}</span>
+              <span className="user-greeting">
+                {user?.role === 'Guest' ? 'Hello, Guest' : `Hello, ${displayName}`}
+              </span>
               <span className="user-type-label">
-                {user?.account_type || user?.role || 'User'}
-                {user?.account_type?.startsWith('Provincial')
-                  ? (user?.province ? ` · ${user.province}` : '') 
-                  : (user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : '')}
+                {user?.role === 'Guest' ? 'Guest View Mode' : (
+                  <>
+                    {user?.account_type || user?.role || 'User'}
+                    {user?.account_type?.startsWith('Provincial')
+                      ? (user?.province ? ` · ${user.province}` : '') 
+                      : (user?.city ? ` · ${user.city}` : user?.province ? ` · ${user.province}` : '')}
+                  </>
+                )}
               </span>
             </div>
           )}
         </div>
+
         <button
           className="sidebar-link"
           onClick={() => setShowSettingsModal(true)}
@@ -309,14 +316,26 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           <Gear size={16} weight="bold" />
           {!isCollapsed && <span>Settings</span>}
         </button>
-        <button 
-          className="sidebar-link logout-btn" 
-          onClick={openLogoutModal}
-          title={isCollapsed ? 'Logout' : ''}
-        >
-          <SignOut size={16} weight="bold" />
-          {!isCollapsed && <span>Logout</span>}
-        </button>
+        {user?.role === 'Guest' ? (
+          <button 
+            className="sidebar-link login-btn" 
+            onClick={() => navigate('/login')}
+            title={isCollapsed ? 'Login' : ''}
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <SignOut size={16} weight="bold" style={{ transform: 'rotate(180deg)', color: '#6366f1' }} />
+            {!isCollapsed && <span style={{ color: '#6366f1', fontWeight: 700 }}>Login</span>}
+          </button>
+        ) : (
+          <button 
+            className="sidebar-link logout-btn" 
+            onClick={openLogoutModal}
+            title={isCollapsed ? 'Logout' : ''}
+          >
+            <SignOut size={16} weight="bold" />
+            {!isCollapsed && <span>Logout</span>}
+          </button>
+        )}
       </div>
 
       <ConfirmationModal

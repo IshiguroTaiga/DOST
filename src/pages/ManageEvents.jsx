@@ -464,7 +464,7 @@ const handleApplyAll = async (signal) => {
              <div className="consolidated-report-search-box">
                <SearchInput placeholder="Search incidents..." value={searchTerm} onChange={val => { setSearchTerm(val); setCurrentPage(1) }} />
              </div>
-             {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
+             {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && user?.role !== 'Guest' && (
                <Button 
                  variant="solid" 
                  color="primary" 
@@ -528,7 +528,7 @@ const handleApplyAll = async (signal) => {
                   </td>
                   <td className="col-action">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                      {!event.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
+                      {!event.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && user?.role !== 'Guest' && (
                         <Button 
                           variant="solid"
                           color="success"
@@ -603,7 +603,7 @@ const handleApplyAll = async (signal) => {
         footer={
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div>
-               {editingId && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
+               {editingId && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && user?.role !== 'Guest' && (
                  <Button 
                    variant="outline" 
                    color="danger"
@@ -622,7 +622,7 @@ const handleApplyAll = async (signal) => {
               
               {modalMode === 'view' ? (
                 <>
-                  {editingId && !events.find(e => e.id === editingId)?.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && (
+                  {editingId && !events.find(e => e.id === editingId)?.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && user?.role !== 'Guest' && (
                     <Button 
                       variant="solid"
                       color="success"
@@ -633,7 +633,7 @@ const handleApplyAll = async (signal) => {
                       Deploy
                     </Button>
                   )}
-                  {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.account_type === 'Provincial Admin' || user.account_type === 'Provincial' || user.account_type === 'LGU Admin' || user.account_type === 'LGU') && (
+                  {(user.account_type === 'Regional Admin' || user.account_type === 'Super Admin' || user.account_type === 'Provincial Admin' || user.account_type === 'Provincial' || user.account_type === 'LGU Admin' || user.account_type === 'LGU') && user?.role !== 'Guest' && (
                     <Button 
                       variant="solid"
                       color="primary"

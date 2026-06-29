@@ -93,6 +93,40 @@ export default function Login({ onLogin }) {
           <Button type="submit" className="login-btn" isLoading={submitting}>
             Sign In
           </Button>
+          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const guestUser = {
+                  id: 'guest',
+                  role: 'Guest',
+                  account_type: 'Guest',
+                  first_name: 'Guest',
+                  last_name: 'User',
+                  name: 'Guest User',
+                };
+                onLogin?.(guestUser);
+                navigate('/dashboard', { replace: true });
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#6366f1',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                width: '100%',
+                transition: 'background-color 0.2s',
+                backgroundColor: 'rgba(99, 102, 241, 0.05)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.05)'}
+            >
+              Continue as Guest / View System
+            </button>
+          </div>
         </form>
       </div>
       <div className="login-footer">

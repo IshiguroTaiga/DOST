@@ -450,7 +450,7 @@ export default function Users() {
     return sortAsc ? <CaretUp size={14} className="users-sort-icon" /> : <CaretDown size={14} className="users-sort-icon" />
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && currentUser?.role !== 'Guest') {
     return (
       <div className="page users-page">
         <div className="users-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
@@ -489,14 +489,16 @@ export default function Users() {
             >
               Export CSV
             </Button>
-            <Button 
-              variant="solid" 
-              color="primary" 
-              onClick={openModal}
-              leftIcon={<UserPlus size={18} />}
-            >
-              Add User
-            </Button>
+            {currentUser?.role !== 'Guest' && (
+              <Button 
+                variant="solid" 
+                color="primary" 
+                onClick={openModal}
+                leftIcon={<UserPlus size={18} />}
+              >
+                Add User
+              </Button>
+            )}
           </div>
         </div>
 
@@ -544,7 +546,7 @@ export default function Users() {
                     {paginatedUsers.map((user) => {
                       return (
                         <tr key={user.id}>
-                          <td>
+                          <td data-label="Name">
                             <div className="users-cell-name">
                               <div className="users-avatar">{firstLetter(user)}</div>
                               {hasUnread(user.id) && (
@@ -564,18 +566,18 @@ export default function Users() {
                               {displayName(user)}
                             </div>
                           </td>
-                          <td>{user.email}</td>
+                          <td data-label="Email">{user.email}</td>
                           {(isSuperAdmin || isRegionalAdmin) && (
-                            <td>{user.province || '-'}</td>
+                            <td data-label="Province">{user.province || '-'}</td>
                           )}
-                          <td>{user.account_type || '-'}</td>
-                          <td>{user.creator_email || 'System'}</td>
-                          <td>
+                          <td data-label="Account Type">{user.account_type || '-'}</td>
+                          <td data-label="Created By">{user.creator_email || 'System'}</td>
+                          <td data-label="Status">
                             <span className={`users-status users-status-${(user.status || 'Active').toLowerCase()}`}>
                               {user.status || 'Active'}
                             </span>
                           </td>
-                          <td className="col-action">
+                          <td className="col-action" data-label="Actions">
                             <div className="consolidated-actions">
                               <Button
                                 variant="solid"
@@ -758,7 +760,7 @@ export default function Users() {
         maxWidth="500px"
         footer={
           <>
-            {isSuperAdmin && viewDetailsUser?.id !== currentUser?.id && (
+            {isSuperAdmin && viewDetailsUser?.id !== currentUser?.id && currentUser?.role !== 'Guest' && (
               <Button 
                 variant="outline" 
                 color="danger" 
@@ -769,7 +771,9 @@ export default function Users() {
               </Button>
             )}
             <Button variant="subtle" onClick={closeViewDetailsModal}>Close</Button>
-            <Button variant="solid" onClick={openEditModalFromDetails}>Edit</Button>
+            {currentUser?.role !== 'Guest' && (
+              <Button variant="solid" onClick={openEditModalFromDetails}>Edit</Button>
+            )}
           </>
         }
       >

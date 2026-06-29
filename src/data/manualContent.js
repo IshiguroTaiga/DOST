@@ -238,14 +238,68 @@ export const MANUAL_SECTIONS = [
       {
         title: 'Developers Profile',
         text: 'Patongan, Joaquin\nBullanday, Luis\nLadera, Ivan\nPagurayan, Angel Lyka\nPermison, Micko Gabriel',
-        visual: '/assets/help/DVProfile.JPG',
-        type: 'iframe'
+        visual: '/assets/help/DVShowcase.jpeg',
+        type: 'iframe',
+        clickableNames: true
       },
       {
         title: 'Developer Showcase',
-        text: '[Placeholder for showcasing developer\'s work, projects, or portfolio. To be updated by the developer.]',
-        visual: 'https://drive.google.com/file/d/1ClYQS7zonb3TaSaM-Stnb2j7MZ9a1sHl/view',
-        type: 'iframe'
+        developersShowcase: true,
+        developers: [
+          {
+            id: 'bullanday-luis',
+            name: 'Bullanday, Luis',
+            photo: '/assets/devs/bullanday.jpg',
+            about: "Yo! I'm a Computer Science student and an aspiring Frontend Developer who loves creating clean, interactive, and user-friendly websites. Outside of coding, I enjoy watching anime, playing video games, and spending time learning new things at my own pace. I like bringing ideas to life through code and building projects that are both fun and useful. Code. Learn. Repeat. No Sleep XD.",
+            email: 'bullandayluist@gmail.com',
+            github: 'github.com/rcssln',
+            number: '09164453919',
+            links: [
+              'https://www.facebook.com/luis.tegerero.bullanday'
+            ]
+          },
+          {
+            id: 'ladera-ivan',
+            name: 'Ladera, Ivan',
+            photo: '/assets/devs/ladera.jpg',
+            about: "Sup! I'm a Computer Science student at MMSU. currently learning programming and continuously improving my skills through self-study. Aside from coding, I have a basic background in graphic design and enjoy creating simple, clean designs whenever I get the chance. I like watching movies and thrift shopping. I'm always looking for opportunities to learn something new and become a better developer every day.",
+            email: 'Ivanjustinladera0722@gmail.com',
+            github: 'github.com/ItlogNaMaalat',
+            number: '09263898004',
+            links: [
+              'https://www.facebook.com/Ihbann/'
+            ]
+          },
+          {
+            id: 'pagurayan-angel-lyka',
+            name: 'Pagurayan, Angel Lyka S.',
+            photo: '/assets/devs/pagurayan.jpg',
+            about: "Hi, I’m Angel, a Computer Science student driven by the intersection of technology and visual design. I specialize in bridging the gap between functional code and aesthetic impact, leveraging my background in photography and graphic design to enhance the user experience of my tech projects. I am deeply committed to continuous growth and dedicated to building creative, high-impact digital solutions.",
+            email: 'pagurayanangellyka@gmail.com',
+            github: 'github.com/jykzrepo',
+            number: '0995 785 4029 / 0960 853 9878',
+            links: [
+              'linkedin.com/in/angel-lyka-pagurayan-8ba51718b',
+              'https://www.facebook.com/pagurayan.angel',
+              'https://www.instagram.com/cout.angel_/'
+            ]
+          },
+          {
+            id: 'permison-micko-gabriel',
+            name: 'Permison, Micko Gabriel D.',
+            photo: '/assets/devs/permison.png',
+            about: "Halo! a Computer Science MMSU student here i am the one under the name IshiguroTaiga which you might have seen me on other social platforms and games, very interested into web development. Whether I'm building highly personalized, anime-themed sites or systems for school and corporate projects, I love bringing ideas to life on the screen. Outside programming, I spend a lot of my time gaming, reading mangas/manhwas and a bit of studying.",
+            email: 'mickogabriel75@gmail.com',
+            github: 'github.com/IshiguroTaiga',
+            number: '0998 155 6469 / 0916 442 5310',
+            links: [
+              'https://www.facebook.com/micko.gabriel.47',
+              'https://www.facebook.com/mickogabriel.permison.47',
+              'https://www.instagram.com/ishigurotaiga/',
+              'https://www.tiktok.com/@ishiguro_taiga'
+            ]
+          }
+        ]
       }
     ]
   },
@@ -317,27 +371,23 @@ export const MANUAL_SECTIONS = [
     steps: [
       {
         title: 'Week 1: Introduction and Initial UI Changes',
-        text: '**Day 1:** Oriented with SIREN project; rebranding to PROACT; implemented clickable dashboard category buttons.\n**Day 2:** Fixed event assignment "apply to all" functionality; developed Affected Persons details modal; integrated SOLIDO DRRM Knowledge Hub sidebar link; updated log-in page background to WhiteSmoke.\n**Day 3:** React/JavaScript project file structure orientation; dashboard header UI refinements; finalized PROACT logo.\n**Day 4:** Added Hazard Information to sidebar with external resources (Solido, PAGASA, PHIVOLCS); fixed dash-hero-meta and dash-hero-amount overlapping layout.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
+        text: '**June 1:** Oriented with SIREN project; rebranding to PROACT; implemented clickable dashboard category buttons.\n**June 2:** Fixed event assignment "apply to all" functionality; developed Affected Persons details modal; integrated SOLIDO DRRM Knowledge Hub sidebar link; updated log-in page background to WhiteSmoke.\n**June 3:** React/JavaScript project file structure orientation; dashboard header UI refinements; finalized PROACT logo.\n**June 4:** Added Hazard Information to sidebar with external resources (Solido, PAGASA, PHIVOLCS); fixed dash-hero-meta and dash-hero-amount overlapping layout.'
       },
       {
         title: 'Week 2: Backend Logic and System Optimization',
-        text: '**Day 5:** Integrated Browser Geolocation API (wttr) into Dashboard.jsx; removed redundant "Approver" user roles; implemented LGU/Province self-approval workflow; fixed Add Report classification/summary layout; added weatherClassification.json; fixed 1M/1B currency formatting for Assistance Value; added scroll-to-bottom utility for Damaged Houses.\n**Day 6:** Developed AI report summary generator supporting Groq (Llama 3) and Google Gemini via custom API keys; changed dash-hero-meta layout from flex to grid.\n**Day 7:** Tested Vercel deployment; resolved user login fetching and Super Admin privilege bugs on proact.dost1.ph.\n**Day 8:** Fixed remote PDF preview bugs; designed database schema for AI executive summary history; converted Affected Person vertical bar chart to horizontal with filtering; updated city suspension tracking to LGU scope.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
+        text: '**June 8:** Integrated Browser Geolocation API (wttr) into Dashboard.jsx; removed redundant "Approver" user roles; implemented LGU/Province self-approval workflow; fixed Add Report classification/summary layout; added weatherClassification.json; fixed 1M/1B currency formatting for Assistance Value; added scroll-to-bottom utility for Damaged Houses.\n**June 9:** Developed AI report summary generator supporting Groq (Llama 3) and Google Gemini via custom API keys; changed dash-hero-meta layout from flex to grid.\n**June 10:** Tested Vercel deployment; resolved user login fetching and Super Admin privilege bugs on proact.dost1.ph.\n**June 11:** Fixed remote PDF preview bugs; designed database schema for AI executive summary history; converted Affected Person vertical bar chart to horizontal with filtering; updated city suspension tracking to LGU scope.'
       },
       {
         title: 'Week 3: Final Features and Debugging',
-        text: '**Day 9:** Resolved provincial data leaks and standardized global SitRep numbering; added barangay accordions to Affected Person list; implemented synchronized pop-up barangay charts when clicking city data.\n**Day 10:** Security audit & "Edit User" password bypass patch; corrected gaps in weatherClassifications.json (e.g., 30°C alignment); enforced Mandatory Report Categories (Red Dots); reorganized Help Manual with developer profiles and iframe/video support; fixed sidebar collapse visibility for hazard links; changed weather icons to black; fixed Affected Person numerical bugs.\n**Day 10-11:** Integrated ExcelJS for advanced exports; added native data validation dropdowns and dependent city-to-barangay filtering via INDIRECT formulas; built mobile-first responsive UI with Hamburger Menu and optimized grids.\n**Day 11:** Developed Interactive GIS Map for monitoring stations; refactored Equipment Inventory to a space-efficient horizontal 3-3-1 grid layout; implemented draggable/editable detail modals; configured partial update PATCH routes for stations; added 11-digit Philippine mobile formatting; updated PROACT logo to feature the 1RDRRMC crest.\n**Day 12:** Enforced LGU/Provincial scope validation for Excel uploads and limited templates to assigned cities; added frontend import filters with warnings for unauthorized rows; secured backend API using validateReportAccess across POST/PATCH routes; normalized city string comparisons.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
+        text: '**June 15:** Resolved provincial data leaks and standardized global SitRep numbering; added barangay accordions to Affected Person list; implemented synchronized pop-up barangay charts when clicking city data.\n**June 16:** Security audit & "Edit User" password bypass patch; corrected gaps in weatherClassifications.json (e.g., 30°C alignment); enforced Mandatory Report Categories (Red Dots); reorganized Help Manual with developer profiles and iframe/video support; fixed sidebar collapse visibility for hazard links; changed weather icons to black; fixed Affected Person numerical bugs.\n**June 16-17:** Integrated ExcelJS for advanced exports; added native data validation dropdowns and dependent city-to-barangay filtering via INDIRECT formulas; built mobile-first responsive UI with Hamburger Menu and optimized grids.\n**June 17:** Developed Interactive GIS Map for monitoring stations; refactored Equipment Inventory to a space-efficient horizontal grid layout; implemented draggable/editable detail modals; configured partial update PATCH routes for stations; added 11-digit Philippine mobile formatting; updated PROACT logo to feature the 1RDRRMC crest.\n**June 18:** Enforced LGU/Provincial scope validation for Excel uploads and limited templates to assigned cities; added frontend import filters with warnings for unauthorized rows; secured backend API using validateReportAccess across POST/PATCH routes; normalized city string comparisons.'
       },
       {
         title: 'Week 4: Final Permissions & Context Synchronization',
-        text: '**Day 13:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**Day 14:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows; integrated a comprehensive Project Handbook under Help & Manual (Developer Profiles) and exported the root-level handbook.md.\n**Day 15:** Exposed "Add Report" tab in sidebar to Regional users; added dedicated "For Approval" link in sidebar for approvers; updated backend routing to allow creators to fetch and edit their own unapproved draft reports; made SitRep auto-cloning permanent in the frontend; constrained backend auto-clone lookup by report province; scoped database replication during auto-cloning by city boundaries from region1_barangays.json to prevent cross-province data leaks; expanded the Project Handbook and Help Manual with user hierarchy role descriptions and settings panel configurations.',
-        visual: '/assets/help/dashboard_demo.webp',
-        type: 'video'
+        text: '**June 22:** Reverted station permissions to allow LGU edits; locked down and pre-populated Province/LGU fields in the mapping station drawer to block cross-jurisdictional updates; added fetchEvents and useEffect sync hooks to resolve auto-refresh lag for mandatory report markers; corrected the default alert status indicator color for "White (Normal)" from indigo to gray/white (#94a3b8); documented Davis Instruments v1 API proxying simulation token configurations.\n**June 23:** Rearranged sidebar layout (Interactive Map placed below Users); fixed user edit modal location reset bugs for LGUs/Provinces; implemented real-time auto-refresh utilizing Socket.io (users:changed) on user mutations; fixed user email and password database updates with administrative password reset bypasses; fixed a database foreign key constraint violation error when deleting user accounts by wrapping the operation in a transaction that cascades sets to NULL and deletes associated activity logs; implemented custom cyclone monitoring details (Location, Wind/Gust, Movement, Coordinates, and dynamic real-time clock) for Tropical Cyclone events on the Dashboard hero section and event creation/edit workflows; integrated a comprehensive Project Handbook under Help & Manual (Developer Profiles) and exported the root-level handbook.md.\n**June 24:** Exposed "Add Report" tab in sidebar to Regional users; added dedicated "For Approval" link in sidebar for approvers; updated backend routing to allow creators to fetch and edit their own unapproved draft reports; made SitRep auto-cloning permanent in the frontend; constrained backend auto-clone lookup by report province; scoped database replication during auto-cloning by city boundaries from region1_barangays.json to prevent cross-province data leaks; expanded the Project Handbook and Help Manual with user hierarchy role descriptions and settings panel configurations; integrated accountability logs tracking report authorship and approvals.\n**June 25:** Resolved git merge conflicts for final deployment; successfully presented the completed PROACT system and stay learnings to DOST Region 1.'
+      },
+      {
+        title: 'Week 5: Guest Access & Handover Maintenance',
+        text: '**June 29:** Implemented a full guest/viewer role across system components, blocking database modifications on key forms while granting read-only capabilities; refactored the developer showcase layout to a clickable side-by-side view with absolute URLs; integrated toggleable responsive mobile mode support for tabular views; resolved final spacing and layout constraints.'
       }
     ]
   },

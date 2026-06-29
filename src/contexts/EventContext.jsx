@@ -63,6 +63,28 @@ export function EventProvider({ children, user }) {
   const [lastReportsUpdate, setLastReportsUpdate] = useState(Date.now())
   const [lastUsersUpdate, setLastUsersUpdate] = useState(Date.now())
 
+  const [mobileMode, setMobileMode] = useState(() => {
+    const saved = localStorage.getItem('mobile_mode')
+    if (saved !== null) return saved === 'true'
+    return window.innerWidth < 1024
+  })
+
+  const toggleMobileMode = useCallback(() => {
+    setMobileMode(prev => {
+      const next = !prev
+      localStorage.setItem('mobile_mode', String(next))
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    if (mobileMode) {
+      document.documentElement.classList.add('mobile-mode-active')
+    } else {
+      document.documentElement.classList.remove('mobile-mode-active')
+    }
+  }, [mobileMode])
+
   // 3. UI Utility Hooks (Must be defined before they are used in other hooks' dependencies)
   const showSuccess = useCallback((title, message) => {
     let finalTitle = title;
@@ -1023,7 +1045,9 @@ setEventSignals(Object.values(deduplicated))
     lastUsersUpdate,
     toast,
     showToast,
-    closeToast
+    closeToast,
+    mobileMode,
+    toggleMobileMode
   }
 
   return (

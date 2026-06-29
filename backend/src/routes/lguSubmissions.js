@@ -286,6 +286,7 @@ router.get('/pending', authenticate, async (req, res) => {
   const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
   const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
   const isLgu = ['LGU Admin', 'LGU'].includes(req.user.account_type);
+  const isGuest = req.user.role === 'Guest';
 
   try {
     let query = `
@@ -297,7 +298,7 @@ router.get('/pending', authenticate, async (req, res) => {
     `;
     const params = [];
 
-    if (!isSuperAdmin && !isRegional) {
+    if (!isSuperAdmin && !isRegional && !isGuest) {
       if (isProvincial && req.user.province) {
         params.push(req.user.province);
         query += ` AND sr.province = $${params.length}`;
@@ -326,6 +327,7 @@ router.get('/pending-count', authenticate, async (req, res) => {
   const isRegional = ['Regional Admin', 'Regional'].includes(req.user.account_type);
   const isProvincial = ['Provincial Admin', 'Provincial'].includes(req.user.account_type);
   const isLgu = ['LGU Admin', 'LGU'].includes(req.user.account_type);
+  const isGuest = req.user.role === 'Guest';
 
   try {
     let query = `
@@ -336,7 +338,7 @@ router.get('/pending-count', authenticate, async (req, res) => {
     `;
     const params = [];
     
-    if (!isSuperAdmin && !isRegional) {
+    if (!isSuperAdmin && !isRegional && !isGuest) {
       if (isProvincial && req.user.province) {
         params.push(req.user.province);
         query += ` AND sr.province = $${params.length}`;

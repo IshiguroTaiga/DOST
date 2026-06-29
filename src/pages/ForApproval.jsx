@@ -22,6 +22,7 @@ export default function ForApproval() {
 
   const isProvincial = ['Provincial Admin', 'Provincial'].includes(user?.account_type)
   const isRegionalOrSuper = ['Regional Admin', 'Regional', 'Super Admin'].includes(user?.account_type) || user?.role === 'Super Admin'
+  const isGuest = user?.role === 'Guest'
 
   const [sitreps, setSitreps] = useState([])
   const [lguSubmissions, setLguSubmissions] = useState([])
@@ -31,6 +32,7 @@ export default function ForApproval() {
   const [processingReview, setProcessingReview] = useState(false)
   const [showPdfPreview, setShowPdfPreview] = useState(true)
   const [remarks, setRemarks] = useState('')
+  const [guestTab, setGuestTab] = useState('lgu')
 
   const fetchPendingData = async () => {
     if (!user) return
@@ -42,6 +44,11 @@ export default function ForApproval() {
       } else if (isRegionalOrSuper) {
         const { data } = await api.get('/situational-reports', { params: { status: 'Pending Approval' } })
         setSitreps(data || [])
+      } else if (isGuest) {
+        const { data: sitrepData } = await api.get('/situational-reports', { params: { status: 'Pending Approval' } }).catch(() => ({ data: [] }))
+        setSitreps(sitrepData || [])
+        const { data: lguData } = await api.get('/lgu-submissions/pending').catch(() => ({ data: [] }))
+        setLguSubmissions(lguData || [])
       }
     } catch (err) {
       console.error('Error fetching pending data:', err)
@@ -170,11 +177,11 @@ export default function ForApproval() {
                 ) : (
                   lguSubmissions.map((item) => (
                     <tr key={`${item.situational_report_id}-${item.city}`}>
-                      <td className="event-name-cell">{item.event_name || 'Unknown Event'}</td>
-                      <td style={{ fontWeight: 500 }}>{item.report_title}</td>
-                      <td>{item.city}</td>
-                      <td className="event-date-cell">{new Date(item.updated_at).toLocaleDateString()}</td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                      <td className="event-name-cell" data-label="Event">{item.event_name || 'Unknown Event'}</td>
+                      <td style={{ fontWeight: 500 }} data-label="Report">{item.report_title}</td>
+                      <td data-label="LGU">{item.city}</td>
+                      <td className="event-date-cell" data-label="Updated At">{new Date(item.updated_at).toLocaleDateString()}</td>
+                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }} data-label="Actions">
                         <Button
                           variant="solid"
                           color="primary"
@@ -202,15 +209,23 @@ export default function ForApproval() {
             maxWidth="600px"
             footer={
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', width: '100%' }}>
-                <Button variant="subtle" onClick={() => setShowReviewModal(false)} disabled={processingReview}>
-                  Cancel
-                </Button>
-                <Button variant="solid" color="danger" onClick={() => handleRejectLgu(reviewSitRep, remarks)} isLoading={processingReview} disabled={!remarks.trim()}>
-                  Reject
-                </Button>
-                <Button variant="solid" color="primary" onClick={() => handleApproveLgu(reviewSitRep)} isLoading={processingReview}>
-                  Approve
-                </Button>
+                {isGuest ? (
+                  <Button variant="solid" onClick={() => setShowReviewModal(false)}>
+                    Close
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="subtle" onClick={() => setShowReviewModal(false)} disabled={processingReview}>
+                      Cancel
+                    </Button>
+                    <Button variant="solid" color="danger" onClick={() => handleRejectLgu(reviewSitRep, remarks)} isLoading={processingReview} disabled={!remarks.trim()}>
+                      Reject
+                    </Button>
+                    <Button variant="solid" color="primary" onClick={() => handleApproveLgu(reviewSitRep)} isLoading={processingReview}>
+                      Approve
+                    </Button>
+                  </>
+                )}
               </div>
             }
           >
@@ -283,11 +298,11 @@ export default function ForApproval() {
                 ) : (
                   sitreps.map((sr) => (
                     <tr key={sr.id}>
-                      <td className="event-name-cell">{sr.events?.name || 'Unknown Event'}</td>
-                      <td style={{ fontWeight: 500 }}>{sr.title}</td>
-                      <td>{sr.province}</td>
-                      <td className="event-date-cell">{new Date(sr.created_at).toLocaleDateString()}</td>
-                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                      <td className="event-name-cell" data-label="Event">{sr.events?.name || 'Unknown Event'}</td>
+                      <td style={{ fontWeight: 500 }} data-label="Report">{sr.title}</td>
+                      <td data-label="Province">{sr.province}</td>
+                      <td className="event-date-cell" data-label="Created At">{new Date(sr.created_at).toLocaleDateString()}</td>
+                      <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }} data-label="Actions">
                         <Button
                           variant="solid"
                           color="primary"
@@ -315,12 +330,20 @@ export default function ForApproval() {
             maxWidth="1100px"
             footer={
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', width: '100%' }}>
-                <Button variant="subtle" onClick={() => setShowReviewModal(false)} disabled={processingReview}>
-                  Cancel
-                </Button>
-                <Button variant="solid" color="primary" onClick={handleApprove} isLoading={processingReview} icon={<CheckCircle size={18} />}>
-                  Approve
-                </Button>
+                {isGuest ? (
+                  <Button variant="solid" onClick={() => setShowReviewModal(false)}>
+                    Close
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="subtle" onClick={() => setShowReviewModal(false)} disabled={processingReview}>
+                      Cancel
+                    </Button>
+                    <Button variant="solid" color="primary" onClick={handleApprove} isLoading={processingReview} icon={<CheckCircle size={18} />}>
+                      Approve
+                    </Button>
+                  </>
+                )}
               </div>
             }
           >
@@ -420,6 +443,198 @@ export default function ForApproval() {
         )}
       </div>
     )
+  }
+
+  if (isGuest) {
+    return (
+      <div className="page for-approval-page">
+        <div className="consolidated-report-card">
+          <div className="consolidated-report-toolbar">
+            <div className="consolidated-report-header-stack">
+              <h1 className="consolidated-report-title">Pending Approvals (Guest View)</h1>
+              <p className="page-subtitle" style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
+                View situational reports and LGU submissions pending approval.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #e2e8f0', padding: '0 1.75rem', marginTop: '1rem' }}>
+            <button
+              onClick={() => setGuestTab('lgu')}
+              style={{
+                padding: '0.75rem 1rem',
+                border: 'none',
+                background: 'none',
+                borderBottom: guestTab === 'lgu' ? '2px solid #6366f1' : 'none',
+                color: guestTab === 'lgu' ? '#6366f1' : '#64748b',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              LGU Submissions ({lguSubmissions.length})
+            </button>
+            <button
+              onClick={() => setGuestTab('regional')}
+              style={{
+                padding: '0.75rem 1rem',
+                border: 'none',
+                background: 'none',
+                borderBottom: guestTab === 'regional' ? '2px solid #6366f1' : 'none',
+                color: guestTab === 'regional' ? '#6366f1' : '#64748b',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Regional Reports ({sitreps.length})
+            </button>
+          </div>
+
+          {guestTab === 'lgu' ? (
+            <div className="consolidated-report-table-wrapper" style={{ marginTop: '1rem' }}>
+              <table className="consolidated-report-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '25%' }}>Event</th>
+                    <th style={{ width: '30%' }}>Report Title</th>
+                    <th style={{ width: '15%' }}>City</th>
+                    <th style={{ width: '15%' }}>Submitted At</th>
+                    <th className="col-action" style={{ width: '15%', textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan="5" className="consolidated-report-loading">
+                      <LoadingSpinner small label="Fetching pending submissions..." />
+                    </td></tr>
+                  ) : lguSubmissions.length === 0 ? (
+                    <tr><td colSpan="5" className="consolidated-report-empty">
+                      No LGU submissions pending approval.
+                    </td></tr>
+                  ) : (
+                    lguSubmissions.map((item) => (
+                      <tr key={`${item.situational_report_id}-${item.city}`}>
+                        <td className="event-name-cell" data-label="Event">{item.event_name || 'Unknown Event'}</td>
+                        <td style={{ fontWeight: 500 }} data-label="Report">{item.report_title}</td>
+                        <td data-label="LGU">{item.city}</td>
+                        <td className="event-date-cell" data-label="Updated At">{new Date(item.updated_at).toLocaleDateString()}</td>
+                        <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }} data-label="Actions">
+                          <Button
+                            variant="solid"
+                            color="primary"
+                            size="sm"
+                            onClick={() => { setReviewSitRep(item); setRemarks(''); setShowReviewModal(true) }}
+                            icon={<Eye size={14} />}
+                          >
+                            Review
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="consolidated-report-table-wrapper" style={{ marginTop: '1rem' }}>
+              <table className="consolidated-report-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '25%' }}>Event</th>
+                    <th style={{ width: '30%' }}>Report Title</th>
+                    <th style={{ width: '15%' }}>Province</th>
+                    <th style={{ width: '15%' }}>Submitted At</th>
+                    <th className="col-action" style={{ width: '15%', textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan="5" className="consolidated-report-loading">
+                      <LoadingSpinner small label="Fetching pending reports..." />
+                    </td></tr>
+                  ) : sitreps.length === 0 ? (
+                    <tr><td colSpan="5" className="consolidated-report-empty">
+                      No reports pending approval.
+                    </td></tr>
+                  ) : (
+                    sitreps.map((sr) => (
+                      <tr key={sr.id}>
+                        <td className="event-name-cell" data-label="Event">{sr.events?.name || 'Unknown Event'}</td>
+                        <td style={{ fontWeight: 500 }} data-label="Report">{sr.title}</td>
+                        <td data-label="Province">{sr.province}</td>
+                        <td className="event-date-cell" data-label="Created At">{new Date(sr.created_at).toLocaleDateString()}</td>
+                        <td className="col-action" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }} data-label="Actions">
+                          <Button
+                            variant="solid"
+                            color="primary"
+                            size="sm"
+                            onClick={() => { setReviewSitRep(sr); setShowReviewModal(true) }}
+                            icon={<Eye size={14} />}
+                          >
+                            Review
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {showReviewModal && reviewSitRep && (
+          <HeaderFooterModal
+            isOpen={showReviewModal}
+            onClose={() => setShowReviewModal(false)}
+            title={reviewSitRep.city ? `Review LGU Submission: ${reviewSitRep.city}` : `Review: ${reviewSitRep.title}`}
+            subtitle={reviewSitRep.city ? `Report: ${reviewSitRep.report_title}` : "Review the signed PDF below."}
+            maxWidth={reviewSitRep.city ? "600px" : "1100px"}
+            footer={
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', width: '100%' }}>
+                <Button variant="solid" onClick={() => setShowReviewModal(false)}>
+                  Close
+                </Button>
+              </div>
+            }
+          >
+            {reviewSitRep.city ? (
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'grid', gap: '1.5rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event</label>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginTop: '0.25rem' }}>{reviewSitRep.event_name}</div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>City</label>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginTop: '0.25rem' }}>{reviewSitRep.city}</div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Province</label>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginTop: '0.25rem' }}>{reviewSitRep.province}</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="review-modal-content" style={{ display: 'flex', height: '70vh', gap: '1.5rem', minHeight: 0 }}>
+                <div style={{ flex: 1, background: '#e2e8f0', overflow: 'hidden', minHeight: 0, borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                  {(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url) ? (
+                    <iframe
+                      src={`${resolvePdfUrl(reviewSitRep.pending_pdf_url || reviewSitRep.approved_pdf_url)}#toolbar=0`}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      title="PDF Review"
+                    />
+                  ) : (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748b' }}>
+                      No PDF Preview available.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </HeaderFooterModal>
+        )}
+      </div>
+    );
   }
 
   return (

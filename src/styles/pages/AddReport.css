@@ -1558,3 +1558,106 @@
 .add-row-bottom-btn:active {
 	transform: translateY(-1px);
 }
+
+/* Guest View-Only Mode overrides */
+.is-guest-view input,
+.is-guest-view select,
+.is-guest-view textarea,
+.is-guest-view .modern-date-picker-display,
+.is-guest-view .searchable-select-display,
+.is-guest-view .searchable-select-container,
+.is-guest-view .remarks-trigger,
+.is-guest-view button:not(.modern-date-picker-close-btn):not(.searchable-select-clear-btn) {
+  pointer-events: none !important;
+  cursor: default !important;
+  background-color: rgba(241, 245, 249, 0.6) !important;
+  color: #94a3b8 !important;
+  opacity: 0.8 !important;
+  user-select: none !important;
+}
+
+.is-guest-view .col-actions,
+.is-guest-view th.col-actions,
+.is-guest-view td.col-actions {
+  display: none !important;
+}
+
+/* Mobile Mode Responsive table layouts */
+.mobile-mode-active .consolidated-report-table-wrapper {
+  overflow-x: visible !important;
+}
+
+.mobile-mode-active .consolidated-report-table {
+  min-width: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  border: none !important;
+}
+
+.mobile-mode-active .consolidated-report-table thead {
+  display: none !important;
+}
+
+.mobile-mode-active .consolidated-report-table tbody {
+  display: block !important;
+  width: 100% !important;
+}
+
+.mobile-mode-active .consolidated-report-table tr {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  margin-bottom: 24px !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.mobile-mode-active .consolidated-report-table td {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  padding: 0 !important;
+  border: none !important;
+  width: 100% !important;
+}
+
+.mobile-mode-active .consolidated-report-table td::before {
+  content: attr(data-label);
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #475569;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.mobile-mode-active .consolidated-report-table td.col-actions,
+.mobile-mode-active .consolidated-report-table td.col-action {
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding-top: 12px !important;
+  margin-top: 4px !important;
+}
+
+.mobile-mode-active .consolidated-report-table td.col-actions::before,
+.mobile-mode-active .consolidated-report-table td.col-action::before {
+  display: none !important;
+}
+
+.mobile-mode-active .consolidated-report-table input,
+.mobile-mode-active .consolidated-report-table select,
+.mobile-mode-active .consolidated-report-table textarea,
+.mobile-mode-active .consolidated-report-table .searchable-select-container,
+.mobile-mode-active .consolidated-report-table .modern-date-picker-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}

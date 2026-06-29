@@ -111,4 +111,14 @@
 - **City-Scoped Record Replication:** Overhauled the cloning logic (`cloneTable` and `cloneAllDataTablesWithClient`) to dynamically load Region I geographical boundaries (`region1_barangays.json`) and strictly filter cloned database rows by target province cities, ensuring data isolation and preventing cross-province data contamination during concurrent SitRep edits.
 - **System Walkthrough & Handbook Expansion:** Extended the system handbook (`handbook.md`) and React UI Help Manual (`manualContent.js`) to include detailed walkthroughs explaining the administrative role hierarchy (Super Admin, Regional Admin, Provincial Admin, LGU Admin), administrative privileges, and settings configurations (Security, SMTP Setup, AI Keys, Event Logs, Map Logs).
 - **Super Admin Account Security Scoping:** Implemented strict backend API scoping rules in `users.js` that filter out `Super Admin` (system admin) accounts from being visible to any user who is not a `Super Admin`. Non-Super Admins are blocked from editing, deleting, or creating Super Admin accounts, or elevating any account to the Super Admin role. Bypassed user-deletion constraint bugs and integrated secure transaction authorization.
+- **Enhanced Accountability Tracking:** Integrated tracking controls allowing users to identify report authorship and trailing approvals (who created, modified, and approved each situational report entry).
 
+### **Day 16** (June 25)
+- **Conflict Resolution & Final Deployment:** Resolved git merge conflicts during final deployment preparations.
+- **Final Presentation:** Successfully presented the completed PROACT system, including overall architectural achievements and feature updates, to DOST Region 1.
+
+### **Day 17** (June 29)
+- **Guest / View-Only Account Integration:** Implemented a full guest/viewer role across system components, blocking database modifications on key forms while granting read-only capabilities to the main dashboard widgets and consolidated report views.
+- **Developer Showcase Layout Refinement:** Redesigned the Developer profiles section under Help & Manual. Restructured the list to be a clickable side-by-side view where selecting a developer dynamically displays their information and links on the right-side visual panel. Normalizes portfolio URLs as absolute links to prevent redirect issues.
+- **Mobile Mode Enhancements:** Integrated a toggleable responsive layout class (`.mobile-mode-active`) that reformats wide tabular screens into standard card-based structures for small smartphone devices.
+- **System Maintenance:** Checked security access logic, visual details, and resolved layout constraints to finalize system handover.
