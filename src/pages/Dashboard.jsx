@@ -2278,7 +2278,7 @@ CHRONOLOGY OF EVENTS`;
               >
                 <span className="dash-dropdown-label">
                   <span className="dash-dropdown-prefix">Event</span>
-                  <span className="dash-dropdown-value">{events.find(e => e.id === currentEventId)?.name || 'Select Event'}</span>
+                  <span className="dash-dropdown-value">{currentEvent?.name || 'Select Event'}</span>
                 </span>
                 <CaretRight className={`dash-dropdown-caret ${eventDropdownOpen ? 'rotated' : ''}`} size={12} weight="bold" />
               </button>

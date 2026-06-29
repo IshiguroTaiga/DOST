@@ -464,12 +464,16 @@ export function EventProvider({ children, user }) {
     id: 'default-good-day',
     name: "It's a Good Day",
     eventType: 'Calm',
+    alertLevel: 'Routine',
     alertStatus: 'white',
     color: '#10b981',
     pingedReportTypes: [],
     affectedProvinces: []
   }
-  const currentEvent = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
+  const isEventExpired = (e) => {
+    if (!e || !e.endDate) return false
+    return new Date(e.endDate) <= new Date()
+  }
 
   // 6. Effects
 
@@ -701,8 +705,8 @@ export function EventProvider({ children, user }) {
       const payload = {
         name: capitalizedName,
         color: event.color || '#6366f1',
-        start_date: event.startDate || null,
-        end_date: event.endDate || null,
+        start_date: event.startDate ? new Date(event.startDate).toISOString() : null,
+        end_date: event.endDate ? new Date(event.endDate).toISOString() : null,
         event_type: event.eventType || 'calamity',
         alert_status: event.alertStatus || 'white',
         alert_level: event.alertLevel || null,
@@ -740,8 +744,8 @@ export function EventProvider({ children, user }) {
           : 'Untitled Event'
       }
       if (updates.color !== undefined) payload.color = updates.color
-      if (updates.startDate !== undefined) payload.start_date = updates.startDate || null
-      if (updates.endDate !== undefined) payload.end_date = updates.endDate || null
+      if (updates.startDate !== undefined) payload.start_date = updates.startDate ? new Date(updates.startDate).toISOString() : null
+      if (updates.endDate !== undefined) payload.end_date = updates.endDate ? new Date(updates.endDate).toISOString() : null
       if (updates.eventType !== undefined) payload.event_type = updates.eventType
       if (updates.alertStatus !== undefined) payload.alert_status = updates.alertStatus
       if (updates.alertLevel !== undefined) payload.alert_level = updates.alertLevel || null
@@ -1006,8 +1010,17 @@ setEventSignals(Object.values(deduplicated))
 
   const value = {
     events,
-    currentEvent,
-    currentEventId,
+    get currentEvent() {
+      const raw = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
+      return isEventExpired(raw) ? defaultEvent : raw
+    },
+    get currentEventId() {
+      const raw = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
+      if (isEventExpired(raw)) {
+        return 'default-good-day'
+      }
+      return currentEventId || (events[0] ? events[0].id : 'default-good-day')
+    },
     setCurrentEventId,
     selectedEventForReport,
     situationalReports,

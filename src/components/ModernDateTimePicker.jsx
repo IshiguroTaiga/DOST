@@ -106,6 +106,7 @@ const ModernDateTimePicker = ({
 
   const formattedDisplay = () => {
     if (!value) return placeholder;
+    if (typeof value !== 'string') return placeholder;
     try {
       if (type === 'datetime-local') {
         const [d, t] = value.split('T');
@@ -113,7 +114,7 @@ const ModernDateTimePicker = ({
       }
       return value;
     } catch (e) {
-      return value;
+      return placeholder;
     }
   };
 

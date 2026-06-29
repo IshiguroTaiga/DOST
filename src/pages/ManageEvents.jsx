@@ -1011,7 +1011,7 @@ const handleApplyAll = async (signal) => {
                   <Calendar size={16} color="#94a3b8" />
                   <ModernDateTimePicker
                     value={form.startDate}
-                    onChange={val => setForm({ ...form, startDate: val })}
+                    onChange={e => setForm({ ...form, startDate: e.target.value })}
                     placeholder="Start Date & Time"
                     disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                   />
@@ -1020,7 +1020,7 @@ const handleApplyAll = async (signal) => {
                   <Clock size={16} color="#94a3b8" />
                   <ModernDateTimePicker
                     value={form.endDate}
-                    onChange={val => setForm({ ...form, endDate: val })}
+                    onChange={e => setForm({ ...form, endDate: e.target.value })}
                     placeholder="End Date & Time (Optional)"
                     disabled={editingId && user.account_type !== 'Regional Admin' && user.account_type !== 'Super Admin'}
                   />
