@@ -85,6 +85,19 @@ export function EventProvider({ children, user }) {
     }
   }, [mobileMode])
 
+  const [showDeviceToggle, setShowDeviceToggle] = useState(() => {
+    const saved = localStorage.getItem('show_device_toggle')
+    return saved !== 'false'
+  })
+
+  const toggleShowDeviceToggle = useCallback(() => {
+    setShowDeviceToggle(prev => {
+      const next = !prev
+      localStorage.setItem('show_device_toggle', String(next))
+      return next
+    })
+  }, [])
+
   // 3. UI Utility Hooks (Must be defined before they are used in other hooks' dependencies)
   const showSuccess = useCallback((title, message) => {
     let finalTitle = title;
@@ -1047,7 +1060,9 @@ setEventSignals(Object.values(deduplicated))
     showToast,
     closeToast,
     mobileMode,
-    toggleMobileMode
+    toggleMobileMode,
+    showDeviceToggle,
+    toggleShowDeviceToggle
   }
 
   return (

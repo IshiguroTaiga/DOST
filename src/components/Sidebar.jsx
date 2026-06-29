@@ -19,7 +19,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
   const isAdmin = isRegionalAdmin || isProvincialAdmin || isLguAdmin || isSuperAdmin
   const navigate = useNavigate()
   const location = useLocation()
-  const { notifications, pendingUsersCount, pendingApprovalsCount, markNotificationsByTypeAsRead, mobileMode, toggleMobileMode } = useEvents()
+  const { notifications, pendingUsersCount, pendingApprovalsCount, markNotificationsByTypeAsRead, mobileMode, toggleMobileMode, showDeviceToggle } = useEvents()
   
   const unreadNotifs = notifications?.filter(n => !n.is_read) || []
   
@@ -317,15 +317,17 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           {!isCollapsed && <span>Settings</span>}
         </button>
 
-        <button
-          className="sidebar-link"
-          onClick={toggleMobileMode}
-          style={{ border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
-          title={isCollapsed ? (mobileMode ? 'Switch to Desktop View' : 'Switch to Mobile View') : ''}
-        >
-          <DeviceMobile size={16} weight={mobileMode ? 'fill' : 'bold'} style={{ color: mobileMode ? '#6366f1' : 'inherit' }} />
-          {!isCollapsed && <span>{mobileMode ? 'Desktop View' : 'Mobile View'}</span>}
-        </button>
+        {showDeviceToggle && (
+          <button
+            className="sidebar-link"
+            onClick={toggleMobileMode}
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+            title={isCollapsed ? (mobileMode ? 'Switch to Desktop View' : 'Switch to Mobile View') : ''}
+          >
+            <DeviceMobile size={16} weight={mobileMode ? 'fill' : 'bold'} style={{ color: mobileMode ? '#6366f1' : 'inherit' }} />
+            {!isCollapsed && <span>{mobileMode ? 'Desktop View' : 'Mobile View'}</span>}
+          </button>
+        )}
         {user?.role === 'Guest' ? (
           <button 
             className="sidebar-link login-btn" 

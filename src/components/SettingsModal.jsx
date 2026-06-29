@@ -14,6 +14,7 @@ import HeaderFooterModal from './HeaderFooterModal'
 
 export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserUpdate }) {
     const navigate = useNavigate()
+    const { showDeviceToggle, toggleShowDeviceToggle } = useEvents()
 
     const [activeTab, setActiveTab] = useState('security')
 
@@ -537,6 +538,27 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                                     <div style={{ fontWeight: 700, marginBottom: '0.25rem', color: '#e2e8f0' }}>Dark</div>
                                     <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Dark background, light text</div>
                                 </div> */}
+                            </div>
+
+                            <h3 className="settings-section-title" style={{ marginTop: '2.5rem' }}>Sidebar Options</h3>
+                            <p className="settings-section-desc">Customize layout toggle visibility in the sidebar.</p>
+                            
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', borderRadius: 'var(--radius-md)', border: '2px solid var(--border-color)', background: 'rgba(255,255,255,0.02)', transition: 'all 0.2s' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', width: '100%' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={showDeviceToggle} 
+                                        onChange={toggleShowDeviceToggle}
+                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                    />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        {showDeviceToggle ? <Eye size={20} style={{ color: 'var(--accent)' }} /> : <EyeClosed size={20} style={{ color: 'var(--text-muted)' }} />}
+                                        <div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Show Device Layout Toggle</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Displays the Desktop/Mobile layout toggle in the sidebar footer</div>
+                                        </div>
+                                    </div>
+                                </label>
                             </div>
                         </div>
                     )}
