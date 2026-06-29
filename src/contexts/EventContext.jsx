@@ -66,7 +66,7 @@ export function EventProvider({ children, user }) {
   const [mobileMode, setMobileMode] = useState(() => {
     const saved = localStorage.getItem('mobile_mode')
     if (saved !== null) return saved === 'true'
-    return window.innerWidth < 1024
+    return window.innerWidth < 768
   })
 
   const toggleMobileMode = useCallback(() => {

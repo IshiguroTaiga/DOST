@@ -207,22 +207,22 @@ export default function EventLogs() {
 
                                         return (
                                             <tr key={log.id}>
-                                                <td style={{ fontWeight: 500, color: '#0f172a' }}>{log.action}</td>
-                                                <td>
+                                                <td style={{ fontWeight: 500, color: '#0f172a' }} data-label="Action">{log.action}</td>
+                                                <td data-label="Author">
                                                     <div className="logs-cell-name">
                                                         <div className="logs-avatar">{firstLetter(log)}</div>
                                                         <span style={{ fontWeight: isMe ? 600 : 400 }}>{isMe ? 'You' : displayName(log)}</span>
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <td data-label="Clearance">
                                                     <span className={`logs-badge logs-badge-${authorType.toLowerCase().replace(' ', '-')}`}>
                                                         {authorType}
                                                     </span>
                                                 </td>
-                                                <td style={{ color: '#64748b' }}>
+                                                <td style={{ color: '#64748b' }} data-label="Details">
                                                     {log.details || '-'}
                                                 </td>
-                                                <td style={{ color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                                                <td style={{ color: '#94a3b8', whiteSpace: 'nowrap' }} data-label="Date">
                                                     {new Date(log.created_at).toLocaleString(undefined, {
                                                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
                                                     })}

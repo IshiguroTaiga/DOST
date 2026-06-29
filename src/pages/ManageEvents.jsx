@@ -499,34 +499,34 @@ const handleApplyAll = async (signal) => {
             <tbody>
               {paginated.map(event => (
                 <tr key={event.id}>
-                  <td>
+                  <td data-label="Event Name">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: event.color, flexShrink: 0 }} />
                       <span className="event-name-cell">{event.name}</span>
                     </div>
                   </td>
-                  <td className="event-date-cell">
+                  <td className="event-date-cell" data-label="Date of Event">
                     {event.startDate ? new Date(event.startDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
                   </td>
-                  <td>
+                  <td data-label="Alert Lvl">
                     <span className={alertPillClass(event.alertStatus)}>
                       {(event.alertStatus || 'white').toUpperCase()}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Deployment">
                     {event.isDeployed
                       ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: '#dcfce7', color: '#15803d', fontSize: '0.75rem', fontWeight: 700 }}><CheckCircle size={12} />Deployed</span>
                       : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: '#f1f5f9', color: '#64748b', fontSize: '0.75rem', fontStyle: 'italic' }}><Info size={12} />Draft</span>
                     }
                   </td>
-                  <td>
+                  <td data-label="Provinces">
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {event.affectedProvinces?.length > 0
                         ? event.affectedProvinces.map(p => <span key={p} style={{ display: 'inline-block', padding: '2px 8px', background: '#ede9fe', color: '#5b21b6', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600 }}>{p}</span>)
                         : <span style={{ color: '#94a3b8', fontSize: '0.8125rem' }}>None</span>}
                     </div>
                   </td>
-                  <td className="col-action">
+                  <td className="col-action" data-label="Actions">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                       {!event.isDeployed && (user.account_type === 'Regional Admin' || user.account_type === 'Super Admin') && user?.role !== 'Guest' && (
                         <Button 

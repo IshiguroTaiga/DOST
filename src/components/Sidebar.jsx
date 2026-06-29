@@ -316,6 +316,16 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
           <Gear size={16} weight="bold" />
           {!isCollapsed && <span>Settings</span>}
         </button>
+
+        <button
+          className="sidebar-link"
+          onClick={toggleMobileMode}
+          style={{ border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+          title={isCollapsed ? (mobileMode ? 'Switch to Desktop View' : 'Switch to Mobile View') : ''}
+        >
+          <DeviceMobile size={16} weight={mobileMode ? 'fill' : 'bold'} style={{ color: mobileMode ? '#6366f1' : 'inherit' }} />
+          {!isCollapsed && <span>{mobileMode ? 'Desktop View' : 'Mobile View'}</span>}
+        </button>
         {user?.role === 'Guest' ? (
           <button 
             className="sidebar-link login-btn" 
