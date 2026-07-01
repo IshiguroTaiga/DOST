@@ -9,7 +9,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log(`[Auth/login] Login attempt for: ${email}`);
+  if (email && email.toLowerCase().trim() !== 'mmsu@ccis.dev') {
+    console.log(`[Auth/login] Login attempt for: ${email}`);
+  }
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }

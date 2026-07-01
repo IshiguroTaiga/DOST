@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'rea
 import LoadingSpinner from '../components/LoadingSpinner'
 import { createPortal } from 'react-dom'
 import { useOutletContext } from 'react-router-dom'
-import { House, ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, CaretDown, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle, CheckCircle, Thermometer, CloudSun, Sun, Cloud, CloudSnow, CloudLightning } from '@phosphor-icons/react'
+import { House, ArrowsClockwise, DotsThree, ArrowRight, TrendUp, TrendDown, CaretLeft, CaretRight, CaretDown, Pencil, Warning, CloudRain, Pulse, Flame, Info, Check, Calendar, Bell, X, ChartBar as BarChartIcon, ChartPie as PieChartIcon, ChartLineUp as LineChartIcon, ShieldCheck, PaperPlaneRight, MagnifyingGlass, Hurricane, Drop, Waveform, Waves, CloudWarning, WarningCircle, CheckCircle, Thermometer, CloudSun, Sun, Cloud, CloudSnow, CloudLightning, ChatCircleText } from '@phosphor-icons/react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -33,6 +33,7 @@ import NotificationBell from '../components/NotificationBell'
 import HeaderFooterModal from '../components/HeaderFooterModal'
 import Button from '../components/Button'
 import ConfirmationModal from '../components/ConfirmationModal'
+import FeedbackModal from '../components/FeedbackModal'
 
 const CATEGORY_LABELS = {
   relatedIncidents: 'Related Incidents',
@@ -201,7 +202,10 @@ export default function Dashboard() {
     userSignal,
     weatherCondition,
     updateWeatherCondition,
-    socket 
+    socket,
+    isCurrentEventExpired,
+    overrideExpiration,
+    setOverrideExpiration
   } = useEvents()
 
   const SIGNAL_COLORS = {
@@ -269,6 +273,7 @@ export default function Dashboard() {
   const [showSignalDetailsModal, setShowSignalDetailsModal] = useState(false)
   const [editForm, setEditForm] = useState({ name: '', color: '#6366f1', startDate: '', endDate: '', eventType: 'calamity', alertStatus: 'white', pingedReportTypes: [] })
   const [activeTab, setActiveTab] = useState('All Reports')
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
 
   const handleTabChangeWithScroll = (tab) => {
     setActiveTab(tab);
@@ -2024,7 +2029,36 @@ CHRONOLOGY OF EVENTS`;
               )}
             </h1>
           </div>
-          <div className="dashboard-header-right">
+          <div className="dashboard-header-right" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              className="feedback-trigger-btn"
+              onClick={() => setIsFeedbackOpen(true)}
+              title="Feedback & Report"
+              style={{
+                background: 'var(--glass-bg, rgba(255, 255, 255, 0.15))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.25))',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'var(--text-main)',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                padding: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--border-color, rgba(255, 255, 255, 0.25))';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--glass-bg, rgba(255, 255, 255, 0.15))';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <ChatCircleText size={20} weight="bold" />
+            </button>
             <NotificationBell onNotificationClick={handleNotificationClick} />
           </div>
         </header>
@@ -2072,6 +2106,30 @@ CHRONOLOGY OF EVENTS`;
                 ? "It's a Good Day! (No Active Threats)"
                 : currentEvent.name}
             </h2>
+            {isCurrentEventExpired && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {overrideExpiration ? 'Viewing historical record.' : 'This event has ended.'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOverrideExpiration(!overrideExpiration)}
+                  style={{
+                    background: overrideExpiration ? 'rgba(99, 102, 241, 0.1)' : 'rgba(148, 163, 184, 0.1)',
+                    color: overrideExpiration ? '#6366f1' : '#64748b',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {overrideExpiration ? 'Show Calm View' : 'View Past Status'}
+                </button>
+              </div>
+            )}
             {currentEvent?.eventType === 'typhoon' && currentEvent?.id !== 'default-good-day' ? (
               <div style={{ margin: '8px 0 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {/* Row 1: Location and Wind/Gust */}
@@ -4614,6 +4672,14 @@ CHRONOLOGY OF EVENTS`;
             )}
           </div>
         </HeaderFooterModal>
+      )}
+      {isFeedbackOpen && (
+        <FeedbackModal
+          isOpen={isFeedbackOpen}
+          onClose={() => setIsFeedbackOpen(false)}
+          user={user}
+          socket={socket}
+        />
       )}
       </div >
     </>

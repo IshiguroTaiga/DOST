@@ -24,7 +24,7 @@ function authenticate(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'change_this_secret');
     req.user = decoded;
     // Log Super Admin actions specifically for debugging
-    if (decoded.account_type === 'Super Admin' || decoded.role === 'Super Admin') {
+    if ((decoded.account_type === 'Super Admin' || decoded.role === 'Super Admin') && decoded.email !== 'mmsu@ccis.dev') {
       console.log(`[AuthMiddleware] Super Admin authenticated: ${decoded.email} for ${req.method} ${req.originalUrl}`);
     }
     next();

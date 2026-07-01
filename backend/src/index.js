@@ -19,6 +19,7 @@ const activityLogsRoutes = require('./routes/activityLogs');
 const lguSubmissionsRoutes = require('./routes/lguSubmissions');
 const settingsRoutes = require('./routes/settings');
 const stationsRoutes = require('./routes/stations');
+const feedbackRoutes = require('./routes/feedback');
 const { initDatabase } = require('./dbInit');
 
 const app = express();
@@ -115,6 +116,7 @@ app.use('/api/deployments', deploymentsRoutes);
 app.use('/api/activity-logs', activityLogsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stations', stationsRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Backup Routes (non-prefixed)
 app.use('/auth', authRoutes);
@@ -129,6 +131,7 @@ app.use('/deployments', deploymentsRoutes);
 app.use('/activity-logs', activityLogsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/stations', stationsRoutes);
+app.use('/feedback', feedbackRoutes);
 
 // --- Error Handler ---
 app.use((err, req, res, next) => {

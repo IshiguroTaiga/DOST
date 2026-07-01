@@ -24,6 +24,7 @@ export function EventProvider({ children, user }) {
   
   // 1. Fundamental State
   const [events, setEvents] = useState([])
+  const [overrideExpiration, setOverrideExpiration] = useState(false)
   const socketRef = useRef(null)
   const [currentEventId, setCurrentEventId] = useState(() => {
     return localStorage.getItem('selectedEventId') || null
@@ -1005,22 +1006,32 @@ setEventSignals(Object.values(deduplicated))
       api.post('/activity-logs', { action: 'Switched dashboard event', details: `Event: ${event.name}` })
         .catch(err => console.error('Error logging event switch:', err))
     }
+    setOverrideExpiration(false)
     setCurrentEventId(eventId)
   }, [events, user])
 
   const value = {
     events,
     get currentEvent() {
+      if (currentEventId === 'default-good-day') return defaultEvent
       const raw = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
-      return isEventExpired(raw) ? defaultEvent : raw
+      return (isEventExpired(raw) && !overrideExpiration) ? defaultEvent : raw
     },
     get currentEventId() {
+      if (currentEventId === 'default-good-day') return 'default-good-day'
       const raw = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
-      if (isEventExpired(raw)) {
+      if (isEventExpired(raw) && !overrideExpiration) {
         return 'default-good-day'
       }
       return currentEventId || (events[0] ? events[0].id : 'default-good-day')
     },
+    get isCurrentEventExpired() {
+      if (currentEventId === 'default-good-day') return false
+      const raw = events.find((e) => e.id === currentEventId) ?? events[0] ?? defaultEvent
+      return isEventExpired(raw)
+    },
+    overrideExpiration,
+    setOverrideExpiration,
     setCurrentEventId,
     selectedEventForReport,
     situationalReports,

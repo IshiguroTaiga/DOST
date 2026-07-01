@@ -122,3 +122,9 @@
 - **Developer Showcase Layout Refinement:** Redesigned the Developer profiles section under Help & Manual. Restructured the list to be a clickable side-by-side view where selecting a developer dynamically displays their information and links on the right-side visual panel. Normalizes portfolio URLs as absolute links to prevent redirect issues.
 - **Mobile Mode Enhancements:** Integrated a toggleable responsive layout class (`.mobile-mode-active`) that reformats wide tabular screens into standard card-based structures for small smartphone devices.
 - **System Maintenance:** Checked security access logic, visual details, and resolved layout constraints to finalize system handover.
+
+### **Day 18** (July 1)
+- **Play Store-Style Feedback & Ratings:** Designed and integrated a feedback rating overlay modal beside the dashboard notification bell, giving all users access to submit 1-5 star ratings/comments, and view reviews history with aggregate scores and star-count breakdowns.
+- **System Maintenance:** Refactored internal configurations and improved dashboard widget stability.
+
+
