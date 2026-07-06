@@ -103,7 +103,7 @@ export default function Users() {
       setError(null)
       if (showLoading) setLoading(true)
       const { data } = await api.get('/users')
-      setUsers(data || [])
+      setUsers(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load users')
       setUsers([])

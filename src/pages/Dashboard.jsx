@@ -818,9 +818,10 @@ const handleNotificationClick = (notif) => {
     const { data: allSitreps } = await api.get('/situational-reports', {
       params: { event_id: currentEventId, scope: dashboardScope }
     })
+    const sitrepsList = Array.isArray(allSitreps) ? allSitreps : []
 
     // Group by province and find latest approved for aggregation
-    const latestApprovedPerProvince = (allSitreps || []).reduce((acc, sr) => {
+    const latestApprovedPerProvince = sitrepsList.reduce((acc, sr) => {
       const isApproved = sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved');
       if (isApproved) {
         const prov = sr.province || 'Unknown'
@@ -835,7 +836,7 @@ const handleNotificationClick = (notif) => {
     let approvedIds = []
     if (selectedDashboardSitRepId) {
       if (selectedDashboardSitRepId === 'COMBINED') {
-        const allApproved = (allSitreps || []).filter(sr => sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved'))
+        const allApproved = sitrepsList.filter(sr => sr.status === 'Approved' || (isLguUser && sr.lgu_submission_status === 'Approved'))
         approvedIds = allApproved.map(sr => sr.id)
         approvedIdsCsv = approvedIds.join(',') || '00000000-0000-0000-0000-000000000000'
       } else {
@@ -847,7 +848,7 @@ const handleNotificationClick = (notif) => {
       approvedIdsCsv = approvedIds.join(',') || '00000000-0000-0000-0000-000000000000'
     }
 
-    const sitRepMap = (allSitreps || []).reduce((acc, sr) => {
+    const sitRepMap = sitrepsList.reduce((acc, sr) => {
       acc[sr.id] = sr.title
       return acc
     }, {})
@@ -971,7 +972,7 @@ const handleNotificationClick = (notif) => {
         }
       })
 
-      if (data) data.forEach(row => {
+      if (data && Array.isArray(data)) data.forEach(row => {
         let amount = 1;
         const brgy = row[col];
         const city = row.city || row.mun || toCity(brgy);
@@ -1136,23 +1137,23 @@ const handleNotificationClick = (notif) => {
         const { data: reportsData } = await api.get('/reports/reports', {
           params: { event_id: currentEventId, situational_report_id: approvedIdsCsv, scope: dashboardScope }
         })
+        const reportsList = Array.isArray(reportsData) ? reportsData : []
 
-        if (!reportsData || reportsData.length === 0) {
+        if (reportsList.length === 0) {
           console.log('[Dashboard] No reports found for event:', currentEventId)
           return
         }
 
-        const reportIds = reportsData.map(r => r.id)
+        const reportIds = reportsList.map(r => r.id)
         const { data: rowsData } = await api.get('/reports/report_rows', {
           params: { report_id: reportIds.join(','), scope: dashboardScope }
         })
-
-        if (!rowsData) return
+        const rowsList = Array.isArray(rowsData) ? rowsData : []
 
         // Map rows back to reports
-        const reportsWithRows = reportsData.map(report => ({
+        const reportsWithRows = reportsList.map(report => ({
           ...report,
-          report_rows: rowsData.filter(row => row.report_id === report.id)
+          report_rows: rowsList.filter(row => row.report_id === report.id)
         }))
         
         reportsWithRows.forEach(report => {
@@ -1240,7 +1241,7 @@ const handleNotificationClick = (notif) => {
             scope: dashboardScope
           }
         })
-        if (!data) return
+        if (!data || !Array.isArray(data)) return
         data.forEach(row => {
           const isCurrent = row.created_at >= sinceISO
           const type = row.type || 'N/A'

@@ -1355,16 +1355,17 @@ export default function ConsolidatedReport() {
           situational_report_id: selectedSitRep.id
         }
       })
+      const rowsList = Array.isArray(allRows) ? allRows : []
 
-      if (!allRows?.length) {
+      if (!rowsList.length) {
         alert('No data to export for this category.')
         return
       }
 
-      const headers = Object.keys(allRows[0]).join(',')
+      const headers = Object.keys(rowsList[0]).join(',')
       const csv = [
         headers,
-        ...allRows.map(row => Object.values(row).map(v => `"${v}"`).join(','))
+        ...rowsList.map(row => Object.values(row).map(v => `"${v}"`).join(','))
       ].join('\n')
 
       const blob = new Blob([csv], { type: 'text/csv' })
@@ -1958,26 +1959,27 @@ export default function ConsolidatedReport() {
       const { data: allData } = await api.get('/reports/all-types', {
         params: { situational_report_id: sitRepId }
       })
+      const dataList = Array.isArray(allData) ? allData : []
 
       const exportData = {
         eventName: event?.name || 'Event',
         province: province || '',
         summaryText: sitrep?.title || sitrep?.summary || '',
-        relatedIncidentsDetails: allData.filter(d => d.category === 'incidents'),
-        affectedPopulationDetails: allData.filter(d => d.category === 'evacuation'),
-        roadsAndBridgesDetails: allData.filter(d => d.category === 'roads'),
-        powerDetails: allData.filter(d => d.category === 'power'),
-        waterSupplyDetails: allData.filter(d => d.category === 'water'),
-        communicationLinesDetails: allData.filter(d => d.category === 'communication'),
-        damagedHousesDetails: allData.filter(d => d.category === 'houses'),
-        classSuspensionDetails: allData.filter(d => d.category === 'class'),
-        workSuspensionDetails: allData.filter(d => d.category === 'work'),
-        stateOfCalamityDetails: allData.filter(d => d.category === 'calamity'),
-        preEmptiveEvacuationDetails: allData.filter(d => d.category === 'preemptive'),
-        assistanceProvidedDetails: allData.filter(d => d.category === 'assistance'),
-        assistanceLgusDetails: allData.filter(d => d.category === 'assistance_lgus'),
-        agricultureDamageDetails: allData.filter(d => d.category === 'agriculture'),
-        infrastructureDamageDetails: allData.filter(d => d.category === 'infrastructure'),
+        relatedIncidentsDetails: dataList.filter(d => d.category === 'incidents'),
+        affectedPopulationDetails: dataList.filter(d => d.category === 'evacuation'),
+        roadsAndBridgesDetails: dataList.filter(d => d.category === 'roads'),
+        powerDetails: dataList.filter(d => d.category === 'power'),
+        waterSupplyDetails: dataList.filter(d => d.category === 'water'),
+        communicationLinesDetails: dataList.filter(d => d.category === 'communication'),
+        damagedHousesDetails: dataList.filter(d => d.category === 'houses'),
+        classSuspensionDetails: dataList.filter(d => d.category === 'class'),
+        workSuspensionDetails: dataList.filter(d => d.category === 'work'),
+        stateOfCalamityDetails: dataList.filter(d => d.category === 'calamity'),
+        preEmptiveEvacuationDetails: dataList.filter(d => d.category === 'preemptive'),
+        assistanceProvidedDetails: dataList.filter(d => d.category === 'assistance'),
+        assistanceLgusDetails: dataList.filter(d => d.category === 'assistance_lgus'),
+        agricultureDamageDetails: dataList.filter(d => d.category === 'agriculture'),
+        infrastructureDamageDetails: dataList.filter(d => d.category === 'infrastructure'),
       }
 
       generateConsolidatedCsv(exportData)

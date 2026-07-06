@@ -202,8 +202,9 @@ export function EventProvider({ children, user }) {
     if (!eventId) return
     try {
       const { data } = await api.get('/situational-reports', { params: { event_id: eventId } })
-      setSituationalReports(data || [])
-      return data
+      const reportsList = Array.isArray(data) ? data : []
+      setSituationalReports(reportsList)
+      return reportsList
     } catch (err) {
       console.error('Error fetching situational reports:', err)
       return []
@@ -214,8 +215,9 @@ export function EventProvider({ children, user }) {
     if (!eventId) return
     try {
       const { data } = await api.get('/deployments', { params: { event_id: eventId } })
-      setEventDeployments(data || [])
-      return data
+      const deploymentsList = Array.isArray(data) ? data : []
+      setEventDeployments(deploymentsList)
+      return deploymentsList
     } catch (err) {
       console.error('Error fetching event deployments:', err)
       return []
@@ -237,7 +239,8 @@ export function EventProvider({ children, user }) {
     if (!user) return
     try {
       const { data } = await api.get('/events')
-      const mappedEvents = (data || []).map(mapEvent)
+      const eventsList = Array.isArray(data) ? data : []
+      const mappedEvents = eventsList.map(mapEvent)
       console.log('[EventContext] Fetched events:', mappedEvents.length)
       setEvents(mappedEvents)
     } catch (err) {
@@ -251,8 +254,9 @@ export function EventProvider({ children, user }) {
     if (!user) return
     try {
       const { data } = await api.get('/notifications')
-      setNotifications(data || [])
-      const unread = (data || []).filter(n => !n.is_read)
+      const notifsList = Array.isArray(data) ? data : []
+      setNotifications(notifsList)
+      const unread = notifsList.filter(n => !n.is_read)
       setUnreadCount(unread.length)
       if (!hasShownInitialToast.current && unread.length > 0) {
         hasShownInitialToast.current = true
@@ -300,7 +304,11 @@ export function EventProvider({ children, user }) {
         const { data } = await api.get('/situational-reports', {
           params: { status: 'Pending Approval', count_only: true, event_id: 'all' }
         })
-        setPendingApprovalsCount(Array.isArray(data) ? data.length : (data?.count || 0))
+        if (data && typeof data === 'object') {
+          setPendingApprovalsCount(Array.isArray(data) ? data.length : (data.count || 0))
+        } else {
+          setPendingApprovalsCount(0)
+        }
       } catch (err) {
         console.error('Error fetching pending approvals count:', err)
       }
@@ -677,8 +685,9 @@ export function EventProvider({ children, user }) {
         params: { province: provinces, account_type: ['Provincial', 'Provincial Admin', 'LGU', 'LGU Admin'], status: 'Active' }
       })
 
-      if (usersToNotify && usersToNotify.length > 0) {
-        const notifs = usersToNotify
+      const usersList = Array.isArray(usersToNotify) ? usersToNotify : []
+      if (usersList.length > 0) {
+        const notifs = usersList
           .filter(u => u.id !== user?.id)
           .map(u => ({
             user_id: u.id,
@@ -783,8 +792,9 @@ export function EventProvider({ children, user }) {
     setLoadingSignals(true)
     try {
       const { data } = await api.get('/signals', { params: { event_id: eventId } })
+      const signalsList = Array.isArray(data) ? data : []
       
-      const deduplicated = (data || []).reduce((acc, current) => {
+      const deduplicated = signalsList.reduce((acc, current) => {
         const key = `${current.province?.toLowerCase() || ''}-${current.city?.toLowerCase() || ''}-${current.barangay?.toLowerCase() || ''}`;
         if (!acc[key]) {
           acc[key] = current;
@@ -792,10 +802,8 @@ export function EventProvider({ children, user }) {
         return acc;
       }, {});
 
-setEventSignals(Object.values(deduplicated))
-      
       setEventSignals(Object.values(deduplicated))
-      return data || []
+      return signalsList
     } catch (err) {
       console.error('Error fetching event signals:', err)
       return []

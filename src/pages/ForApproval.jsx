@@ -40,15 +40,15 @@ export default function ForApproval() {
     try {
       if (isProvincial) {
         const { data } = await api.get('/lgu-submissions/pending')
-        setLguSubmissions(data || [])
+        setLguSubmissions(Array.isArray(data) ? data : [])
       } else if (isRegionalOrSuper) {
         const { data } = await api.get('/situational-reports', { params: { status: 'Pending Approval' } })
-        setSitreps(data || [])
+        setSitreps(Array.isArray(data) ? data : [])
       } else if (isGuest) {
         const { data: sitrepData } = await api.get('/situational-reports', { params: { status: 'Pending Approval' } }).catch(() => ({ data: [] }))
-        setSitreps(sitrepData || [])
+        setSitreps(Array.isArray(sitrepData) ? sitrepData : [])
         const { data: lguData } = await api.get('/lgu-submissions/pending').catch(() => ({ data: [] }))
-        setLguSubmissions(lguData || [])
+        setLguSubmissions(Array.isArray(lguData) ? lguData : [])
       }
     } catch (err) {
       console.error('Error fetching pending data:', err)
