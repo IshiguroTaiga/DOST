@@ -124,7 +124,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </span>
           )}
         </NavLink>
-        {(isAdmin || isRegional || isProvincial || user?.role === 'Guest') && (
+        {(isAdmin || isRegional || isProvincial) && user?.role !== 'Guest' && (
           <NavLink
             to="/manage-events"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -139,7 +139,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </NavLink>
         )}
-        {(isProvincial || isRegional || isSuperAdmin || user?.role === 'Guest') && (
+        {(isProvincial || isRegional || isSuperAdmin) && user?.role !== 'Guest' && (
           <div className="sidebar-nav-group">
             <NavLink
               to="/consolidated-report"
@@ -156,20 +156,22 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             </NavLink>
           </div>
         )}
-        <NavLink
-          to="/add-report"
-          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          title={isCollapsed ? 'Add Report' : ''}
-        >
-          <FilePlus size={16} weight="bold" />
-          {!isCollapsed && <span>{user?.role === 'Guest' ? 'Reports' : 'Add Report'}</span>}
-          {getNavCount('/add-report') > 0 && (
-            <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
-              {getNavCount('/add-report')}
-            </span>
-          )}
-        </NavLink>
-        {(isSuperAdmin || isRegional || user?.role === 'Guest') && (
+        {user?.role !== 'Guest' && (
+          <NavLink
+            to="/add-report"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title={isCollapsed ? 'Add Report' : ''}
+          >
+            <FilePlus size={16} weight="bold" />
+            {!isCollapsed && <span>Add Report</span>}
+            {getNavCount('/add-report') > 0 && (
+              <span className={isCollapsed ? 'sidebar-nav-badge--collapsed' : 'sidebar-nav-badge'}>
+                {getNavCount('/add-report')}
+              </span>
+            )}
+          </NavLink>
+        )}
+        {(isSuperAdmin || isRegional) && user?.role !== 'Guest' && (
           <NavLink
             to="/for-approval"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
@@ -186,7 +188,7 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
         )}
 
 
-        {(isAdmin || user?.role === 'Guest') && (
+        {isAdmin && user?.role !== 'Guest' && (
           <NavLink
             to="/users"
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}

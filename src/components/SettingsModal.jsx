@@ -16,7 +16,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
     const navigate = useNavigate()
     const { showDeviceToggle, toggleShowDeviceToggle } = useEvents()
 
-    const [activeTab, setActiveTab] = useState('security')
+    const [activeTab, setActiveTab] = useState(user?.role === 'Guest' ? 'appearance' : 'security')
 
     // Password Change State
     const [currentPassword, setCurrentPassword] = useState('')
@@ -203,7 +203,7 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             setConfirmNewPassword('')
             setPwdError('')
             setPwdSuccess('')
-            setActiveTab('security')
+            setActiveTab(user?.role === 'Guest' ? 'appearance' : 'security')
             setTheme(localStorage.getItem('theme') || 'classic')
             setMaintenanceError('')
             setMaintenanceSuccess('')
@@ -327,12 +327,14 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
             <div className="modal-body-p0" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
                 {/* Modal Sidebar Tabs */}
                 <div className="modal-sidebar">
-                    <button
-                        onClick={() => setActiveTab('security')}
-                        className={`modal-sidebar-tab ${activeTab === 'security' ? 'active' : ''}`}
-                    >
-                        <Shield size={16} /> Security
-                    </button>
+                    {user?.role !== 'Guest' && (
+                        <button
+                            onClick={() => setActiveTab('security')}
+                            className={`modal-sidebar-tab ${activeTab === 'security' ? 'active' : ''}`}
+                        >
+                            <Shield size={16} /> Security
+                        </button>
+                    )}
 
                     <button
                         onClick={() => setActiveTab('appearance')}
@@ -377,32 +379,38 @@ export default function SettingsModal({ isOpen, onClose, user, onLogout, onUserU
                         </button>
                     )}
 
-                    <button
-                        onClick={() => {
-                            onClose()
-                            navigate('/event-logs')
-                        }}
-                        className="modal-sidebar-tab"
-                    >
-                        <ClockCounterClockwise size={16} /> System Event Logs
-                    </button>
+                    {user?.role !== 'Guest' && (
+                        <button
+                            onClick={() => {
+                                onClose()
+                                navigate('/event-logs')
+                            }}
+                            className="modal-sidebar-tab"
+                        >
+                            <ClockCounterClockwise size={16} /> System Event Logs
+                        </button>
+                    )}
 
-                    <button
-                        onClick={() => setActiveTab('map-logs')}
-                        className={`modal-sidebar-tab ${activeTab === 'map-logs' ? 'active' : ''}`}
-                    >
-                        <MapPin size={16} /> Map Logs
-                    </button>
+                    {user?.role !== 'Guest' && (
+                        <button
+                            onClick={() => setActiveTab('map-logs')}
+                            className={`modal-sidebar-tab ${activeTab === 'map-logs' ? 'active' : ''}`}
+                        >
+                            <MapPin size={16} /> Map Logs
+                        </button>
+                    )}
 
-                    <button
-                        onClick={() => {
-                            navigate('/manual')
-                            onClose()
-                        }}
-                        className="modal-sidebar-tab"
-                    >
-                        <Info size={16} /> Help & Manual
-                    </button>
+                    {user?.role !== 'Guest' && (
+                        <button
+                            onClick={() => {
+                                navigate('/manual')
+                                onClose()
+                            }}
+                            className="modal-sidebar-tab"
+                        >
+                            <Info size={16} /> Help & Manual
+                        </button>
+                    )}
 
                     <div className="modal-sidebar-footer">
                         <div className="modal-version-text">

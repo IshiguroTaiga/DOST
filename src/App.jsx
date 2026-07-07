@@ -123,13 +123,13 @@ function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="add-report" element={<AddReport />} />
-            <Route path="users" element={<Users />} />
-            <Route path="consolidated-report" element={<ConsolidatedReport />} />
-            <Route path="event-logs" element={<EventLogs />} />
-            <Route path="manage-events" element={<ManageEvents />} />
-            <Route path="for-approval" element={<ForApproval />} />
-            <Route path="manual" element={<Manual />} />
+            <Route path="add-report" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <AddReport />} />
+            <Route path="users" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <Users />} />
+            <Route path="consolidated-report" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <ConsolidatedReport />} />
+            <Route path="event-logs" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <EventLogs />} />
+            <Route path="manage-events" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <ManageEvents />} />
+            <Route path="for-approval" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <ForApproval />} />
+            <Route path="manual" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <Manual />} />
             <Route path="map" element={<InteractiveMap />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
