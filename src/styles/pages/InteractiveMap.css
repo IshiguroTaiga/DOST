@@ -215,27 +215,34 @@
 
 .form-label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.8125rem; /* ~13px */
   font-weight: 700;
-  color: #64748b;
+  color: #334155; /* Higher contrast slate */
   text-transform: uppercase;
-  margin-bottom: 0.625rem;
+  margin-bottom: 0.375rem; /* 6px */
   padding-left: 0.25rem;
 }
 
 .drawer-input {
   width: 100%;
-  padding: 0.875rem 1.25rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: white;
-  font-size: 0.9375rem;
+  height: 40px; /* Standardize height */
+  padding: 0 0.875rem; /* clean horizontal padding */
+  border-radius: 8px; /* Standardize border radius */
+  border: 1px solid #cbd5e1; /* Clear high-contrast border */
+  background: #ffffff;
+  font-size: 0.875rem; /* ~14px minimum */
+  color: #1e293b;
   transition: all 0.2s;
+}
+
+.drawer-input::placeholder {
+  color: #94a3b8;
+  font-size: 0.8125rem;
 }
 
 .drawer-input:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   outline: none;
 }
 
@@ -331,6 +338,32 @@
 
 /* Ensures SVG icon matches perfectly inside */
 .multi-device-station svg {
+  display: block;
+  width: 57%;
+  height: 57%;
+}
+
+/* Evacuation Center Station: Amber */
+.evac-station .marker-circle {
+  background-color: #f59e0b; /* Tailwind amber-500 */
+  color: #ffffff;
+}
+
+/* Ensures SVG icon matches perfectly inside */
+.evac-station svg {
+  display: block;
+  width: 57%;
+  height: 57%;
+}
+
+/* Relief Warehouse Station: Purple/Indigo */
+.warehouse-station .marker-circle {
+  background-color: #8b5cf6; /* Tailwind violet-500 */
+  color: #ffffff;
+}
+
+/* Ensures SVG icon matches perfectly inside */
+.warehouse-station svg {
   display: block;
   width: 57%;
   height: 57%;
@@ -459,31 +492,97 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
+  width: 100%;
 }
 
 .inventory-item {
   background: #f8fafc;
-  padding: 0.75rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.05);
-  transition: all 0.2s;
+  padding: 0.875rem 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-align: center;
 }
 
+.inventory-item:not(.active):hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+/* Base Active layout shifts */
 .inventory-item.active {
-  background: white;
+  cursor: default;
+  align-items: stretch; /* stretch child form fields */
+}
+
+.inventory-item.active .pill-toggle {
+  margin-bottom: 0.75rem !important; /* spacing below checkbox when expanded */
+  align-self: center; /* keep toggle centered */
+}
+
+/* Selected States */
+.inventory-item.active-blue {
+  background: rgba(59, 130, 246, 0.03);
   border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  border-width: 1.5px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+}
+.inventory-item.active-blue .pill-label {
+  background: #3b82f6 !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2) !important;
+}
+
+.inventory-item.active-amber {
+  grid-column: span 3; /* Expand to full width! */
+  background: #ffffff;
+  border-color: #f59e0b;
+  border-width: 2px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08);
+}
+.inventory-item.active-amber .pill-label {
+  background: #f59e0b !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2) !important;
+}
+
+.inventory-item.active-purple {
+  grid-column: span 3; /* Expand to full width! */
+  background: #ffffff;
+  border-color: #8b5cf6;
+  border-width: 2px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.08);
+}
+.inventory-item.active-purple .pill-label {
+  background: #8b5cf6 !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Receded State for toggles */
+.inventory-item.receded {
+  opacity: 0.45;
+  filter: grayscale(60%);
+  border-color: #e2e8f0 !important;
+  background: rgba(248, 250, 252, 0.5) !important;
 }
 
 .inventory-details-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px dashed #e2e8f0;
+  gap: 0.875rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #cbd5e1;
+  text-align: left; /* Reset text align for forms */
+  width: 100%;
 }
 
 .inventory-detail-field {
@@ -492,20 +591,11 @@
   gap: 0.25rem;
 }
 
-/* Specific 3-3-1 alignment when nothing is expanded */
-.inventory-grid > div:nth-child(7):not(.active) {
-  grid-column: 2;
-}
-
 .equipment-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
   margin-top: 0.5rem;
-}
-
-.equipment-grid > div:nth-child(7) {
-  grid-column: 2;
 }
 
 /* Equipment Detail Overlay */
@@ -853,4 +943,360 @@
   background: #ef4444;
   color: white;
   border-color: #ef4444;
+}
+
+/* Custom View Panels for Evac and Warehouse Details */
+.custom-detail-view {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.evac-occupancy-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.occupancy-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.occupancy-large {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.occupancy-separator {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin: 0 0.25rem;
+}
+
+.occupancy-max {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.occupancy-unit {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-left: 0.5rem;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease-out;
+}
+
+.detail-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.amenities-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.amenity-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.amenity-badge.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.amenity-badge.inactive {
+  background: rgba(255, 255, 255, 0.03);
+  color: #64748b;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-card-bg {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.info-card-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.info-card-val {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+/* Warehouse Specifics */
+.stockpile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.stockpile-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #3b82f6;
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.stockpile-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.stockpile-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.stockpile-unit {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.funds-prepositioned-banner {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.banner-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #c084fc;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.banner-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.asset-status-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.asset-status-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.asset-count {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #3b82f6;
+}
+
+.asset-check-status {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.asset-status-item.active .asset-check-status {
+  color: #10b981;
+}
+
+.asset-status-item.inactive .asset-check-status {
+  color: #64748b;
+}
+
+.asset-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.checkbox-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.checkbox-option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-option-item input {
+  cursor: pointer;
+}
+
+/* Light Theme overrides for Map Drawer Form */
+.map-entry-drawer .form-section-title {
+  font-size: 0.8125rem; /* ~13px */
+  font-weight: 800;
+  color: #1e293b; /* Dark slate */
+  text-transform: uppercase;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.375rem;
+  margin-bottom: 0.875rem;
+  margin-top: 1.5rem; /* generous top margin */
+  letter-spacing: 0.05em;
+  width: 100%;
+}
+
+.map-entry-drawer .sub-label {
+  display: block;
+  font-size: 0.75rem; /* ~12px */
+  font-weight: 700;
+  color: #475569; /* Slate-600 */
+  text-transform: uppercase;
+  margin-bottom: 0.375rem; /* 6px label-to-input gap */
+}
+
+.map-entry-drawer .checkbox-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem; /* vertical list spacing */
+  width: 100%;
+}
+
+.map-entry-drawer .checkbox-option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem; /* ~14px text size */
+  color: #334155; /* Slate-700 for high contrast */
+  cursor: pointer;
+  font-weight: 500;
+  user-select: none;
+  line-height: 1.25;
+}
+
+.map-entry-drawer .checkbox-option-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Dark Theme overrides for Active Details Modal Form */
+.equipment-detail-overlay .form-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.equipment-detail-overlay .sub-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+/* Grid Layout for forms */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem; /* consistent spacing */
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .form-row-2 {
+    grid-template-columns: 1fr; /* collapse to single column on mobile */
+    gap: 0.75rem;
+  }
+}
+
+.detail-edit-input {
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-top: 0.25rem;
+}
+
+.detail-edit-input:focus {
+  border-color: #3b82f6 !important;
 }
