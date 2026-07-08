@@ -2,9 +2,80 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const { sendForgotPasswordEmail } = require('../utils/mailer');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.trim()) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const cleanEmail = email.toLowerCase().trim();
+    const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 LIMIT 1', [cleanEmail]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'No user registered with this email address.' });
+    }
+
+    const user = rows[0];
+    if (user.status === 'Inactive') {
+      return res.status(403).json({ error: 'Your account is inactive. Please contact an administrator.' });
+    }
+    if (user.status === 'Pending') {
+      return res.status(403).json({ error: 'Your account registration is pending approval.' });
+    }
+
+    // Generate secure temporary 8-char password
+    const tempPassword = Math.random().toString(36).slice(-6).toUpperCase() + Math.floor(10 + Math.random() * 90);
+    const hash = await bcrypt.hash(tempPassword, 12);
+
+    await pool.query(
+      'UPDATE users SET password_hash = $1, must_change_password = TRUE WHERE id = $2',
+      [hash, user.id]
+    );
+
+    // Send reset email
+    const emailResult = await sendForgotPasswordEmail(user.email, user.first_name, tempPassword);
+
+    if (!emailResult.success) {
+      console.warn(`[Auth/forgot-password] Email failed to send. Falling back to default temporary password...`);
+      const fallbackPassword = 'Reset@1234';
+      const fallbackHash = await bcrypt.hash(fallbackPassword, 12);
+      await pool.query(
+        'UPDATE users SET password_hash = $1, must_change_password = TRUE WHERE id = $2',
+        [fallbackHash, user.id]
+      );
+      
+      // Log action with fallback note
+      await pool.query(
+        'INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)',
+        [user.id, 'Reset password request', 'User requested password reset. Email failed; reset to default temporary password']
+      );
+
+      return res.json({ 
+        success: true, 
+        emailSent: false,
+        message: 'Mail delivery failed or not configured. Your password has been reset to the default temporary password: Reset@1234'
+      });
+    }
+
+    // Log action
+    await pool.query(
+      'INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)',
+      [user.id, 'Reset password request', 'User requested temporary password reset via Login screen']
+    );
+
+    res.json({ success: true, message: 'A temporary password has been successfully sent to your email.' });
+  } catch (err) {
+    console.error('[Auth/forgot-password] ERROR:', err.message);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {

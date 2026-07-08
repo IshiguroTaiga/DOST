@@ -96,7 +96,9 @@ export default function Users() {
   const [submittingEdit, setSubmittingEdit] = useState(false)
   const [tempPasswordResult, setTempPasswordResult] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedProvinceFilter, setSelectedProvinceFilter] = useState('All')
 
   const fetchUsers = async (showLoading = false) => {
     try {
@@ -117,15 +119,22 @@ export default function Users() {
   }, [lastUsersUpdate])
 
   const filteredUsers = useMemo(() => {
-    if (!searchTerm) return users
+    let result = users
+    if (selectedProvinceFilter && selectedProvinceFilter !== 'All') {
+      result = result.filter((u) => u.province === selectedProvinceFilter)
+    }
+    if (!searchTerm) return result
     const low = searchTerm.toLowerCase()
-    return users.filter((u) =>
+    return result.filter((u) =>
       u.first_name?.toLowerCase().includes(low) ||
       u.last_name?.toLowerCase().includes(low) ||
       u.email?.toLowerCase().includes(low) ||
-      u.role?.toLowerCase().includes(low)
+      u.role?.toLowerCase().includes(low) ||
+      u.province?.toLowerCase().includes(low) ||
+      u.city?.toLowerCase().includes(low) ||
+      u.account_type?.toLowerCase().includes(low)
     )
-  }, [users, searchTerm])
+  }, [users, searchTerm, selectedProvinceFilter])
 
   const sortedUsers = useMemo(() => {
     const list = [...filteredUsers]
@@ -481,6 +490,32 @@ export default function Users() {
               suggestions={users.map(u => `${u.first_name} ${u.last_name}`)}
               className="consolidated-report-search-box"
             />
+            {(isSuperAdmin || isRegionalAdmin) && (
+              <select
+                value={selectedProvinceFilter}
+                onChange={(e) => {
+                  setSelectedProvinceFilter(e.target.value)
+                  setCurrentPage(1)
+                }}
+                style={{
+                  height: '40px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  fontSize: '0.875rem',
+                  background: 'var(--color-input-bg, rgba(15, 23, 42, 0.45))',
+                  color: 'var(--color-text, #f1f5f9)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  minWidth: '150px'
+                }}
+              >
+                <option value="All" style={{ background: '#1e293b', color: '#fff' }}>All Provinces</option>
+                {PROVINCE_NAMES.map(prov => (
+                  <option key={prov} value={prov} style={{ background: '#1e293b', color: '#fff' }}>{prov}</option>
+                ))}
+              </select>
+            )}
             <Button 
               variant="solid" 
               color="success"
@@ -1159,7 +1194,7 @@ export default function Users() {
               </div>
             )}
 
-            {(!tempPasswordResult.emailSent) && (
+            {tempPasswordResult.password && (
               <div style={{
                 background: 'var(--bg-card, #f8fafc)',
                 border: '1px solid var(--border-color, #e2e8f0)',
@@ -1242,12 +1277,12 @@ export default function Users() {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(tempPasswordResult.email)
-                    setCopied(true)
-                    setTimeout(() => setCopied(false), 2000)
+                    setCopiedEmail(true)
+                    setTimeout(() => setCopiedEmail(false), 2000)
                   }}
                   style={{
                     background: 'transparent',
-                    color: copied ? '#22c55e' : 'var(--text-muted, #64748b)',
+                    color: copiedEmail ? '#22c55e' : 'var(--text-muted, #64748b)',
                     border: '1px solid currentColor',
                     borderRadius: '6px',
                     padding: '4px 8px',
@@ -1259,8 +1294,8 @@ export default function Users() {
                     transition: 'all 0.2s'
                   }}
                 >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? 'Copied Email' : 'Copy'}
+                  {copiedEmail ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedEmail ? 'Copied Email' : 'Copy'}
                 </button>
               </div>
             )}

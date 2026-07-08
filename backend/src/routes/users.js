@@ -268,7 +268,13 @@ router.patch('/:id', authenticate, async (req, res) => {
     }
     
     if (theme) { fields.push(`theme = $${fields.length + 1}`); values.push(theme); }
-    if (passwordHash) { fields.push(`password_hash = $${fields.length + 1}`); values.push(passwordHash); }
+    if (passwordHash) { 
+      fields.push(`password_hash = $${fields.length + 1}`); 
+      values.push(passwordHash); 
+      if (!isSelf) {
+        fields.push(`must_change_password = TRUE`);
+      }
+    }
 
     if (fields.length === 0) {
       return res.status(400).json({ error: 'No fields to update' });

@@ -50,7 +50,10 @@ router.post('/:id/summaries', authenticate, async (req, res) => {
 
 const PROVINCES_WITH_CITIES = {};
 try {
-  const regionDataPath = path.resolve(__dirname, '../../../src/data/region1_barangays.json');
+  let regionDataPath = path.resolve(__dirname, '../data/region1_barangays.json');
+  if (!fs.existsSync(regionDataPath)) {
+    regionDataPath = path.resolve(__dirname, '../../../src/data/region1_barangays.json');
+  }
   const regionData = JSON.parse(fs.readFileSync(regionDataPath, 'utf8'));
   if (regionData && regionData.provinces) {
     for (const province of regionData.provinces) {

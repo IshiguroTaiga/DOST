@@ -321,4 +321,93 @@ const sendEventNotificationEmail = async (userEmail, eventName, eventDetails) =>
   }
 };
 
-module.exports = { sendWelcomeEmail, sendEventNotificationEmail };
+/**
+ * Sends a password reset temporary password email.
+ */
+const sendForgotPasswordEmail = async (userEmail, firstName, tempPassword) => {
+  let smtpEmail = process.env.OUTLOOK_EMAIL;
+  let smtpPassword = process.env.OUTLOOK_PASSWORD;
+  let senderName = process.env.OUTLOOK_SENDER_NAME || 'DOST DRRMO';
+  let host = 'smtp.office365.com';
+  let port = 587;
+  let senderEmail = '';
+
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+  try {
+    const { rows } = await pool.query('SELECT value FROM settings WHERE key = $1', ['smtp_config']);
+    if (rows.length > 0 && rows[0].value) {
+      const config = rows[0].value;
+      if (config.username && config.password) {
+        smtpEmail = config.username;
+        smtpPassword = config.password;
+        host = config.host || host;
+        port = parseInt(config.port) || port;
+        senderEmail = config.senderEmail || '';
+        senderName = config.senderName || senderName;
+      }
+    }
+  } catch (dbErr) {
+    console.warn('[Mailer] Could not fetch SMTP config from DB', dbErr.message);
+  }
+
+  if (!smtpEmail || !smtpPassword) {
+    console.warn('[Mailer] SMTP credentials not configured. Skipping password reset email.');
+    return { success: false, error: 'SMTP credentials not configured' };
+  }
+
+  const fromAddress = `"${senderName}" <${senderEmail || smtpEmail}>`;
+  const transporter = nodemailer.createTransport({
+    host: host,
+    port: port,
+    secure: port === 465,
+    auth: { user: smtpEmail, pass: smtpPassword },
+    tls: { 
+      rejectUnauthorized: port === 587 || port === 25 ? false : true,
+      ciphers: 'SSLv3' 
+    }
+  });
+
+  const htmlContent = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+        <div style="background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); padding: 32px 24px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Password Reset Request</h1>
+        </div>
+        <div style="padding: 32px 24px;">
+          <div style="font-size: 18px; font-weight: 600; color: #0f172a; margin-bottom: 16px;">Hello, ${firstName}!</div>
+          <p>We received a request to reset your password. Below is your new temporary password. Please use this password to log in.</p>
+          
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 24px 0; text-align: center;">
+            <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; display: block; margin-bottom: 8px;">Temporary Password</span>
+            <div style="margin: 12px 0; display: inline-block; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px;">
+              <span style="font-family: 'Courier New', Courier, monospace; font-size: 28px; font-weight: 700; color: #1e293b; letter-spacing: 2px;">${tempPassword}</span>
+            </div>
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Tip: You will be prompted to change this password immediately upon logging in.</div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 32px;">
+            <a href="${clientUrl}" style="background-color: #e11d48; color: #ffffff !important; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">Login & Change Password</a>
+          </div>
+        </div>
+        <div style="background-color: #f1f5f9; padding: 24px; text-align: center; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0;">
+          <p style="margin: 0;">If you did not request this reset, please change your password or contact a system administrator immediately.</p>
+          <p style="margin: 4px 0 0 0;">&copy; ${new Date().getFullYear()} DOST DRRMO - PROACT. All rights reserved.</p>
+        </div>
+      </div>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: fromAddress,
+      to: userEmail,
+      subject: "PROACT Password Reset Request",
+      html: htmlContent
+    });
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('[Mailer] Forgot Password Email Error:', error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+module.exports = { sendWelcomeEmail, sendEventNotificationEmail, sendForgotPasswordEmail };
