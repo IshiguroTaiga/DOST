@@ -102,7 +102,7 @@
 - **Tropical Cyclone Monitor Details**: Replaced the generic active event hero description with user-configured Location, Wind/Gust, Movement, Coordinates, and a dynamic real-time clock (HH:MM) that updates every minute for Tropical Cyclone (`typhoon`) events. Added these form inputs to both the main event manager (`ManageEvents.jsx`) and the Dashboard's edit event modal.
 - **Project Handbook Creation**: Created a comprehensive Project Handbook detailing system overview, purpose, solutions, manual vs. PROACT comparison, NSDB guidelines alignment, features, and operational flows. Integrated this handbook directly under the *Settings > Help & Manual (Developer Profiles)* page and exported it as a root-level markdown file named `handbook.md`.
 
-### **Day 15** (June 24)
+### **Day 15*any* (June 24)
 - **Regional "Add Report" Access Enabled:** Exposed the **Add Report** page in the sidebar navigation to Regional users (`Regional` and `Regional Admin`) to allow them to create and manage situational reports.
 - **Dedicated "For Approval" Sidebar Navigation:** Introduced a dedicated **For Approval** navigation link (utilizing the `CheckSquareOffset` icon) in `Sidebar.jsx` for all approver accounts (`Super Admin`, `Regional`, `Regional Admin`, `Regional Approver`, and `Provincial Approver`) to streamline access to the report approval list.
 - **Backend Permissions for Regional Viewers:** Refactored backend routes (`situationalReports.js` and `reports.js`) to allow basic `Regional` viewer accounts to fetch and edit situational reports they created themselves, overriding the default read-only restrictions for unapproved reports.
