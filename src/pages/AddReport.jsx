@@ -1798,6 +1798,23 @@ useEffect(() => {
         status: 'Ongoing'
       })
     },
+    evacuationCenters: {
+      filename: 'Evacuation_Centers',
+      headers: ['City/Municipality', 'Barangay', 'Evacuation Center Name', 'Evacuation Center Address', 'Inside Families CUM', 'Inside Families NOW', 'Inside Persons CUM', 'Inside Persons NOW', 'Origin of IDPs', 'Status', 'Remarks'],
+      map: (d) => ({
+        city: d['City/Municipality'] || '',
+        barangay: d['Barangay'] || '',
+        evacuationCenterName: d['Evacuation Center Name'] || '',
+        evacuationCenterAddress: d['Evacuation Center Address'] || '',
+        insideFamiliesCum: d['Inside Families CUM']?.toString() || '',
+        insideFamiliesNow: d['Inside Families NOW']?.toString() || '',
+        insidePersonsCum: d['Inside Persons CUM']?.toString() || '',
+        insidePersonsNow: d['Inside Persons NOW']?.toString() || '',
+        originOfIdps: d['Origin of IDPs'] || '',
+        status: d['Status'] || 'Active',
+        remarks: d['Remarks'] || ''
+      })
+    },
     power: {
       filename: 'Power_Status',
       headers: ['City/Municipality', 'Barangay', 'Status', 'Type', 'Service Provider', 'Date Interruption', 'Time Interruption', 'Date Restored', 'Time Restored', 'Remarks'],
@@ -2069,55 +2086,186 @@ useEffect(() => {
       try {
         const bstr = evt.target.result
         const wb = XLSX.read(bstr, { type: 'binary' })
-        const wsname = wb.SheetNames[0]
-        const ws = wb.Sheets[wsname]
         let importedRows = []
 
-        if (activeCategoryModal === 'evacuationCenters') {
-          const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 })
-          const isRawTemplate = rawData.length > 10 && rawData[3] && rawData[3].some(cell => cell && cell.toString().includes('EVACUATION CENTER'))
-          
-          if (isRawTemplate) {
-            let currentCity = ''
-            for (let r = 8; r < rawData.length; r++) {
-              const row = rawData[r]
-              if (!row) continue
+        wb.SheetNames.forEach(wsname => {
+          if (wsname.toLowerCase().includes('copy')) return
+          const ws = wb.Sheets[wsname]
+
+          if (activeCategoryModal === 'evacuationCenters') {
+            const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 })
+            const isRawTemplate = rawData.length > 10 && rawData[3] && rawData[3].some(cell => cell && cell.toString().includes('EVACUATION CENTER'))
+            const isInventoryTemplate = rawData.length > 5 && rawData[0] && rawData[0].some(cell => cell && cell.toString().includes('NAME OF EVACUATION CENTER'))
+            
+            if (isRawTemplate) {
+              let currentCity = ''
+              for (let r = 8; r < rawData.length; r++) {
+                const row = rawData[r]
+                if (!row) continue
+                
+                if (row[2] && row[2].toString().trim() && !row[2].toString().toLowerCase().includes('total')) {
+                  currentCity = row[2].toString().trim()
+                }
+                
+                const ecName = row[16] ? row[16].toString().trim() : ''
+                if (!ecName || ecName.toLowerCase() === 'sub-total' || ecName.toLowerCase() === 'grand total' || ecName.toLowerCase().includes('total')) continue
+                
+                const barangay = row[9] ? row[9].toString().trim() : ''
+                const insideFamiliesCum = parseInt(row[20]) || 0
+                const insideFamiliesNow = parseInt(row[21]) || 0
+                const insidePersonsCum = parseInt(row[22]) || 0
+                const insidePersonsNow = parseInt(row[23]) || 0
+                const originOfIdps = row[18] ? row[18].toString().trim() : ''
+                const address = row[17] ? row[17].toString().trim() : ''
+                const remarks = row[26] ? row[26].toString().trim() : ''
+                const status = (insideFamiliesNow > 0 || insidePersonsNow > 0) ? 'Active' : 'Inactive'
+                
+                importedRows.push({
+                  city: currentCity,
+                  barangay,
+                  evacuationCenterName: ecName,
+                  evacuationCenterAddress: address,
+                  insideFamiliesCum: insideFamiliesCum.toString(),
+                  insideFamiliesNow: insideFamiliesNow.toString(),
+                  insidePersonsCum: insidePersonsCum.toString(),
+                  insidePersonsNow: insidePersonsNow.toString(),
+                  originOfIdps,
+                  status,
+                  remarks
+                })
+              }
+            } else if (isInventoryTemplate) {
+              let nameCol = -1
+              let locCol = -1
+              let famCol = -1
+              let indCol = -1
               
-              if (row[2] && row[2].toString().trim() && !row[2].toString().toLowerCase().includes('total')) {
-                currentCity = row[2].toString().trim()
+              for (let r = 0; r < Math.min(3, rawData.length); r++) {
+                const row = rawData[r]
+                if (!row) continue
+                row.forEach((cell, c) => {
+                  if (!cell) return
+                  const str = cell.toString().toUpperCase()
+                  if (str.includes('NAME OF EVACUATION CENTER')) nameCol = c
+                  if (str.includes('LOCATION')) locCol = c
+                  if (str.includes('FAMILY')) famCol = c
+                  if (str.includes('INDIVIDUAL')) indCol = c
+                })
               }
               
-              const ecName = row[16] ? row[16].toString().trim() : ''
-              if (!ecName || ecName.toLowerCase() === 'sub-total' || ecName.toLowerCase() === 'grand total' || ecName.toLowerCase().includes('total')) continue
-              
-              const barangay = row[9] ? row[9].toString().trim() : ''
-              const insideFamiliesCum = parseInt(row[20]) || 0
-              const insideFamiliesNow = parseInt(row[21]) || 0
-              const insidePersonsCum = parseInt(row[22]) || 0
-              const insidePersonsNow = parseInt(row[23]) || 0
-              const originOfIdps = row[18] ? row[18].toString().trim() : ''
-              const address = row[17] ? row[17].toString().trim() : ''
-              const remarks = row[26] ? row[26].toString().trim() : ''
-              const status = (insideFamiliesNow > 0 || insidePersonsNow > 0) ? 'Active' : 'Inactive'
-              
-              importedRows.push({
-                city: currentCity,
-                barangay,
-                evacuationCenterName: ecName,
-                evacuationCenterAddress: address,
-                insideFamiliesCum: insideFamiliesCum.toString(),
-                insideFamiliesNow: insideFamiliesNow.toString(),
-                insidePersonsCum: insidePersonsCum.toString(),
-                insidePersonsNow: insidePersonsNow.toString(),
-                originOfIdps,
-                status,
-                remarks
-              })
+              if (nameCol !== -1 && locCol !== -1) {
+                let currentCity = ''
+                for (let r = 2; r < rawData.length; r++) {
+                  const row = rawData[r]
+                  if (!row) continue
+                  
+                  const nonEmpties = row.map((cell, idx) => cell !== undefined && cell !== null && cell !== '' ? idx : -1).filter(idx => idx !== -1)
+                  
+                  if (nonEmpties.length === 1) {
+                    const idx = nonEmpties[0]
+                    const val = row[idx].toString().trim()
+                    if (val.toUpperCase().startsWith('PROVINCE OF') || val.toUpperCase().startsWith('PROVINCIAL')) {
+                      continue
+                    } else {
+                      currentCity = val
+                    }
+                  } else if (nonEmpties.length > 1) {
+                    const ecName = row[nameCol] ? row[nameCol].toString().trim() : ''
+                    if (!ecName || ecName.toLowerCase().includes('total') || ecName.toLowerCase() === 'name of evacuation center') continue
+                    
+                    const numCell = row[nonEmpties[0]].toString().trim()
+                    if (isNaN(Number(numCell)) && !numCell.includes('/') && numCell.length > 3) {
+                      continue
+                    }
+                    const location = row[locCol] ? row[locCol].toString().trim() : ''
+                    const barangay = location.split(',')[0].trim()
+                    const famCap = row[famCol] ? row[famCol].toString().trim() : ''
+                    const indCap = row[indCol] ? row[indCol].toString().trim() : ''
+                    const remarks = (famCap || indCap) ? `Capacity: ${famCap ? famCap + ' families' : ''}${famCap && indCap ? ', ' : ''}${indCap ? indCap + ' individuals' : ''}` : ''
+                    
+                    let resolvedCity = currentCity
+                    if (!resolvedCity && location) {
+                      const lowerLoc = location.toLowerCase()
+                      const found = LGU_NAMES.find(l => lowerLoc.includes(l.toLowerCase()))
+                      if (found) resolvedCity = found
+                    }
+
+                    importedRows.push({
+                      city: resolvedCity,
+                      barangay,
+                      evacuationCenterName: ecName,
+                      evacuationCenterAddress: location,
+                      insideFamiliesCum: '0',
+                      insideFamiliesNow: '0',
+                      insidePersonsCum: '0',
+                      insidePersonsNow: '0',
+                      originOfIdps: '',
+                      status: 'Active',
+                      remarks
+                    })
+                  }
+                }
+              }
             }
           }
-        }
+
+          if (activeCategoryModal === 'evacuation') {
+            const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 })
+            const isRawTemplate = rawData.length > 10 && rawData[3] && rawData[3].some(cell => cell && cell.toString().includes('EVACUATION CENTER'))
+            
+            if (isRawTemplate) {
+              let currentCity = ''
+              for (let r = 8; r < rawData.length; r++) {
+                const row = rawData[r]
+                if (!row) continue
+                
+                if (row[2] && row[2].toString().trim() && !row[2].toString().toLowerCase().includes('total')) {
+                  currentCity = row[2].toString().trim()
+                }
+                
+                const brgyName = row[9] ? row[9].toString().trim() : ''
+                if (!brgyName || brgyName.toLowerCase() === 'sub-total' || brgyName.toLowerCase() === 'grand total' || brgyName.toLowerCase().includes('total')) continue
+                
+                const affectedFamilies = row[11] ? row[11].toString().trim() : '0'
+                const affectedPersons = row[12] ? row[12].toString().trim() : '0'
+                const ecsCum = row[14] ? row[14].toString().trim() : '0'
+                const ecsNow = row[15] ? row[15].toString().trim() : '0'
+                const insideFamiliesCum = row[20] ? row[20].toString().trim() : '0'
+                const insideFamiliesNow = row[21] ? row[21].toString().trim() : '0'
+                const insidePersonsCum = row[22] ? row[22].toString().trim() : '0'
+                const insidePersonsNow = row[23] ? row[23].toString().trim() : '0'
+                const outsideFamiliesCum = row[24] ? row[24].toString().trim() : '0'
+                const outsideFamiliesNow = row[25] ? row[25].toString().trim() : '0'
+                const outsidePersonsCum = row[26] ? row[26].toString().trim() : '0'
+                const outsidePersonsNow = row[27] ? row[27].toString().trim() : '0'
+                const remarks = row[28] ? row[28].toString().trim() : ''
+                
+                importedRows.push({
+                  city: currentCity,
+                  barangay: brgyName,
+                  affectedFamilies,
+                  affectedPersons,
+                  ecsCum,
+                  ecsNow,
+                  insideFamiliesCum,
+                  insideFamiliesNow,
+                  insidePersonsCum,
+                  insidePersonsNow,
+                  outsideFamiliesCum,
+                  outsideFamiliesNow,
+                  outsidePersonsCum,
+                  outsidePersonsNow,
+                  remarks,
+                  status: 'Ongoing'
+                })
+              }
+            }
+          }
+        })
 
         if (importedRows.length === 0) {
+          const wsname = wb.SheetNames[0]
+          const ws = wb.Sheets[wsname]
           const data = XLSX.utils.sheet_to_json(ws)
           if (data && data.length > 0) {
             importedRows = data.map(config.map)

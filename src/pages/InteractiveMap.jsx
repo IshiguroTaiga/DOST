@@ -1584,6 +1584,15 @@ const MultiDeviceIcon = useMemo(() => {
                         onChange={e => setDetailEditData({ ...detailEditData, coverage: e.target.value })} 
                       />
                     </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Coordinates</span>
+                      <input 
+                        type="text" 
+                        className="drawer-input detail-edit-input" 
+                        disabled
+                        value={`${activeEquipmentDetail.station.latitude}, ${activeEquipmentDetail.station.longitude}`} 
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="custom-view-panels">
@@ -1639,6 +1648,10 @@ const MultiDeviceIcon = useMemo(() => {
                       <div className="info-card-row">
                         <span className="info-card-label">Coverage Area</span>
                         <span className="info-card-val">{activeEquipmentDetail.val.coverage || 'N/A'}</span>
+                      </div>
+                      <div className="info-card-row">
+                        <span className="info-card-label">Coordinates</span>
+                        <span className="info-card-val">{activeEquipmentDetail.station.latitude}, {activeEquipmentDetail.station.longitude}</span>
                       </div>
                     </div>
                   </div>
@@ -1744,6 +1757,15 @@ const MultiDeviceIcon = useMemo(() => {
                         onChange={e => setDetailEditData({ ...detailEditData, coverage: e.target.value })} 
                       />
                     </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Coordinates</span>
+                      <input 
+                        type="text" 
+                        className="drawer-input detail-edit-input" 
+                        disabled
+                        value={`${activeEquipmentDetail.station.latitude}, ${activeEquipmentDetail.station.longitude}`} 
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="custom-view-panels">
@@ -1800,6 +1822,10 @@ const MultiDeviceIcon = useMemo(() => {
                       <div className="info-card-row">
                         <span className="info-card-label">Coverage Area</span>
                         <span className="info-card-val">{activeEquipmentDetail.val.coverage || 'N/A'}</span>
+                      </div>
+                      <div className="info-card-row">
+                        <span className="info-card-label">Coordinates</span>
+                        <span className="info-card-val">{activeEquipmentDetail.station.latitude}, {activeEquipmentDetail.station.longitude}</span>
                       </div>
                     </div>
                   </div>
