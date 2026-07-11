@@ -9,6 +9,8 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import Button from '../components/Button'
+import HeaderFooterModal from '../components/HeaderFooterModal'
+import { getBarangaysForCity } from '../data/locations'
 import '../styles/pages/InteractiveMap.css'
 
 const PROVINCES = ['Ilocos Norte', 'Ilocos Sur', 'La Union', 'Pangasinan']
@@ -55,6 +57,24 @@ const getMarkerSize = (zoom) => {
 export default function InteractiveMap() {
   const { user } = useOutletContext()
   const fileInputRef = useRef(null)
+
+  // Evacuation report modal state variables
+  const [showEvacReportModal, setShowEvacReportModal] = useState(false)
+  const [modalEvents, setModalEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(false)
+  const [selectedEventId, setSelectedEventId] = useState('')
+  const [modalSitReps, setModalSitReps] = useState([])
+  const [sitRepsLoading, setSitRepsLoading] = useState(false)
+  const [selectedSitRepId, setSelectedSitRepId] = useState('')
+  const [reportBarangay, setReportBarangay] = useState('')
+  const [familiesCum, setFamiliesCum] = useState('0')
+  const [familiesNow, setFamiliesNow] = useState('0')
+  const [personsCum, setPersonsCum] = useState('0')
+  const [personsNow, setPersonsNow] = useState('0')
+  const [originIdps, setOriginIdps] = useState('')
+  const [reportStatus, setReportStatus] = useState('Active')
+  const [reportRemarks, setReportRemarks] = useState('')
+  const [submittingReport, setSubmittingReport] = useState(false)
   const [zoom, setZoom] = useState(8)
 
   const accountType = user?.account_type || user?.role || '';
@@ -102,6 +122,129 @@ export default function InteractiveMap() {
     };
     e.preventDefault();
   };
+
+  const fetchModalSitReps = async (eventId) => {
+    setSitRepsLoading(true)
+    try {
+      const { data } = await api.get('/situational-reports', { params: { event_id: eventId } })
+      setModalSitReps(data || [])
+      if (data && data.length > 0) {
+        setSelectedSitRepId(data[0].id)
+      } else {
+        setSelectedSitRepId('')
+      }
+    } catch (err) {
+      console.error('Failed to load SitReps:', err)
+    } finally {
+      setSitRepsLoading(false)
+    }
+  }
+
+  const handleOpenEvacReportModal = async () => {
+    if (!activeEquipmentDetail || activeEquipmentDetail.type.id !== 'evac') return
+    const station = activeEquipmentDetail.station
+    
+    setFamiliesCum(activeEquipmentDetail.val.max_capacity_families || '0')
+    setFamiliesNow(activeEquipmentDetail.val.current_families || '0')
+    setPersonsCum('0')
+    setPersonsNow('0')
+    setOriginIdps('')
+    setReportStatus('Active')
+    setReportRemarks('')
+
+    let guessedBarangay = ''
+    const address = station.address || ''
+    const city = station.lgu || ''
+    if (address && city) {
+      const parts = address.split(',').map(p => p.trim())
+      const barangays = getBarangaysForCity(city) || []
+      const found = parts.find(part => 
+        barangays.some(b => b.toLowerCase() === part.toLowerCase())
+      )
+      if (found) guessedBarangay = found
+    }
+    setReportBarangay(guessedBarangay)
+
+    setShowEvacReportModal(true)
+    setEventsLoading(true)
+    try {
+      const { data } = await api.get('/events')
+      const sorted = (data || []).sort((a, b) => (b.isDeployed ? 1 : 0) - (a.isDeployed ? 1 : 0))
+      setModalEvents(sorted)
+      const activeEvent = sorted.find(e => e.isDeployed) || sorted[0]
+      if (activeEvent) {
+        setSelectedEventId(activeEvent.id)
+        await fetchModalSitReps(activeEvent.id)
+      }
+    } catch (err) {
+      console.error('Failed to load events for report:', err)
+      alert('Could not load events. Please try again.')
+    } finally {
+      setEventsLoading(false)
+    }
+  }
+
+  const handleEventChange = (e) => {
+    const val = e.target.value
+    setSelectedEventId(val)
+    if (val) {
+      fetchModalSitReps(val)
+    } else {
+      setModalSitReps([])
+      setSelectedSitRepId('')
+    }
+  }
+
+  const barangaysList = useMemo(() => {
+    const city = activeEquipmentDetail?.station?.lgu || ''
+    if (!city) return []
+    return getBarangaysForCity(city) || []
+  }, [activeEquipmentDetail])
+
+  const handleSubmitEvacReport = async () => {
+    if (!selectedEventId) {
+      alert('Please select a Disaster Event.')
+      return
+    }
+    if (!selectedSitRepId) {
+      alert('Please select or create a Situational Report first.')
+      return
+    }
+    if (!reportBarangay) {
+      alert('Please select a Barangay.')
+      return
+    }
+
+    setSubmittingReport(true)
+    try {
+      const station = activeEquipmentDetail.station
+      const payload = {
+        event_id: selectedEventId,
+        situational_report_id: selectedSitRepId,
+        city: station.lgu || user?.city || '',
+        barangay: reportBarangay,
+        evacuation_center_name: station.name || '',
+        evacuation_center_address: station.address || '',
+        inside_families_cum: parseInt(familiesCum) || 0,
+        inside_families_now: parseInt(familiesNow) || 0,
+        inside_persons_cum: parseInt(personsCum) || 0,
+        inside_persons_now: parseInt(personsNow) || 0,
+        origin_of_idps: originIdps || '',
+        status: reportStatus,
+        remarks: reportRemarks
+      }
+
+      await api.post('/reports/evacuation_centers_reports/bulk', [payload])
+      alert('Evacuation report submitted successfully!')
+      setShowEvacReportModal(false)
+    } catch (err) {
+      console.error('Failed to submit evacuation report:', err)
+      const errorMsg = err.response?.data?.details || err.response?.data?.error || err.message || 'Failed to submit report'
+      alert(`Error: ${errorMsg}`)
+    } finally {
+      setSubmittingReport(false)
+    }
+  }
 
   const [liveData, setLiveData] = useState(null);
   const [liveLoading, setLiveLoading] = useState(false);
@@ -1654,6 +1797,17 @@ const MultiDeviceIcon = useMemo(() => {
                         <span className="info-card-val">{activeEquipmentDetail.station.latitude}, {activeEquipmentDetail.station.longitude}</span>
                       </div>
                     </div>
+                    {user?.role !== 'Guest' && (
+                      <Button 
+                        onClick={handleOpenEvacReportModal} 
+                        variant="primary" 
+                        size="sm" 
+                        style={{ marginTop: '1rem', width: '100%', borderRadius: '10px', backgroundColor: '#ec4899', borderColor: '#ec4899' }}
+                        leftIcon={<Plus size={16} />}
+                      >
+                        Add Evacuation Report
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
@@ -1893,6 +2047,199 @@ const MultiDeviceIcon = useMemo(() => {
             )}
           </div>
         </div>
+      )}
+
+      {showEvacReportModal && (
+        <HeaderFooterModal
+          isOpen={true}
+          onClose={() => setShowEvacReportModal(false)}
+          title="Add Evacuation Center Status Report"
+          subtitle={`Report status for: ${activeEquipmentDetail?.station?.name}`}
+          maxWidth="600px"
+          footer={
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', width: '100%' }}>
+              <Button variant="subtle" onClick={() => setShowEvacReportModal(false)}>Cancel</Button>
+              <Button variant="solid" color="primary" onClick={handleSubmitEvacReport} disabled={submittingReport}>
+                {submittingReport ? 'Submitting...' : 'Submit Report'}
+              </Button>
+            </div>
+          }
+        >
+          <div className="evac-report-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: '#1e293b' }}>
+            {/* Event selection */}
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Select Disaster Event</label>
+              {eventsLoading ? (
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Loading active events...</span>
+              ) : (
+                <select 
+                  className="drawer-input" 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                  value={selectedEventId}
+                  onChange={handleEventChange}
+                >
+                  <option value="">— Select an Event —</option>
+                  {modalEvents.map(e => (
+                    <option key={e.id} value={e.id}>{e.name} ({e.eventType})</option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* SitRep selection */}
+            {selectedEventId && (
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Select Situational Report (SitRep)</label>
+                {sitRepsLoading ? (
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Loading SitReps...</span>
+                ) : (
+                  <select 
+                    className="drawer-input" 
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    value={selectedSitRepId}
+                    onChange={e => setSelectedSitRepId(e.target.value)}
+                  >
+                    <option value="">— Select a SitRep —</option>
+                    {modalSitReps.map(sr => (
+                      <option key={sr.id} value={sr.id}>Report No. {sr.report_number} — {sr.title}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+
+            {/* Province and City/Municipality details */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Province</label>
+                <input 
+                  type="text" 
+                  className="drawer-input" 
+                  disabled 
+                  value={activeEquipmentDetail?.station?.province || ''} 
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f1f5f9' }}
+                />
+              </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>City/Municipality</label>
+                <input 
+                  type="text" 
+                  className="drawer-input" 
+                  disabled 
+                  value={activeEquipmentDetail?.station?.lgu || ''} 
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f1f5f9' }}
+                />
+              </div>
+            </div>
+
+            {/* Barangay and Status details */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Barangay</label>
+                <select 
+                  className="drawer-input"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                  value={reportBarangay}
+                  onChange={e => setReportBarangay(e.target.value)}
+                >
+                  <option value="">— Select Barangay —</option>
+                  {barangaysList.map(b => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Status</label>
+                <select 
+                  className="drawer-input" 
+                  value={reportStatus} 
+                  onChange={e => setReportStatus(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Families metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Inside Families (Cumulative)</label>
+                <input 
+                  type="number" 
+                  className="drawer-input" 
+                  value={familiesCum} 
+                  onChange={e => setFamiliesCum(e.target.value)} 
+                  placeholder="0"
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Inside Families (Now)</label>
+                <input 
+                  type="number" 
+                  className="drawer-input" 
+                  value={familiesNow} 
+                  onChange={e => setFamiliesNow(e.target.value)} 
+                  placeholder="0"
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+            </div>
+
+            {/* Persons metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Inside Persons (Cumulative)</label>
+                <input 
+                  type="number" 
+                  className="drawer-input" 
+                  value={personsCum} 
+                  onChange={e => setPersonsCum(e.target.value)} 
+                  placeholder="0"
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Inside Persons (Now)</label>
+                <input 
+                  type="number" 
+                  className="drawer-input" 
+                  value={personsNow} 
+                  onChange={e => setPersonsNow(e.target.value)} 
+                  placeholder="0"
+                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+            </div>
+
+            {/* Origin of IDPs */}
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Origin of IDPs</label>
+              <input 
+                type="text" 
+                className="drawer-input" 
+                value={originIdps} 
+                onChange={e => setOriginIdps(e.target.value)} 
+                placeholder="Barangay / Sitio"
+                style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              />
+            </div>
+
+            {/* Remarks */}
+            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Remarks</label>
+              <textarea 
+                className="drawer-input" 
+                value={reportRemarks} 
+                onChange={e => setReportRemarks(e.target.value)} 
+                placeholder="Any updates or concerns"
+                style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', minHeight: '60px', fontFamily: 'inherit' }}
+              />
+            </div>
+          </div>
+        </HeaderFooterModal>
       )}
     </div>
   )

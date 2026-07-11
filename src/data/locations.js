@@ -59,7 +59,7 @@ export function getBarangaysForCity(cityName) {
   const normalize = (s) => {
     if (!s) return ''
     return s.toLowerCase()
-      .replace(/^(city of|municipality of)\s+/i, '')
+      .replace(/^(lgu|city of|municipality of)\s+/i, '')
       .replace(/\s+(city|municipality)$/i, '')
       .replace(/[^a-z0-9]/g, '') // Remove non-alphanumeric for strict comparison
       .trim()

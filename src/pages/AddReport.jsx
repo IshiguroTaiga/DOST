@@ -2527,7 +2527,7 @@ useEffect(() => {
     setShowCategoryModal(true)
   }
 
-  const handleCategorySelect = (catId) => {
+  function handleCategorySelect(catId) {
     setShowCategoryModal(false)
     const existingEntry = submittedReports.find(r => r.category === catId)
     if (existingEntry) {
@@ -2654,7 +2654,7 @@ useEffect(() => {
     setEditingItemId(null)
   }
 
-  const handleEditReport = (item) => {
+  function handleEditReport(item) {
     setActiveCategoryModal(item.category)
     setDeletedRowIds([])
     // For evacuation, the "editingItemId" should be the parent report_id
@@ -3724,7 +3724,7 @@ useEffect(() => {
     )
   }
 
-  const navigateTo = (newView, data = {}) => {
+  function navigateTo(newView, data = {}) {
     setView(newView)
     if (data.event !== undefined) {
       setSelectedEvent(data.event)

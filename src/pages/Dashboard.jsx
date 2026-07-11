@@ -247,19 +247,6 @@ export default function Dashboard() {
     dark: '#1e293b'     // Dark
   }
 
-  const [currentTime, setCurrentTime] = useState(() => {
-    const now = new Date()
-    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-  })
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date()
-      setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }))
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [result, setResult] = useState(null)
@@ -2157,7 +2144,6 @@ CHRONOLOGY OF EVENTS`;
                   whiteSpace: 'nowrap'
                 }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span>({currentTime})</span>
                     {currentEvent.coordinates && <span>({currentEvent.coordinates})</span>}
                   </div>
                   <div>Movement: <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{currentEvent.movement || '—'}</strong></div>
