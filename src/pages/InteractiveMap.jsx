@@ -10,8 +10,28 @@ import SearchInput from '../components/SearchInput'
 import SearchableSelect from '../components/SearchableSelect'
 import Button from '../components/Button'
 import HeaderFooterModal from '../components/HeaderFooterModal'
-import { getBarangaysForCity } from '../data/locations'
+import { getBarangaysForCity, getProvinceForCity } from '../data/locations'
+import region1EvacuationCenters from '../data/region1_evacuation_centers.json'
 import '../styles/pages/InteractiveMap.css'
+
+const getCentersForProvinceAndLgu = (province, lguName) => {
+  if (!province || !lguName) return [];
+  const provKey = Object.keys(region1EvacuationCenters).find(k => k.toLowerCase() === province.toLowerCase());
+  if (!provKey) return [];
+  
+  const provData = region1EvacuationCenters[provKey];
+  
+  const normalize = (s) => s.toLowerCase()
+    .replace(/^lgu[- ]*/g, '')
+    .replace(/^(city of|municipality of)\s+/g, '')
+    .replace(/\s+(city|municipality)$/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+  
+  const targetNorm = normalize(lguName);
+  const key = Object.keys(provData).find(k => normalize(k) === targetNorm);
+  return key ? provData[key] : [];
+};
 
 const PROVINCES = ['Ilocos Norte', 'Ilocos Sur', 'La Union', 'Pangasinan']
 const PH_OUTER_BOUNDS = [[4.0, 116.0], [21.5, 127.5]]
@@ -223,7 +243,7 @@ export default function InteractiveMap() {
         situational_report_id: selectedSitRepId,
         city: station.lgu || user?.city || '',
         barangay: reportBarangay,
-        evacuation_center_name: station.name || '',
+        evacuation_center_name: station.equipment_details?.evac?.name || station.lgu || '',
         evacuation_center_address: station.address || '',
         inside_families_cum: parseInt(familiesCum) || 0,
         inside_families_now: parseInt(familiesNow) || 0,
@@ -981,7 +1001,7 @@ const MultiDeviceIcon = useMemo(() => {
             return (
               <Marker key={station.id} position={[parseFloat(station.latitude), parseFloat(station.longitude)]} icon={iconToUse || undefined}>
                 <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                  <div style={{ fontWeight: 'bold' }}>{station.lgu}</div>
+                  <div style={{ fontWeight: 'bold' }}>{station.equipment_details?.evac?.name || station.lgu}</div>
                   <div style={{ fontSize: '0.7rem' }}>{station.province}</div>
                 </Tooltip>
                 <Popup className="custom-station-popup">
@@ -991,7 +1011,7 @@ const MultiDeviceIcon = useMemo(() => {
                     </div>
                   )}
                   <div className="station-popup-header">
-                     <h3>{station.lgu}</h3>
+                     <h3>{station.equipment_details?.evac?.name || station.lgu}</h3>
                      {canEditStation(station) && (
                        <div style={{ display: 'flex', gap: '0.5rem' }}>
                          <button onClick={() => handleEdit(station)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }} title="Edit"><Pencil size={14} /></button>
@@ -1153,6 +1173,24 @@ const MultiDeviceIcon = useMemo(() => {
               <input className="drawer-input" placeholder="e.g. LGU Adams" value={formData.lgu} required onChange={e => setFormData({...formData, lgu: e.target.value})} disabled={isLguUser} />
             </div>
             <div className="form-group">
+              <label className="form-label">Address</label>
+              <input 
+                className="drawer-input" 
+                placeholder="Station/Center Address" 
+                value={formData.address || ''} 
+                onChange={e => setFormData({...formData, address: e.target.value})} 
+                list="drawer-address-suggestions"
+              />
+              <datalist id="drawer-address-suggestions">
+                {(() => {
+                  const centers = getCentersForProvinceAndLgu(formData.province, formData.lgu || user?.city);
+                  return centers.map((c, idx) => (
+                    <option key={idx} value={c.location}>{c.name}</option>
+                  ));
+                })()}
+              </datalist>
+            </div>
+            <div className="form-group">
               <label className="form-label">Station Photo</label>
               <div className="photo-upload-zone" onClick={() => fileInputRef.current.click()}>
                 {formData.photo_url ? (
@@ -1213,6 +1251,69 @@ const MultiDeviceIcon = useMemo(() => {
                       <>
                         {type.id === 'evac' && (
                           <div className="inventory-details-container evac-form">
+                            <div className="form-section-title">Official Inventory</div>
+                            <div className="inventory-detail-field" style={{ marginBottom: '1rem' }}>
+                              <label className="sub-label">Select Official Evacuation Center</label>
+                              <select
+                                className="drawer-input"
+                                value={formData.equipment.evac.name || ''}
+                                onChange={e => {
+                                  const selectedName = e.target.value;
+                                  const centers = getCentersForProvinceAndLgu(formData.province, formData.lgu || user?.city);
+                                  const found = centers.find(c => c.name === selectedName);
+                                  if (found) {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      address: found.location || prev.address,
+                                      equipment: {
+                                        ...prev.equipment,
+                                        evac: {
+                                          ...prev.equipment.evac,
+                                          name: found.name,
+                                          max_capacity_families: found.capacity?.families || prev.equipment.evac.max_capacity_families || '',
+                                        }
+                                      }
+                                    }));
+                                  } else {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      equipment: {
+                                        ...prev.equipment,
+                                        evac: {
+                                          ...prev.equipment.evac,
+                                          name: selectedName
+                                        }
+                                      }
+                                    }));
+                                  }
+                                }}
+                              >
+                                <option value="">— Select official center or type custom below —</option>
+                                {getCentersForProvinceAndLgu(formData.province, formData.lgu || user?.city).map((c, idx) => (
+                                  <option key={idx} value={c.name}>{c.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            
+                            <div className="inventory-detail-field" style={{ marginBottom: '1rem' }}>
+                              <label className="sub-label">Evacuation Center Name</label>
+                              <input
+                                type="text"
+                                className="drawer-input"
+                                placeholder="Enter evacuation center name"
+                                value={formData.equipment.evac.name || ''}
+                                onChange={e => setFormData({
+                                  ...formData,
+                                  equipment: {
+                                    ...formData.equipment,
+                                    evac: {
+                                      ...formData.equipment.evac,
+                                      name: e.target.value
+                                    }
+                                  }
+                                })}
+                              />
+                            </div>
                             <div className="form-section-title">Available Amenities</div>
                             <div className="inventory-detail-field" style={{ marginBottom: '1.25rem' }}>
                               <div className="checkbox-options-grid">
@@ -2054,7 +2155,7 @@ const MultiDeviceIcon = useMemo(() => {
           isOpen={true}
           onClose={() => setShowEvacReportModal(false)}
           title="Add Evacuation Center Status Report"
-          subtitle={`Report status for: ${activeEquipmentDetail?.station?.name}`}
+          subtitle={`Report status for: ${activeEquipmentDetail?.station?.equipment_details?.evac?.name || activeEquipmentDetail?.station?.lgu}`}
           maxWidth="600px"
           footer={
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', width: '100%' }}>

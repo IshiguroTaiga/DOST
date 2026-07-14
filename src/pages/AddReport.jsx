@@ -10,6 +10,27 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import api, { resolvePdfUrl } from '../lib/api'
 import { LGU_NAMES, getBarangaysForCity, getCityForBarangay, getLguNames } from '../data/locations'
 import { getProvinceForCity, PROVINCE_NAMES } from '../data/provinces'
+import region1EvacuationCenters from '../data/region1_evacuation_centers.json'
+
+const getCentersForCity = (cityName) => {
+  if (!cityName) return [];
+  const province = getProvinceForCity(cityName);
+  if (!province) return [];
+  const provKey = Object.keys(region1EvacuationCenters).find(k => k.toLowerCase() === province.toLowerCase());
+  if (!provKey) return [];
+  const provData = region1EvacuationCenters[provKey];
+  
+  const normalize = (s) => s.toLowerCase()
+    .replace(/^lgu[- ]*/g, '')
+    .replace(/^(city of|municipality of)\s+/g, '')
+    .replace(/\s+(city|municipality)$/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+  
+  const targetNorm = normalize(cityName);
+  const key = Object.keys(provData).find(k => normalize(k) === targetNorm);
+  return key ? provData[key] : [];
+};
 import { generateRelatedIncidentsPdf } from '../lib/generateRelatedIncidentsPdf'
 import { generateConsolidatedCsv } from '../lib/generateConsolidatedCsv'
 import { generateAISummary, generateSummary } from '../openai/summaryService'
@@ -3452,8 +3473,57 @@ useEffect(() => {
           )}
           {activeCategoryModal === 'evacuationCenters' && (
             <>
-              <td><input type="text" value={row.evacuationCenterName} onChange={(e) => handleRowChange(index, 'evacuationCenterName', e.target.value)} placeholder="EC Name" /></td>
-              <td><input type="text" value={row.evacuationCenterAddress} onChange={(e) => handleRowChange(index, 'evacuationCenterAddress', e.target.value)} placeholder="EC Address" /></td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.evacuationCenterName} 
+                  list={`ec-names-${index}`}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    handleRowChange(index, 'evacuationCenterName', val);
+                    
+                    const cityCenters = getCentersForCity(row.city || user?.city);
+                    const filtered = row.barangay 
+                      ? cityCenters.filter(c => c.location && c.location.toLowerCase().includes(row.barangay.toLowerCase()))
+                      : cityCenters;
+                    const suggestions = filtered.length > 0 ? filtered : cityCenters;
+                    
+                    const found = suggestions.find(c => c.name === val);
+                    if (found) {
+                      handleRowChange(index, 'evacuationCenterAddress', found.location || '');
+                      if (found.capacity && !row.remarks) {
+                        const famCap = found.capacity.families;
+                        const indCap = found.capacity.individuals;
+                        const capRemark = `Capacity: ${famCap ? famCap + ' families' : ''}${famCap && indCap ? ', ' : ''}${indCap ? indCap + ' individuals' : ''}`;
+                        handleRowChange(index, 'remarks', capRemark);
+                      }
+                    }
+                  }} 
+                  placeholder="EC Name" 
+                />
+                <datalist id={`ec-names-${index}`}>
+                  {(() => {
+                    const cityCenters = getCentersForCity(row.city || user?.city);
+                    const filtered = row.barangay 
+                      ? cityCenters.filter(c => c.location && c.location.toLowerCase().includes(row.barangay.toLowerCase()))
+                      : cityCenters;
+                    const suggestions = filtered.length > 0 ? filtered : cityCenters;
+                    return suggestions.map((c, idx) => (
+                      <option key={idx} value={c.name}>
+                        {c.location ? `${c.name} (${c.location})` : c.name}
+                      </option>
+                    ));
+                  })()}
+                </datalist>
+              </td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.evacuationCenterAddress} 
+                  onChange={(e) => handleRowChange(index, 'evacuationCenterAddress', e.target.value)} 
+                  placeholder="EC Address" 
+                />
+              </td>
               <td><input type="number" min="0" value={row.insideFamiliesCum} onChange={(e) => handleRowChange(index, 'insideFamiliesCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
               <td><input type="number" min="0" value={row.insideFamiliesNow} onChange={(e) => handleRowChange(index, 'insideFamiliesNow', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
               <td><input type="number" min="0" value={row.insidePersonsCum} onChange={(e) => handleRowChange(index, 'insidePersonsCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>

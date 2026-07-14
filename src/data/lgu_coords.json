@@ -1,0 +1,998 @@
+[
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU DOST",
+    "cleanLgu": "DOST",
+    "lat": 17.2663,
+    "lng": 120.3205
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU Umingan",
+    "cleanLgu": "Umingan",
+    "lat": 15.927145,
+    "lng": 120.841012
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU Pozorrubio",
+    "cleanLgu": "Pozorrubio",
+    "lat": 16.110721,
+    "lng": 120.545379
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "cleanLgu": "SAN ILDEFONSO, ILOCOS SUR",
+    "lat": 17.624252,
+    "lng": 120.393423
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "SAN FABIAN",
+    "cleanLgu": "SAN FABIAN",
+    "lat": 16.12198,
+    "lng": 120.40302
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU- SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.90512,
+    "lng": 120.462663
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Local Government Unit of Bolinao",
+    "cleanLgu": "Bolinao",
+    "lat": 16.38835874920866,
+    "lng": 119.89278535704038
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU BANGAR, LA UNION",
+    "cleanLgu": "BANGAR, LA UNION",
+    "lat": 16.8942,
+    "lng": 120.4241
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU BANTAY",
+    "cleanLgu": "BANTAY",
+    "error": "Could not parse: N/A"
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Bugallon, Pangasinan",
+    "cleanLgu": "Bugallon, Pangasinan",
+    "lat": 15.95436,
+    "lng": 120.21651
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU DINGRAS",
+    "cleanLgu": "DINGRAS",
+    "lat": 18.103552,
+    "lng": 120.697224
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Balaoan",
+    "cleanLgu": "Balaoan",
+    "lat": 16.82163,
+    "lng": 120.40214
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU SANTO TOMAS LA UNION",
+    "cleanLgu": "SANTO TOMAS LA UNION",
+    "lat": 16.284362,
+    "lng": 120.390779
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU Natividad, Pangasinan",
+    "cleanLgu": "Natividad, Pangasinan",
+    "lat": 16.0427147,
+    "lng": 120.7973556
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU VINTAR, ILOCOS NORTE",
+    "cleanLgu": "VINTAR, ILOCOS NORTE",
+    "lat": 18.23,
+    "lng": 120.649
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "SAN JACINTO",
+    "cleanLgu": "SAN JACINTO",
+    "error": "Could not parse: ..."
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU Bani, Pangasinan",
+    "cleanLgu": "Bani, Pangasinan",
+    "lat": 16.1834079,
+    "lng": 119.8609722
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU - Suyo, Ilocos Sur",
+    "cleanLgu": "Suyo, Ilocos Sur",
+    "lat": 16,
+    "lng": 59
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Burgos, Ilocos Sur",
+    "cleanLgu": "Burgos, Ilocos Sur",
+    "lat": 17.333423,
+    "lng": 120.49481
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Sta. Catalina, Ilocos Sur",
+    "cleanLgu": "Sta. Catalina, Ilocos Sur",
+    "lat": 17.5843,
+    "lng": 120.3576
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.905071,
+    "lng": 120.462663
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU Santiago Ilocos Sur",
+    "cleanLgu": "Santiago Ilocos Sur",
+    "lat": 17.29472,
+    "lng": 120.445617
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Santol, La Union",
+    "cleanLgu": "Santol, La Union",
+    "lat": 16.772211,
+    "lng": 120.459419
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU ALCALA, PANGASINAN",
+    "cleanLgu": "ALCALA, PANGASINAN",
+    "lat": 15.8457,
+    "lng": 120.521
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Local Government Unit of Alaminos City Pangasinan",
+    "cleanLgu": "Alaminos City Pangasinan",
+    "lat": 16,
+    "lng": 9
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "TAYUG, PANGASINAN",
+    "cleanLgu": "TAYUG, PANGASINAN",
+    "lat": 16,
+    "lng": 1
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LGU-Adams, Ilocos Norte",
+    "cleanLgu": "Adams, Ilocos Norte",
+    "lat": 18.4614786,
+    "lng": 120.9017301
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "S",
+    "cleanLgu": "S",
+    "error": "Could not parse: S"
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Municipal Government of Solsona",
+    "cleanLgu": "Municipal Government of Solsona",
+    "lat": 18,
+    "lng": 5
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Local Government Unit - Mabini",
+    "cleanLgu": "Local Government Unit - Mabini",
+    "lat": 16,
+    "lng": 4
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "cleanLgu": "AGUILAR, PANGASINAN",
+    "lat": 15.889307,
+    "lng": 120.238286
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Local Government Unit of Anda, Pangasinan",
+    "cleanLgu": "Anda, Pangasinan",
+    "lat": 16.289134,
+    "lng": 119.9485051
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "cleanLgu": "Caoayan, Ilocos Sur",
+    "lat": 17.325088,
+    "lng": 120.225872
+  },
+  {
+    "province": "Ilocos Norte",
+    "originalLgu": "Provincial Government of Ilocos Sur",
+    "cleanLgu": "Provincial Government of Ilocos Sur",
+    "lat": 17.5764,
+    "lng": 120.3867
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU DOST",
+    "cleanLgu": "DOST",
+    "lat": 17.2663,
+    "lng": 120.3205
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU Umingan",
+    "cleanLgu": "Umingan",
+    "lat": 15.927145,
+    "lng": 120.841012
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU Pozorrubio",
+    "cleanLgu": "Pozorrubio",
+    "lat": 16.110721,
+    "lng": 120.545379
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "cleanLgu": "SAN ILDEFONSO, ILOCOS SUR",
+    "lat": 17.624252,
+    "lng": 120.393423
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "SAN FABIAN",
+    "cleanLgu": "SAN FABIAN",
+    "lat": 16.12198,
+    "lng": 120.40302
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU- SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.90512,
+    "lng": 120.462663
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Local Government Unit of Bolinao",
+    "cleanLgu": "Bolinao",
+    "lat": 16.38835874920866,
+    "lng": 119.89278535704038
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU BANGAR, LA UNION",
+    "cleanLgu": "BANGAR, LA UNION",
+    "lat": 16.8942,
+    "lng": 120.4241
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU BANTAY",
+    "cleanLgu": "BANTAY",
+    "error": "Could not parse: N/A"
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Bugallon, Pangasinan",
+    "cleanLgu": "Bugallon, Pangasinan",
+    "lat": 15.95436,
+    "lng": 120.21651
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU DINGRAS",
+    "cleanLgu": "DINGRAS",
+    "lat": 18.103552,
+    "lng": 120.697224
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Balaoan",
+    "cleanLgu": "Balaoan",
+    "lat": 16.82163,
+    "lng": 120.40214
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU SANTO TOMAS LA UNION",
+    "cleanLgu": "SANTO TOMAS LA UNION",
+    "lat": 16.284362,
+    "lng": 120.390779
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU Natividad, Pangasinan",
+    "cleanLgu": "Natividad, Pangasinan",
+    "lat": 16.0427147,
+    "lng": 120.7973556
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU VINTAR, ILOCOS NORTE",
+    "cleanLgu": "VINTAR, ILOCOS NORTE",
+    "lat": 18.23,
+    "lng": 120.649
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "SAN JACINTO",
+    "cleanLgu": "SAN JACINTO",
+    "error": "Could not parse: ..."
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU Bani, Pangasinan",
+    "cleanLgu": "Bani, Pangasinan",
+    "lat": 16.1834079,
+    "lng": 119.8609722
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU - Suyo, Ilocos Sur",
+    "cleanLgu": "Suyo, Ilocos Sur",
+    "lat": 16,
+    "lng": 59
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Burgos, Ilocos Sur",
+    "cleanLgu": "Burgos, Ilocos Sur",
+    "lat": 17.333423,
+    "lng": 120.49481
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Sta. Catalina, Ilocos Sur",
+    "cleanLgu": "Sta. Catalina, Ilocos Sur",
+    "lat": 17.5843,
+    "lng": 120.3576
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.905071,
+    "lng": 120.462663
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU Santiago Ilocos Sur",
+    "cleanLgu": "Santiago Ilocos Sur",
+    "lat": 17.29472,
+    "lng": 120.445617
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Santol, La Union",
+    "cleanLgu": "Santol, La Union",
+    "lat": 16.772211,
+    "lng": 120.459419
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU ALCALA, PANGASINAN",
+    "cleanLgu": "ALCALA, PANGASINAN",
+    "lat": 15.8457,
+    "lng": 120.521
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Local Government Unit of Alaminos City Pangasinan",
+    "cleanLgu": "Alaminos City Pangasinan",
+    "lat": 16,
+    "lng": 9
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "TAYUG, PANGASINAN",
+    "cleanLgu": "TAYUG, PANGASINAN",
+    "lat": 16,
+    "lng": 1
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LGU-Adams, Ilocos Norte",
+    "cleanLgu": "Adams, Ilocos Norte",
+    "lat": 18.4614786,
+    "lng": 120.9017301
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "S",
+    "cleanLgu": "S",
+    "error": "Could not parse: S"
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Municipal Government of Solsona",
+    "cleanLgu": "Municipal Government of Solsona",
+    "lat": 18,
+    "lng": 5
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Local Government Unit - Mabini",
+    "cleanLgu": "Local Government Unit - Mabini",
+    "lat": 16,
+    "lng": 4
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "cleanLgu": "AGUILAR, PANGASINAN",
+    "lat": 15.889307,
+    "lng": 120.238286
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Local Government Unit of Anda, Pangasinan",
+    "cleanLgu": "Anda, Pangasinan",
+    "lat": 16.289134,
+    "lng": 119.9485051
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "cleanLgu": "Caoayan, Ilocos Sur",
+    "lat": 17.325088,
+    "lng": 120.225872
+  },
+  {
+    "province": "Ilocos Sur",
+    "originalLgu": "Provincial Government of Ilocos Sur",
+    "cleanLgu": "Provincial Government of Ilocos Sur",
+    "lat": 17.5764,
+    "lng": 120.3867
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU DOST",
+    "cleanLgu": "DOST",
+    "lat": 17.2663,
+    "lng": 120.3205
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU Umingan",
+    "cleanLgu": "Umingan",
+    "lat": 15.927145,
+    "lng": 120.841012
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU Pozorrubio",
+    "cleanLgu": "Pozorrubio",
+    "lat": 16.110721,
+    "lng": 120.545379
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "cleanLgu": "SAN ILDEFONSO, ILOCOS SUR",
+    "lat": 17.624252,
+    "lng": 120.393423
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "SAN FABIAN",
+    "cleanLgu": "SAN FABIAN",
+    "lat": 16.12198,
+    "lng": 120.40302
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU- SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.90512,
+    "lng": 120.462663
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Local Government Unit of Bolinao",
+    "cleanLgu": "Bolinao",
+    "lat": 16.38835874920866,
+    "lng": 119.89278535704038
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU BANGAR, LA UNION",
+    "cleanLgu": "BANGAR, LA UNION",
+    "lat": 16.8942,
+    "lng": 120.4241
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU BANTAY",
+    "cleanLgu": "BANTAY",
+    "error": "Could not parse: N/A"
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Bugallon, Pangasinan",
+    "cleanLgu": "Bugallon, Pangasinan",
+    "lat": 15.95436,
+    "lng": 120.21651
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU DINGRAS",
+    "cleanLgu": "DINGRAS",
+    "lat": 18.103552,
+    "lng": 120.697224
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Balaoan",
+    "cleanLgu": "Balaoan",
+    "lat": 16.82163,
+    "lng": 120.40214
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU SANTO TOMAS LA UNION",
+    "cleanLgu": "SANTO TOMAS LA UNION",
+    "lat": 16.284362,
+    "lng": 120.390779
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU Natividad, Pangasinan",
+    "cleanLgu": "Natividad, Pangasinan",
+    "lat": 16.0427147,
+    "lng": 120.7973556
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU VINTAR, ILOCOS NORTE",
+    "cleanLgu": "VINTAR, ILOCOS NORTE",
+    "lat": 18.23,
+    "lng": 120.649
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "SAN JACINTO",
+    "cleanLgu": "SAN JACINTO",
+    "error": "Could not parse: ..."
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU Bani, Pangasinan",
+    "cleanLgu": "Bani, Pangasinan",
+    "lat": 16.1834079,
+    "lng": 119.8609722
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU - Suyo, Ilocos Sur",
+    "cleanLgu": "Suyo, Ilocos Sur",
+    "lat": 16,
+    "lng": 59
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Burgos, Ilocos Sur",
+    "cleanLgu": "Burgos, Ilocos Sur",
+    "lat": 17.333423,
+    "lng": 120.49481
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Sta. Catalina, Ilocos Sur",
+    "cleanLgu": "Sta. Catalina, Ilocos Sur",
+    "lat": 17.5843,
+    "lng": 120.3576
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.905071,
+    "lng": 120.462663
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU Santiago Ilocos Sur",
+    "cleanLgu": "Santiago Ilocos Sur",
+    "lat": 17.29472,
+    "lng": 120.445617
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Santol, La Union",
+    "cleanLgu": "Santol, La Union",
+    "lat": 16.772211,
+    "lng": 120.459419
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU ALCALA, PANGASINAN",
+    "cleanLgu": "ALCALA, PANGASINAN",
+    "lat": 15.8457,
+    "lng": 120.521
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Local Government Unit of Alaminos City Pangasinan",
+    "cleanLgu": "Alaminos City Pangasinan",
+    "lat": 16,
+    "lng": 9
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "TAYUG, PANGASINAN",
+    "cleanLgu": "TAYUG, PANGASINAN",
+    "lat": 16,
+    "lng": 1
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LGU-Adams, Ilocos Norte",
+    "cleanLgu": "Adams, Ilocos Norte",
+    "lat": 18.4614786,
+    "lng": 120.9017301
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "S",
+    "cleanLgu": "S",
+    "error": "Could not parse: S"
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Municipal Government of Solsona",
+    "cleanLgu": "Municipal Government of Solsona",
+    "lat": 18,
+    "lng": 5
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Local Government Unit - Mabini",
+    "cleanLgu": "Local Government Unit - Mabini",
+    "lat": 16,
+    "lng": 4
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "cleanLgu": "AGUILAR, PANGASINAN",
+    "lat": 15.889307,
+    "lng": 120.238286
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Local Government Unit of Anda, Pangasinan",
+    "cleanLgu": "Anda, Pangasinan",
+    "lat": 16.289134,
+    "lng": 119.9485051
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "cleanLgu": "Caoayan, Ilocos Sur",
+    "lat": 17.325088,
+    "lng": 120.225872
+  },
+  {
+    "province": "Pangasinan",
+    "originalLgu": "Provincial Government of Ilocos Sur",
+    "cleanLgu": "Provincial Government of Ilocos Sur",
+    "lat": 17.5764,
+    "lng": 120.3867
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU DOST",
+    "cleanLgu": "DOST",
+    "lat": 17.2663,
+    "lng": 120.3205
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU Umingan",
+    "cleanLgu": "Umingan",
+    "lat": 15.927145,
+    "lng": 120.841012
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU Pozorrubio",
+    "cleanLgu": "Pozorrubio",
+    "lat": 16.110721,
+    "lng": 120.545379
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU SAN ILDEFONSO, ILOCOS SUR",
+    "cleanLgu": "SAN ILDEFONSO, ILOCOS SUR",
+    "lat": 17.624252,
+    "lng": 120.393423
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "SAN FABIAN",
+    "cleanLgu": "SAN FABIAN",
+    "lat": 16.12198,
+    "lng": 120.40302
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU- SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.90512,
+    "lng": 120.462663
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Local Government Unit of Bolinao",
+    "cleanLgu": "Bolinao",
+    "lat": 16.38835874920866,
+    "lng": 119.89278535704038
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU BANGAR, LA UNION",
+    "cleanLgu": "BANGAR, LA UNION",
+    "lat": 16.8942,
+    "lng": 120.4241
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU BANTAY",
+    "cleanLgu": "BANTAY",
+    "error": "Could not parse: N/A"
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Bugallon, Pangasinan",
+    "cleanLgu": "Bugallon, Pangasinan",
+    "lat": 15.95436,
+    "lng": 120.21651
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU DINGRAS",
+    "cleanLgu": "DINGRAS",
+    "lat": 18.103552,
+    "lng": 120.697224
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Balaoan",
+    "cleanLgu": "Balaoan",
+    "lat": 16.82163,
+    "lng": 120.40214
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU SANTO TOMAS LA UNION",
+    "cleanLgu": "SANTO TOMAS LA UNION",
+    "lat": 16.284362,
+    "lng": 120.390779
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU Natividad, Pangasinan",
+    "cleanLgu": "Natividad, Pangasinan",
+    "lat": 16.0427147,
+    "lng": 120.7973556
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU VINTAR, ILOCOS NORTE",
+    "cleanLgu": "VINTAR, ILOCOS NORTE",
+    "lat": 18.23,
+    "lng": 120.649
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "SAN JACINTO",
+    "cleanLgu": "SAN JACINTO",
+    "error": "Could not parse: ..."
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU Bani, Pangasinan",
+    "cleanLgu": "Bani, Pangasinan",
+    "lat": 16.1834079,
+    "lng": 119.8609722
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU - Suyo, Ilocos Sur",
+    "cleanLgu": "Suyo, Ilocos Sur",
+    "lat": 16,
+    "lng": 59
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Burgos, Ilocos Sur",
+    "cleanLgu": "Burgos, Ilocos Sur",
+    "lat": 17.333423,
+    "lng": 120.49481
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU SAN QUINTIN, PANGASINAN",
+    "cleanLgu": "SAN QUINTIN, PANGASINAN",
+    "lat": 15.983481,
+    "lng": 120.813873
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Sta. Catalina, Ilocos Sur",
+    "cleanLgu": "Sta. Catalina, Ilocos Sur",
+    "lat": 17.5843,
+    "lng": 120.3576
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "SUDIPEN",
+    "cleanLgu": "SUDIPEN",
+    "lat": 16.905071,
+    "lng": 120.462663
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU Santiago Ilocos Sur",
+    "cleanLgu": "Santiago Ilocos Sur",
+    "lat": 17.29472,
+    "lng": 120.445617
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Santol, La Union",
+    "cleanLgu": "Santol, La Union",
+    "lat": 16.772211,
+    "lng": 120.459419
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU ALCALA, PANGASINAN",
+    "cleanLgu": "ALCALA, PANGASINAN",
+    "lat": 15.8457,
+    "lng": 120.521
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Local Government Unit of Alaminos City Pangasinan",
+    "cleanLgu": "Alaminos City Pangasinan",
+    "lat": 16,
+    "lng": 9
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "TAYUG, PANGASINAN",
+    "cleanLgu": "TAYUG, PANGASINAN",
+    "lat": 16,
+    "lng": 1
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LGU-Adams, Ilocos Norte",
+    "cleanLgu": "Adams, Ilocos Norte",
+    "lat": 18.4614786,
+    "lng": 120.9017301
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "S",
+    "cleanLgu": "S",
+    "error": "Could not parse: S"
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Municipal Government of Solsona",
+    "cleanLgu": "Municipal Government of Solsona",
+    "lat": 18,
+    "lng": 5
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Local Government Unit - Mabini",
+    "cleanLgu": "Local Government Unit - Mabini",
+    "lat": 16,
+    "lng": 4
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "LOCAL GOVERNMENT UNIT OF AGUILAR, PANGASINAN",
+    "cleanLgu": "AGUILAR, PANGASINAN",
+    "lat": 15.889307,
+    "lng": 120.238286
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Local Government Unit of Anda, Pangasinan",
+    "cleanLgu": "Anda, Pangasinan",
+    "lat": 16.289134,
+    "lng": 119.9485051
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Local Government Unit of Caoayan, Ilocos Sur",
+    "cleanLgu": "Caoayan, Ilocos Sur",
+    "lat": 17.325088,
+    "lng": 120.225872
+  },
+  {
+    "province": "La Union",
+    "originalLgu": "Provincial Government of Ilocos Sur",
+    "cleanLgu": "Provincial Government of Ilocos Sur",
+    "lat": 17.5764,
+    "lng": 120.3867
+  }
+]
