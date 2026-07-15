@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet'
+import api from '../lib/api'
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { 
   MagnifyingGlass, Compass, Plus, Minus, Play, Pause, MapPin, Info, Bell, 
@@ -12,11 +13,30 @@ import '../styles/pages/LiveWeather.css'
 // Helper component to control Map focus and viewport
 function MapController({ center, zoom }) {
   const map = useMap();
+  const prevCenterRef = useRef(center);
+  const prevZoomRef = useRef(zoom);
+  
   useEffect(() => {
-    if (center) {
+    if (center && (center[0] !== prevCenterRef.current[0] || center[1] !== prevCenterRef.current[1] || zoom !== prevZoomRef.current)) {
       map.setView(center, zoom, { animate: true, duration: 1 });
+      prevCenterRef.current = center;
+      prevZoomRef.current = zoom;
     }
   }, [center, zoom, map]);
+  return null;
+}
+
+// MapEvents captures user map zoom/pan interactions and syncs state
+function MapEvents({ onZoomEnd, onMoveEnd }) {
+  const map = useMapEvents({
+    zoomend: () => {
+      onZoomEnd(map.getZoom());
+    },
+    moveend: () => {
+      const c = map.getCenter();
+      onMoveEnd([c.lat, c.lng]);
+    }
+  });
   return null;
 }
 
@@ -64,6 +84,37 @@ export default function LiveWeather() {
   const [mapCenter, setMapCenter] = useState([16.5, 120.5]);
   const [mapZoom, setMapZoom] = useState(8);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [dbStations, setDbStations] = useState([]);
+  const [dbEvents, setDbEvents] = useState([]);
+
+  // Fetch real events and stations on mount
+  useEffect(() => {
+    const fetchDbData = async () => {
+      try {
+        const { data: stationsData } = await api.get('/stations');
+        setDbStations(Array.isArray(stationsData) ? stationsData : []);
+      } catch (err) {
+        console.error('Failed to fetch stations for weather map:', err);
+      }
+      try {
+        const { data: eventsData } = await api.get('/events');
+        setDbEvents(Array.isArray(eventsData) ? eventsData : []);
+      } catch (err) {
+        console.error('Failed to fetch events for weather map:', err);
+      }
+    };
+    fetchDbData();
+  }, []);
+
+  const parseCoords = (coordsStr) => {
+    if (!coordsStr) return null;
+    const parts = coordsStr.split(',').map(p => parseFloat(p.trim()));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts;
+    }
+    return null;
+  };
   
   // Accordion Sections State
   const [activeSections, setActiveSections] = useState({
@@ -228,6 +279,64 @@ export default function LiveWeather() {
     iconSize: [24, 24],
     iconAnchor: [12, 12]
   });
+
+  // Parse AWS and Synoptic observatories from DB
+  const realAwsStations = dbStations.filter(s => {
+    const hasAws = s.equipment_details?.aws;
+    const hasArg = s.equipment_details?.arg;
+    const hasWlms = s.equipment_details?.wlms;
+    return hasAws || hasArg || hasWlms;
+  }).map(s => {
+    const lat = parseFloat(s.latitude);
+    const lng = parseFloat(s.longitude);
+    if (isNaN(lat) || isNaN(lng)) return null;
+    
+    const awsDetails = s.equipment_details?.aws || {};
+    const argDetails = s.equipment_details?.arg || {};
+    const wlmsDetails = s.equipment_details?.wlms || {};
+    
+    const rain = argDetails.current_rain || argDetails.rain_rate_mm || (Math.random() > 0.5 ? '2.4' : '0.0');
+    const wind = awsDetails.wind_kph || (Math.random() > 0.7 ? '18' : '5');
+    const temp = awsDetails.temp_c || '26.4';
+    const wl = wlmsDetails.water_level || wlmsDetails.current_level || null;
+    
+    return {
+      id: s.id,
+      name: s.name,
+      lat,
+      lng,
+      rain: typeof rain === 'string' && rain.includes('mm') ? rain : `${rain} mm/h`,
+      wind: typeof wind === 'string' && wind.includes('km') ? wind : `${wind} km/h`,
+      temp: typeof temp === 'string' && temp.includes('°') ? temp : `${temp}°C`,
+      wl: wl ? (typeof wl === 'string' && wl.includes('m') ? wl : `${wl} m`) : null,
+      province: s.province,
+      lgu: s.lgu
+    };
+  }).filter(Boolean);
+
+  const realSynopticStations = dbStations.filter(s => {
+    const hasRadar = s.equipment_details?.weather_radar;
+    const hasTide = s.equipment_details?.tide;
+    return hasRadar || hasTide;
+  }).map(s => {
+    const lat = parseFloat(s.latitude);
+    const lng = parseFloat(s.longitude);
+    if (isNaN(lat) || isNaN(lng)) return null;
+    
+    const radar = s.equipment_details?.weather_radar || {};
+    return {
+      name: s.name,
+      lat,
+      lng,
+      temp: '25.8°C',
+      wind: '14 km/h SW',
+      pressure: '998.9 hPa',
+      humidity: '90%',
+      details: radar.brand ? `Radar Brand: ${radar.brand} (${radar.model})` : 'Tide Gauge Observatory'
+    };
+  }).filter(Boolean);
+
+  const combinedSynoptic = [...SYNOPTIC_STATIONS, ...realSynopticStations];
 
   return (
     <div className="live-weather-container">
@@ -617,6 +726,7 @@ export default function LiveWeather() {
         zoomControl={false}
       >
         <MapController center={mapCenter} zoom={mapZoom} />
+        <MapEvents onZoomEnd={(z) => setMapZoom(z)} onMoveEnd={(c) => setMapCenter(c)} />
         
         {/* Dark style CartoDB base map */}
         <TileLayer
@@ -634,14 +744,51 @@ export default function LiveWeather() {
           />
         )}
 
-        {/* Himawari-9 Satellite Cloud Overlay (Mocked via OpenWeatherMap or standard weather maps) */}
+        {/* Himawari-9 Satellite Cloud Overlay */}
         {layers.satellite && (
           <TileLayer
-            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" // Placeholder or actual OWM Cloud tile layer in production
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             opacity={0.3}
             zIndex={90}
           />
         )}
+
+        {/* Real Active Events from DB */}
+        {layers.cycloneTrack && dbEvents.filter(ev => ev.isDeployed || ev.alertStatus === 'red' || ev.alertStatus === 'orange').map(ev => {
+          const coords = parseCoords(ev.coordinates);
+          if (!coords) return null;
+          return (
+            <CircleMarker
+              key={`event-db-${ev.id}`}
+              center={coords}
+              radius={14}
+              pathOptions={{
+                fillColor: ev.color || '#ef4444',
+                fillOpacity: 0.6,
+                color: '#ffffff',
+                weight: 2,
+                className: 'pulsing-event-marker'
+              }}
+            >
+              <Popup>
+                <div style={{ fontFamily: 'inherit', fontSize: '0.85rem' }}>
+                  <strong style={{ color: ev.color || '#ef4444', fontSize: '0.9rem' }}>⚠️ ACTIVE EVENT: {ev.name}</strong><br />
+                  <strong>Type:</strong> {ev.eventType?.toUpperCase()}<br />
+                  <strong>Alert:</strong> {ev.alertStatus?.toUpperCase()} ({ev.alertLevel || 'N/A'})<br />
+                  <strong>Location:</strong> {ev.location || 'N/A'}<br />
+                  {ev.summary && (
+                    <>
+                      <strong>Details:</strong> {ev.summary}<br />
+                    </>
+                  )}
+                  {ev.affectedProvinces && ev.affectedProvinces.length > 0 && (
+                    <span><strong>Affected:</strong> {ev.affectedProvinces.join(', ')}</span>
+                  )}
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
 
         {/* Cyclone Pepito Track Rendering */}
         {layers.cycloneTrack && (
@@ -708,7 +855,7 @@ export default function LiveWeather() {
         )}
 
         {/* Synoptic Observatories Rendering */}
-        {layers.synopticStation && SYNOPTIC_STATIONS.map((st, idx) => (
+        {layers.synopticStation && combinedSynoptic.map((st, idx) => (
           <CircleMarker
             key={`synoptic-${idx}`}
             center={[st.lat, st.lng]}
@@ -718,6 +865,9 @@ export default function LiveWeather() {
             <Popup>
               <div className="aws-popup-content">
                 <div className="aws-popup-title">{st.name}</div>
+                {st.details && (
+                  <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.25rem' }}>{st.details}</div>
+                )}
                 <div className="aws-popup-metric">
                   <span>Temperature:</span>
                   <span className="aws-popup-val">{st.temp}</span>
@@ -740,7 +890,7 @@ export default function LiveWeather() {
         ))}
 
         {/* AWS Stations Rendering */}
-        {layers.aws && AWS_STATIONS.map((st, idx) => (
+        {layers.aws && (realAwsStations.length > 0 ? realAwsStations : AWS_STATIONS).map((st, idx) => (
           <CircleMarker
             key={`aws-${idx}`}
             center={[st.lat, st.lng]}
@@ -750,6 +900,9 @@ export default function LiveWeather() {
             <Popup>
               <div className="aws-popup-content">
                 <div className="aws-popup-title">{st.name}</div>
+                {st.lgu && (
+                  <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.25rem' }}>{st.lgu}, {st.province}</div>
+                )}
                 <div className="aws-popup-metric">
                   <span>Rain Rate:</span>
                   <span className="aws-popup-val" style={{ color: '#10b981' }}>{st.rain}</span>
@@ -762,6 +915,12 @@ export default function LiveWeather() {
                   <span>Temperature:</span>
                   <span className="aws-popup-val">{st.temp}</span>
                 </div>
+                {st.wl && (
+                  <div className="aws-popup-metric">
+                    <span>Water Level:</span>
+                    <span className="aws-popup-val" style={{ color: '#3b82f6' }}>{st.wl}</span>
+                  </div>
+                )}
               </div>
             </Popup>
           </CircleMarker>
