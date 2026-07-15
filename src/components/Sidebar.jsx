@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X, MapTrifold, DeviceMobile } from '@phosphor-icons/react'
+  SquaresFour, FilePlus, Users, Gear, SignOut, FileText, ChartBar, User, CalendarCheck, CheckSquareOffset, CaretLeft, CaretRight, CaretDown, X, MapTrifold, DeviceMobile, CloudRain } from '@phosphor-icons/react'
 import { useEvents } from '../contexts/EventContext'
 import SettingsModal from './SettingsModal'
 import ConfirmationModal from './ConfirmationModal'
@@ -233,10 +233,20 @@ export default function Sidebar({ user, onLogout, onUserUpdate, isCollapsed, onT
             )}
           </button>
           <div className="sidebar-submenu" style={{ 
-            maxHeight: showHazardDropdown ? '300px' : '0', 
+            maxHeight: showHazardDropdown ? '400px' : '0', 
             opacity: showHazardDropdown ? 1 : 0,
             visibility: showHazardDropdown ? 'visible' : 'hidden'
           }}>
+            <NavLink
+              to="/live-weather"
+              className={({ isActive }) => `sidebar-sub-link ${isActive ? 'active' : ''}`}
+              title={isCollapsed ? 'Live Weather' : ''}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1.25rem' }}
+            >
+              <CloudRain size={16} weight="bold" style={{ color: '#4f46e5' }} />
+              {!isCollapsed && <span>Live Weather Map</span>}
+            </NavLink>
+
             <a
               href="https://solido.dost1.ph/home"
               target="_blank"

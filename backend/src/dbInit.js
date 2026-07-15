@@ -146,9 +146,97 @@ async function initDatabase() {
         origin_of_idps TEXT DEFAULT '',
         status TEXT DEFAULT 'Active',
         remarks TEXT DEFAULT '',
+        vulnerability_human_induced TEXT DEFAULT '',
+        vulnerability_natural_hazard TEXT DEFAULT '',
+        vulnerability_others TEXT DEFAULT '',
+        floor_area NUMERIC DEFAULT 0,
+        total_capacity_family INTEGER DEFAULT 0,
+        total_capacity_individual INTEGER DEFAULT 0,
+        comfort_rooms_female INTEGER DEFAULT 0,
+        comfort_rooms_male INTEGER DEFAULT 0,
+        comfort_rooms_common INTEGER DEFAULT 0,
+        water_source_potable TEXT DEFAULT '',
+        water_source_non_potable TEXT DEFAULT '',
+        ffp_storage_capacity INTEGER DEFAULT 0,
+        used_as_covid_facility TEXT DEFAULT 'NO',
+        isolation_bed_capacity INTEGER DEFAULT 0,
+        officer TEXT DEFAULT '',
+        contact TEXT DEFAULT '',
+        cooling_areas BOOLEAN DEFAULT FALSE,
+        mobile_kitchen BOOLEAN DEFAULT FALSE,
+        mobile_water BOOLEAN DEFAULT FALSE,
+        first_aid BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         CONSTRAINT evac_centers_pkey PRIMARY KEY (id)
       )
+    `);
+
+    // Verify and add missing columns to evacuation_centers_reports if it already exists
+    console.log('[DB Init] Checking and migrating evacuation_centers_reports columns...');
+    await pool.query(`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='vulnerability_human_induced') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN vulnerability_human_induced TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='vulnerability_natural_hazard') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN vulnerability_natural_hazard TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='vulnerability_others') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN vulnerability_others TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='floor_area') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN floor_area NUMERIC DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='total_capacity_family') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN total_capacity_family INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='total_capacity_individual') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN total_capacity_individual INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='comfort_rooms_female') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN comfort_rooms_female INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='comfort_rooms_male') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN comfort_rooms_male INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='comfort_rooms_common') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN comfort_rooms_common INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='water_source_potable') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN water_source_potable TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='water_source_non_potable') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN water_source_non_potable TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='ffp_storage_capacity') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN ffp_storage_capacity INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='used_as_covid_facility') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN used_as_covid_facility TEXT DEFAULT 'NO';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='isolation_bed_capacity') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN isolation_bed_capacity INTEGER DEFAULT 0;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='officer') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN officer TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='contact') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN contact TEXT DEFAULT '';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='cooling_areas') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN cooling_areas BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='mobile_kitchen') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN mobile_kitchen BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='mobile_water') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN mobile_water BOOLEAN DEFAULT FALSE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='evacuation_centers_reports' AND column_name='first_aid') THEN
+          ALTER TABLE public.evacuation_centers_reports ADD COLUMN first_aid BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
     `);
 
     // 4.8. Ensure feedback table exists

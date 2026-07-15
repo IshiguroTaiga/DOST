@@ -127,7 +127,122 @@ export default function InteractiveMap() {
   const [editingId, setEditingId] = useState(null)
   const [activeEquipmentDetail, setActiveEquipmentDetail] = useState(null)
   const [isEditingDetail, setIsEditingDetail] = useState(false)
-  const [detailEditData, setDetailEditData] = useState({ brand: '', model: '', specs: '', coverage: '', officer: '', contact: '' })
+  const [detailEditData, setDetailEditData] = useState({ 
+    brand: '', 
+    model: '', 
+    specs: '', 
+    coverage: '', 
+    officer: '', 
+    contact: '',
+    max_capacity_families: '',
+    current_families: '',
+    cooling_areas: false,
+    mobile_kitchen: false,
+    mobile_water: false,
+    first_aid: false,
+    vulnerability_human_induced: '',
+    vulnerability_natural_hazard: '',
+    vulnerability_others: '',
+    floor_area: '',
+    total_capacity_family: '',
+    total_capacity_individual: '',
+    comfort_rooms_female: '',
+    comfort_rooms_male: '',
+    comfort_rooms_common: '',
+    water_source_potable: '',
+    water_source_non_potable: '',
+    ffp_storage_capacity: '',
+    used_as_covid_facility: 'NO',
+    isolation_bed_capacity: '',
+    remarks: '',
+    status: 'Active',
+    inside_families_cum: '',
+    inside_persons_now: '',
+    inside_persons_cum: '',
+    origin_of_idps: ''
+  })
+  const [evacReports, setEvacReports] = useState([])
+  
+  const fetchEvacReports = async (sitRepId) => {
+    if (!sitRepId) {
+      setEvacReports([])
+      return
+    }
+    try {
+      const response = await api.get('/reports/evacuation_centers_reports', {
+        params: { situational_report_id: sitRepId }
+      })
+      setEvacReports(Array.isArray(response.data) ? response.data : [])
+    } catch (err) {
+      console.error('Failed to fetch evacuation reports:', err)
+    }
+  }
+
+  // Auto-detect active deployed event and its latest report
+  useEffect(() => {
+    const fetchActiveSitRep = async () => {
+      try {
+        const { data: events } = await api.get('/events')
+        const activeEvent = events.find(e => e.isDeployed)
+        if (activeEvent) {
+          const { data: sitreps } = await api.get('/situational-reports', { params: { event_id: activeEvent.id } })
+          if (sitreps && sitreps.length > 0) {
+            const latest = sitreps.sort((a, b) => b.report_number - a.report_number)[0]
+            setSelectedEventId(activeEvent.id)
+            setSelectedSitRepId(latest.id)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load active event/sitrep for map syncing:', err)
+      }
+    }
+    fetchActiveSitRep()
+  }, [])
+
+  useEffect(() => {
+    fetchEvacReports(selectedSitRepId)
+  }, [selectedSitRepId])
+
+  const getLiveEvacDetails = (station, baseVal) => {
+    if (!baseVal || !selectedSitRepId) return baseVal
+    const evacName = baseVal.name || station.lgu || ''
+    const matchingReport = evacReports.find(r => 
+      r.evacuation_center_name?.toLowerCase() === evacName.toLowerCase() &&
+      r.city?.toLowerCase() === station.lgu?.toLowerCase()
+    )
+    if (!matchingReport) return baseVal
+    
+    return {
+      ...baseVal,
+      current_families: matchingReport.inside_families_now?.toString() || baseVal.current_families || '0',
+      inside_families_cum: matchingReport.inside_families_cum?.toString() || '0',
+      inside_persons_now: matchingReport.inside_persons_now?.toString() || '0',
+      inside_persons_cum: matchingReport.inside_persons_cum?.toString() || '0',
+      origin_of_idps: matchingReport.origin_of_idps || '',
+      status: matchingReport.status || 'Active',
+      remarks: matchingReport.remarks || '',
+      vulnerability_human_induced: matchingReport.vulnerability_human_induced || '',
+      vulnerability_natural_hazard: matchingReport.vulnerability_natural_hazard || '',
+      vulnerability_others: matchingReport.vulnerability_others || '',
+      floor_area: matchingReport.floor_area?.toString() || '',
+      total_capacity_family: matchingReport.total_capacity_family?.toString() || baseVal.max_capacity_families || '',
+      total_capacity_individual: matchingReport.total_capacity_individual?.toString() || '',
+      comfort_rooms_female: matchingReport.comfort_rooms_female?.toString() || '',
+      comfort_rooms_male: matchingReport.comfort_rooms_male?.toString() || '',
+      comfort_rooms_common: matchingReport.comfort_rooms_common?.toString() || '',
+      water_source_potable: matchingReport.water_source_potable || '',
+      water_source_non_potable: matchingReport.water_source_non_potable || '',
+      ffp_storage_capacity: matchingReport.ffp_storage_capacity?.toString() || '',
+      used_as_covid_facility: matchingReport.used_as_covid_facility || 'NO',
+      isolation_bed_capacity: matchingReport.isolation_bed_capacity?.toString() || '',
+      officer: matchingReport.officer || baseVal.officer || '',
+      contact: matchingReport.contact || baseVal.contact || '',
+      cooling_areas: matchingReport.cooling_areas !== undefined ? matchingReport.cooling_areas : baseVal.cooling_areas,
+      mobile_kitchen: matchingReport.mobile_kitchen !== undefined ? matchingReport.mobile_kitchen : baseVal.mobile_kitchen,
+      mobile_water: matchingReport.mobile_water !== undefined ? matchingReport.mobile_water : baseVal.mobile_water,
+      first_aid: matchingReport.first_aid !== undefined ? matchingReport.first_aid : baseVal.first_aid
+    }
+  }
   
   const [modalPos, setModalPos] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -255,6 +370,7 @@ export default function InteractiveMap() {
       }
 
       await api.post('/reports/evacuation_centers_reports/bulk', [payload])
+      await fetchEvacReports(selectedSitRepId)
       alert('Evacuation report submitted successfully!')
       setShowEvacReportModal(false)
     } catch (err) {
@@ -286,17 +402,38 @@ export default function InteractiveMap() {
       const isWarehouse = activeEquipmentDetail.type.id === 'warehouse';
       
       if (isEvac) {
+        const liveVal = getLiveEvacDetails(activeEquipmentDetail.station, activeEquipmentDetail.val);
         setDetailEditData({
-          max_capacity_families: activeEquipmentDetail.val.max_capacity_families || '',
-          current_families: activeEquipmentDetail.val.current_families || '',
-          cooling_areas: !!activeEquipmentDetail.val.cooling_areas,
-          mobile_kitchen: !!activeEquipmentDetail.val.mobile_kitchen,
-          mobile_water: !!activeEquipmentDetail.val.mobile_water,
-          first_aid: !!activeEquipmentDetail.val.first_aid,
-          officer: activeEquipmentDetail.val.officer || '',
-          contact: activeEquipmentDetail.val.contact || '',
-          specs: activeEquipmentDetail.val.specs || 'Evacuation Center',
-          coverage: activeEquipmentDetail.val.coverage || `${activeEquipmentDetail.station.lgu}, ${activeEquipmentDetail.station.province}`
+          max_capacity_families: liveVal.max_capacity_families || '',
+          current_families: liveVal.current_families || '',
+          cooling_areas: !!liveVal.cooling_areas,
+          mobile_kitchen: !!liveVal.mobile_kitchen,
+          mobile_water: !!liveVal.mobile_water,
+          first_aid: !!liveVal.first_aid,
+          officer: liveVal.officer || '',
+          contact: liveVal.contact || '',
+          specs: liveVal.specs || 'Evacuation Center',
+          coverage: liveVal.coverage || `${activeEquipmentDetail.station.lgu}, ${activeEquipmentDetail.station.province}`,
+          vulnerability_human_induced: liveVal.vulnerability_human_induced || '',
+          vulnerability_natural_hazard: liveVal.vulnerability_natural_hazard || '',
+          vulnerability_others: liveVal.vulnerability_others || '',
+          floor_area: liveVal.floor_area || '',
+          total_capacity_family: liveVal.total_capacity_family || liveVal.max_capacity_families || '',
+          total_capacity_individual: liveVal.total_capacity_individual || '',
+          comfort_rooms_female: liveVal.comfort_rooms_female || '',
+          comfort_rooms_male: liveVal.comfort_rooms_male || '',
+          comfort_rooms_common: liveVal.comfort_rooms_common || '',
+          water_source_potable: liveVal.water_source_potable || '',
+          water_source_non_potable: liveVal.water_source_non_potable || '',
+          ffp_storage_capacity: liveVal.ffp_storage_capacity || '',
+          used_as_covid_facility: liveVal.used_as_covid_facility || 'NO',
+          isolation_bed_capacity: liveVal.isolation_bed_capacity || '',
+          remarks: liveVal.remarks || '',
+          status: liveVal.status || 'Active',
+          inside_families_cum: liveVal.inside_families_cum || '',
+          inside_persons_now: liveVal.inside_persons_now || '',
+          inside_persons_cum: liveVal.inside_persons_cum || '',
+          origin_of_idps: liveVal.origin_of_idps || ''
         });
       } else if (isWarehouse) {
         setDetailEditData({
@@ -436,7 +573,27 @@ export default function InteractiveMap() {
           officer: detailEditData.officer,
           contact: detailEditData.contact,
           specs: detailEditData.specs,
-          coverage: detailEditData.coverage
+          coverage: detailEditData.coverage,
+          vulnerability_human_induced: detailEditData.vulnerability_human_induced,
+          vulnerability_natural_hazard: detailEditData.vulnerability_natural_hazard,
+          vulnerability_others: detailEditData.vulnerability_others,
+          floor_area: detailEditData.floor_area,
+          total_capacity_family: detailEditData.total_capacity_family,
+          total_capacity_individual: detailEditData.total_capacity_individual,
+          comfort_rooms_female: detailEditData.comfort_rooms_female,
+          comfort_rooms_male: detailEditData.comfort_rooms_male,
+          comfort_rooms_common: detailEditData.comfort_rooms_common,
+          water_source_potable: detailEditData.water_source_potable,
+          water_source_non_potable: detailEditData.water_source_non_potable,
+          ffp_storage_capacity: detailEditData.ffp_storage_capacity,
+          used_as_covid_facility: detailEditData.used_as_covid_facility,
+          isolation_bed_capacity: detailEditData.isolation_bed_capacity,
+          remarks: detailEditData.remarks,
+          status: detailEditData.status,
+          inside_families_cum: detailEditData.inside_families_cum,
+          inside_persons_now: detailEditData.inside_persons_now,
+          inside_persons_cum: detailEditData.inside_persons_cum,
+          origin_of_idps: detailEditData.origin_of_idps
         };
       } else if (typeId === 'warehouse') {
         updatedFields = {
@@ -484,6 +641,58 @@ export default function InteractiveMap() {
       await api.patch(`/stations/${station.id}`, {
         equipment_details: updatedEquipmentDetails
       });
+
+      // Synchronize with evacuation_centers_reports
+      if (typeId === 'evac' && selectedSitRepId) {
+        const evacName = updatedFields.name || station.equipment_details?.evac?.name || station.lgu || '';
+        const matchingReport = evacReports.find(r => 
+          r.evacuation_center_name?.toLowerCase() === evacName.toLowerCase() &&
+          r.city?.toLowerCase() === station.lgu?.toLowerCase()
+        );
+
+        const reportPayload = {
+          event_id: selectedEventId,
+          situational_report_id: selectedSitRepId,
+          city: station.lgu || user?.city || '',
+          barangay: matchingReport?.barangay || station.address || '',
+          evacuation_center_name: evacName,
+          evacuation_center_address: station.address || '',
+          inside_families_cum: parseInt(detailEditData.inside_families_cum) || 0,
+          inside_families_now: parseInt(detailEditData.current_families) || 0,
+          inside_persons_cum: parseInt(detailEditData.inside_persons_cum) || 0,
+          inside_persons_now: parseInt(detailEditData.inside_persons_now) || 0,
+          origin_of_idps: detailEditData.origin_of_idps || '',
+          status: detailEditData.status || 'Active',
+          remarks: detailEditData.remarks || '',
+          vulnerability_human_induced: detailEditData.vulnerability_human_induced || '',
+          vulnerability_natural_hazard: detailEditData.vulnerability_natural_hazard || '',
+          vulnerability_others: detailEditData.vulnerability_others || '',
+          floor_area: parseFloat(detailEditData.floor_area) || 0,
+          total_capacity_family: parseInt(detailEditData.total_capacity_family) || parseInt(detailEditData.max_capacity_families) || 0,
+          total_capacity_individual: parseInt(detailEditData.total_capacity_individual) || 0,
+          comfort_rooms_female: parseInt(detailEditData.comfort_rooms_female) || 0,
+          comfort_rooms_male: parseInt(detailEditData.comfort_rooms_male) || 0,
+          comfort_rooms_common: parseInt(detailEditData.comfort_rooms_common) || 0,
+          water_source_potable: detailEditData.water_source_potable || '',
+          water_source_non_potable: detailEditData.water_source_non_potable || '',
+          ffp_storage_capacity: parseInt(detailEditData.ffp_storage_capacity) || 0,
+          used_as_covid_facility: detailEditData.used_as_covid_facility || 'NO',
+          isolation_bed_capacity: parseInt(detailEditData.isolation_bed_capacity) || 0,
+          officer: detailEditData.officer || '',
+          contact: detailEditData.contact || '',
+          cooling_areas: !!detailEditData.cooling_areas,
+          mobile_kitchen: !!detailEditData.mobile_kitchen,
+          mobile_water: !!detailEditData.mobile_water,
+          first_aid: !!detailEditData.first_aid
+        };
+
+        if (matchingReport && matchingReport.id) {
+          await api.patch('/reports/evacuation_centers_reports/bulk', [{ ...reportPayload, id: matchingReport.id }]);
+        } else {
+          await api.post('/reports/evacuation_centers_reports/bulk', [reportPayload]);
+        }
+        await fetchEvacReports(selectedSitRepId);
+      }
 
       // Update local state
       setStations(prev => prev.map(s => s.id === station.id ? { ...s, equipment_details: updatedEquipmentDetails } : s));
@@ -1036,21 +1245,24 @@ const MultiDeviceIcon = useMemo(() => {
                         {EQUIPMENT_TYPES.map(type => {
                           const val = station.equipment_details?.[type.id];
                           return val ? (
-                            <div key={type.id} className="equipment-card" onClick={() => setActiveEquipmentDetail({ type, val, station })}>
+                            <div key={type.id} className="equipment-card" onClick={() => setActiveEquipmentDetail({ type, val: type.id === 'evac' ? getLiveEvacDetails(station, val) : val, station })}>
                               <div className="equipment-card-header">
                                 <div className="equipment-card-dot"></div>
                                 <span className="equipment-card-label">{type.label}</span>
                               </div>
-                              {type.id === 'evac' && (
-                                <div className="equipment-card-details">
-                                  <div className="equipment-detail-text">
-                                    Capacity: {val.max_capacity_families || 'N/A'} Fam
-                                  </div>
-                                  <div className="equipment-detail-text">
-                                    Occupied: {val.current_families || 0} Fam
-                                  </div>
-                                </div>
-                              )}
+                              {type.id === 'evac' && (() => {
+                                 const liveVal = getLiveEvacDetails(station, val);
+                                 return (
+                                   <div className="equipment-card-details">
+                                     <div className="equipment-detail-text">
+                                       Capacity: {liveVal.total_capacity_family || liveVal.max_capacity_families || 'N/A'} Fam
+                                     </div>
+                                     <div className="equipment-detail-text">
+                                       Occupied: {liveVal.current_families || 0} Fam
+                                     </div>
+                                   </div>
+                                 );
+                               })()}
                               {type.id === 'warehouse' && (
                                 <div className="equipment-card-details">
                                   <div className="equipment-detail-text">
@@ -1271,6 +1483,21 @@ const MultiDeviceIcon = useMemo(() => {
                                           ...prev.equipment.evac,
                                           name: found.name,
                                           max_capacity_families: found.capacity?.families || prev.equipment.evac.max_capacity_families || '',
+                                          vulnerability_human_induced: found.vulnerabilityHumanInduced || '',
+                                          vulnerability_natural_hazard: found.vulnerabilityNaturalHazard || '',
+                                          vulnerability_others: found.vulnerabilityOthers || '',
+                                          floor_area: found.floorArea || '',
+                                          total_capacity_family: found.capacity?.families || '',
+                                          total_capacity_individual: found.capacity?.individuals || '',
+                                          comfort_rooms_female: found.crCount?.female || '',
+                                          comfort_rooms_male: found.crCount?.male || '',
+                                          comfort_rooms_common: found.crCount?.common || '',
+                                          water_source_potable: found.waterSource?.potable || '',
+                                          water_source_non_potable: found.waterSource?.nonPotable || '',
+                                          ffp_storage_capacity: found.foodPackStorageCapacity || '',
+                                          used_as_covid_facility: found.usedAsCovidFacility ? 'YES' : 'NO',
+                                          isolation_bed_capacity: found.isolationBedCapacity || '',
+                                          status: 'Active'
                                         }
                                       }
                                     }));
@@ -1762,24 +1989,219 @@ const MultiDeviceIcon = useMemo(() => {
             {activeEquipmentDetail.type.id === 'evac' && (
               <div className="custom-detail-view evac-detail-view">
                 {isEditingDetail ? (
-                  <div className="custom-edit-form">
-                    <div className="detail-row">
-                      <span className="detail-label">Max Capacity (Families)</span>
-                      <input 
-                        type="number" 
-                        className="drawer-input detail-edit-input" 
-                        value={detailEditData.max_capacity_families || ''} 
-                        onChange={e => setDetailEditData({ ...detailEditData, max_capacity_families: e.target.value })} 
-                      />
+                  <div className="custom-edit-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Human-Induced Vulnerability</span>
+                        <input 
+                          type="text" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.vulnerability_human_induced || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, vulnerability_human_induced: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Natural Hazard Vulnerability</span>
+                        <input 
+                          type="text" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.vulnerability_natural_hazard || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, vulnerability_natural_hazard: e.target.value })} 
+                        />
+                      </div>
                     </div>
                     <div className="detail-row">
-                      <span className="detail-label">Current Occupancy (Families)</span>
+                      <span className="detail-label">Other Vulnerabilities</span>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="drawer-input detail-edit-input" 
-                        value={detailEditData.current_families || ''} 
-                        onChange={e => setDetailEditData({ ...detailEditData, current_families: e.target.value })} 
+                        value={detailEditData.vulnerability_others || ''} 
+                        onChange={e => setDetailEditData({ ...detailEditData, vulnerability_others: e.target.value })} 
                       />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Floor Area (sq. m)</span>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.floor_area || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, floor_area: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">FFP Storage Capacity</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.ffp_storage_capacity || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, ffp_storage_capacity: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Capacity (Family)</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.total_capacity_family || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, total_capacity_family: e.target.value, max_capacity_families: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Capacity (Individual)</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.total_capacity_individual || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, total_capacity_individual: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">CR Female</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.comfort_rooms_female || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, comfort_rooms_female: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">CR Male</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.comfort_rooms_male || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, comfort_rooms_male: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">CR Common</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.comfort_rooms_common || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, comfort_rooms_common: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Water (Potable)</span>
+                        <input 
+                          type="text" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.water_source_potable || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, water_source_potable: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Water (Non-Potable)</span>
+                        <input 
+                          type="text" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.water_source_non_potable || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, water_source_non_potable: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">COVID-19 Facility</span>
+                        <select 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.used_as_covid_facility || 'NO'} 
+                          onChange={e => setDetailEditData({ ...detailEditData, used_as_covid_facility: e.target.value })}
+                        >
+                          <option value="NO">NO</option>
+                          <option value="YES">YES</option>
+                        </select>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Isolation Bed Cap</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.isolation_bed_capacity || ''} 
+                          disabled={detailEditData.used_as_covid_facility !== 'YES'}
+                          onChange={e => setDetailEditData({ ...detailEditData, isolation_bed_capacity: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Families Now</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.current_families || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, current_families: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Families Cum</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.inside_families_cum || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, inside_families_cum: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Persons Now</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.inside_persons_now || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, inside_persons_now: e.target.value })} 
+                        />
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Persons Cum</span>
+                        <input 
+                          type="number" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.inside_persons_cum || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, inside_persons_cum: e.target.value })} 
+                        />
+                      </div>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Origin of IDPs</span>
+                      <input 
+                        type="text" 
+                        className="drawer-input detail-edit-input" 
+                        value={detailEditData.origin_of_idps || ''} 
+                        onChange={e => setDetailEditData({ ...detailEditData, origin_of_idps: e.target.value })} 
+                      />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="detail-row">
+                        <span className="detail-label">Status</span>
+                        <select 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.status || 'Active'} 
+                          onChange={e => setDetailEditData({ ...detailEditData, status: e.target.value })}
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Remarks</span>
+                        <input 
+                          type="text" 
+                          className="drawer-input detail-edit-input" 
+                          value={detailEditData.remarks || ''} 
+                          onChange={e => setDetailEditData({ ...detailEditData, remarks: e.target.value })} 
+                        />
+                      </div>
                     </div>
                     <div className="detail-row">
                       <span className="detail-label">Officer in Charge</span>
@@ -1828,15 +2250,6 @@ const MultiDeviceIcon = useMemo(() => {
                         onChange={e => setDetailEditData({ ...detailEditData, coverage: e.target.value })} 
                       />
                     </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Coordinates</span>
-                      <input 
-                        type="text" 
-                        className="drawer-input detail-edit-input" 
-                        disabled
-                        value={`${activeEquipmentDetail.station.latitude}, ${activeEquipmentDetail.station.longitude}`} 
-                      />
-                    </div>
                   </div>
                 ) : (
                   <div className="custom-view-panels">
@@ -1881,23 +2294,72 @@ const MultiDeviceIcon = useMemo(() => {
                     </div>
 
                     <div className="detail-panel-section info-card-bg" style={{ marginTop: '1rem' }}>
-                      <div className="info-card-row">
-                        <span className="info-card-label">Officer in Charge</span>
-                        <span className="info-card-val">{activeEquipmentDetail.val.officer || 'N/A'}</span>
-                      </div>
-                      <div className="info-card-row">
-                        <span className="info-card-label">Contact Number</span>
-                        <span className="info-card-val">{activeEquipmentDetail.val.contact || 'N/A'}</span>
-                      </div>
-                      <div className="info-card-row">
-                        <span className="info-card-label">Coverage Area</span>
-                        <span className="info-card-val">{activeEquipmentDetail.val.coverage || 'N/A'}</span>
-                      </div>
-                      <div className="info-card-row">
-                        <span className="info-card-label">Coordinates</span>
-                        <span className="info-card-val">{activeEquipmentDetail.station.latitude}, {activeEquipmentDetail.station.longitude}</span>
-                      </div>
-                    </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Officer in Charge</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.officer || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Contact Number</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.contact || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Families (CUM / NOW)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.inside_families_cum || 0} / {activeEquipmentDetail.val.current_families || 0}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Persons (CUM / NOW)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.inside_persons_cum || 0} / {activeEquipmentDetail.val.inside_persons_now || 0}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Origin of IDPs</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.origin_of_idps || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Floor Area</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.floor_area ? `${activeEquipmentDetail.val.floor_area} sq. m` : 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Capacity (Fam / Ind)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.total_capacity_family || activeEquipmentDetail.val.max_capacity_families || 0} / {activeEquipmentDetail.val.total_capacity_individual || 0}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Comfort Rooms (F/M/C)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.comfort_rooms_female || 0} / {activeEquipmentDetail.val.comfort_rooms_male || 0} / {activeEquipmentDetail.val.comfort_rooms_common || 0}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Water Source (P / NP)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.water_source_potable || 'N/A'} / {activeEquipmentDetail.val.water_source_non_potable || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">FFP Storage Capacity</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.ffp_storage_capacity || 0} packs</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">COVID-19 Facility (Beds)</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.used_as_covid_facility || 'NO'} ({activeEquipmentDetail.val.isolation_bed_capacity || 0} beds)</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Human Hazards</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.vulnerability_human_induced || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Natural Hazards</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.vulnerability_natural_hazard || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Status / Remarks</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.status || 'Active'} {activeEquipmentDetail.val.remarks ? `— ${activeEquipmentDetail.val.remarks}` : ''}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Coverage Area</span>
+                         <span className="info-card-val">{activeEquipmentDetail.val.coverage || 'N/A'}</span>
+                       </div>
+                       <div className="info-card-row">
+                         <span className="info-card-label">Coordinates</span>
+                         <span className="info-card-val">{activeEquipmentDetail.station.latitude}, {activeEquipmentDetail.station.longitude}</span>
+                       </div>
+                     </div>
+
                     {user?.role !== 'Guest' && (
                       <Button 
                         onClick={handleOpenEvacReportModal} 

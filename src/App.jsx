@@ -12,6 +12,7 @@ import ManageEvents from './pages/ManageEvents'
 import ForApproval from './pages/ForApproval'
 import Manual from './pages/Manual'
 import InteractiveMap from './pages/InteractiveMap'
+import LiveWeather from './pages/LiveWeather'
 import { EventProvider } from './contexts/EventContext'
 import MeshBackground from './components/MeshGradient'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -131,6 +132,7 @@ function App() {
             <Route path="for-approval" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <ForApproval />} />
             <Route path="manual" element={user?.role === 'Guest' ? <Navigate to="/dashboard" replace /> : <Manual />} />
             <Route path="map" element={<InteractiveMap />} />
+            <Route path="live-weather" element={<LiveWeather />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

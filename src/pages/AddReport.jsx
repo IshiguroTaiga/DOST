@@ -140,11 +140,31 @@ const emptyRow = (catId = 'evacuation', city = '') => {
         ...base,
         evacuationCenterName: '',
         evacuationCenterAddress: '',
+        vulnerabilityHumanInduced: '',
+        vulnerabilityNaturalHazard: '',
+        vulnerabilityOthers: '',
+        floorArea: '',
+        totalCapacityFamily: '',
+        totalCapacityIndividual: '',
+        comfortRoomsFemale: '',
+        comfortRoomsMale: '',
+        comfortRoomsCommon: '',
+        waterSourcePotable: '',
+        waterSourceNonPotable: '',
+        ffpStorageCapacity: '',
+        usedAsCovidFacility: 'NO',
+        isolationBedCapacity: '',
         insideFamiliesCum: '',
         insideFamiliesNow: '',
         insidePersonsCum: '',
         insidePersonsNow: '',
         originOfIdps: '',
+        officer: '',
+        contact: '',
+        cooling_areas: false,
+        mobile_kitchen: false,
+        mobile_water: false,
+        first_aid: false,
         status: 'Active'
       }
     case 'assistance':
@@ -343,11 +363,31 @@ const dbRowToApp = (row, category = 'evacuation') => {
         ...base,
         evacuationCenterName: row.evacuation_center_name || '',
         evacuationCenterAddress: row.evacuation_center_address || '',
+        vulnerabilityHumanInduced: row.vulnerability_human_induced || '',
+        vulnerabilityNaturalHazard: row.vulnerability_natural_hazard || '',
+        vulnerabilityOthers: row.vulnerability_others || '',
+        floorArea: row.floor_area?.toString() ?? '',
+        totalCapacityFamily: row.total_capacity_family?.toString() ?? '',
+        totalCapacityIndividual: row.total_capacity_individual?.toString() ?? '',
+        comfortRoomsFemale: row.comfort_rooms_female?.toString() ?? '',
+        comfortRoomsMale: row.comfort_rooms_male?.toString() ?? '',
+        comfortRoomsCommon: row.comfort_rooms_common?.toString() ?? '',
+        waterSourcePotable: row.water_source_potable || '',
+        waterSourceNonPotable: row.water_source_non_potable || '',
+        ffpStorageCapacity: row.ffp_storage_capacity?.toString() ?? '',
+        usedAsCovidFacility: row.used_as_covid_facility || 'NO',
+        isolationBedCapacity: row.isolation_bed_capacity?.toString() ?? '',
         insideFamiliesCum: row.inside_families_cum?.toString() ?? '',
         insideFamiliesNow: row.inside_families_now?.toString() ?? '',
         insidePersonsCum: row.inside_persons_cum?.toString() ?? '',
         insidePersonsNow: row.inside_persons_now?.toString() ?? '',
         originOfIdps: row.origin_of_idps || '',
+        officer: row.officer || '',
+        contact: row.contact || '',
+        cooling_areas: !!row.cooling_areas,
+        mobile_kitchen: !!row.mobile_kitchen,
+        mobile_water: !!row.mobile_water,
+        first_aid: !!row.first_aid,
         status: row.status || 'Active'
       }
     case 'assistance':
@@ -1821,17 +1861,48 @@ useEffect(() => {
     },
     evacuationCenters: {
       filename: 'Evacuation_Centers',
-      headers: ['City/Municipality', 'Barangay', 'Evacuation Center Name', 'Evacuation Center Address', 'Inside Families CUM', 'Inside Families NOW', 'Inside Persons CUM', 'Inside Persons NOW', 'Origin of IDPs', 'Status', 'Remarks'],
+      headers: [
+        'City/Municipality', 'Barangay', 'Evacuation Center Name', 'Evacuation Center Address',
+        'Vulnerability (Human-Induced)', 'Vulnerability (Natural Hazard)', 'Vulnerability (Others)',
+        'Floor Area (sq. m)', 'Total Capacity (Family)', 'Total Capacity (Individual)',
+        'No. of Comfort Rooms (Female)', 'No. of Comfort Rooms (Male)', 'No. of Comfort Rooms (Common)',
+        'Source of Water (Potable)', 'Source of Water (Non-Potable)', 'Total FFP Storage Capacity',
+        'Used as COVID-19 Facility (Yes/No)', 'Total Isolation Bed Capacity',
+        'Inside Families CUM', 'Inside Families NOW', 'Inside Persons CUM', 'Inside Persons NOW',
+        'Origin of IDPs', 'Officer in Charge', 'Contact Number',
+        'Cooling Areas (Yes/No)', 'Mobile Kitchen (Yes/No)', 'Mobile Water (Yes/No)', 'First Aid (Yes/No)',
+        'Status', 'Remarks'
+      ],
       map: (d) => ({
         city: d['City/Municipality'] || '',
         barangay: d['Barangay'] || '',
         evacuationCenterName: d['Evacuation Center Name'] || '',
         evacuationCenterAddress: d['Evacuation Center Address'] || '',
+        vulnerabilityHumanInduced: d['Vulnerability (Human-Induced)'] || '',
+        vulnerabilityNaturalHazard: d['Vulnerability (Natural Hazard)'] || '',
+        vulnerabilityOthers: d['Vulnerability (Others)'] || '',
+        floorArea: d['Floor Area (sq. m)']?.toString() || '',
+        totalCapacityFamily: d['Total Capacity (Family)']?.toString() || '',
+        totalCapacityIndividual: d['Total Capacity (Individual)']?.toString() || '',
+        comfortRoomsFemale: d['No. of Comfort Rooms (Female)']?.toString() || '',
+        comfortRoomsMale: d['No. of Comfort Rooms (Male)']?.toString() || '',
+        comfortRoomsCommon: d['No. of Comfort Rooms (Common)']?.toString() || '',
+        waterSourcePotable: d['Source of Water (Potable)'] || '',
+        waterSourceNonPotable: d['Source of Water (Non-Potable)'] || '',
+        ffpStorageCapacity: d['Total FFP Storage Capacity']?.toString() || '',
+        usedAsCovidFacility: d['Used as COVID-19 Facility (Yes/No)'] || 'NO',
+        isolationBedCapacity: d['Total Isolation Bed Capacity']?.toString() || '',
         insideFamiliesCum: d['Inside Families CUM']?.toString() || '',
         insideFamiliesNow: d['Inside Families NOW']?.toString() || '',
         insidePersonsCum: d['Inside Persons CUM']?.toString() || '',
         insidePersonsNow: d['Inside Persons NOW']?.toString() || '',
         originOfIdps: d['Origin of IDPs'] || '',
+        officer: d['Officer in Charge'] || '',
+        contact: d['Contact Number'] || '',
+        cooling_areas: d['Cooling Areas (Yes/No)'] === 'YES' || d['Cooling Areas (Yes/No)'] === true,
+        mobile_kitchen: d['Mobile Kitchen (Yes/No)'] === 'YES' || d['Mobile Kitchen (Yes/No)'] === true,
+        mobile_water: d['Mobile Water (Yes/No)'] === 'YES' || d['Mobile Water (Yes/No)'] === true,
+        first_aid: d['First Aid (Yes/No)'] === 'YES' || d['First Aid (Yes/No)'] === true,
         status: d['Status'] || 'Active',
         remarks: d['Remarks'] || ''
       })
@@ -2115,115 +2186,170 @@ useEffect(() => {
 
           if (activeCategoryModal === 'evacuationCenters') {
             const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 })
-            const isRawTemplate = rawData.length > 10 && rawData[3] && rawData[3].some(cell => cell && cell.toString().includes('EVACUATION CENTER'))
-            const isInventoryTemplate = rawData.length > 5 && rawData[0] && rawData[0].some(cell => cell && cell.toString().includes('NAME OF EVACUATION CENTER'))
-            
-            if (isRawTemplate) {
-              let currentCity = ''
-              for (let r = 8; r < rawData.length; r++) {
-                const row = rawData[r]
-                if (!row) continue
+            if (rawData.length >= 2) {
+              // We search row 0 and row 1 to map column indexes
+              let nameCol = -1;
+              let locationCol = -1;
+              let vulnHumanCol = -1;
+              let vulnNaturalCol = -1;
+              let vulnOthersCol = -1;
+              let floorAreaCol = -1;
+              let capFamilyCol = -1;
+              let capIndividualCol = -1;
+              let crFemaleCol = -1;
+              let crMaleCol = -1;
+              let crCommonCol = -1;
+              let waterPotableCol = -1;
+              let waterNonPotableCol = -1;
+              let ffpStorageCol = -1;
+              let covidCol = -1;
+              let isolationCol = -1;
+              let remarksCol = -1;
+              
+              const r0 = rawData[0] || [];
+              const r1 = rawData[1] || [];
+              
+              for (let c = 0; c < Math.max(r0.length, r1.length); c++) {
+                const cell0 = r0[c] ? r0[c].toString().toUpperCase().trim() : '';
+                const cell1 = r1[c] ? r1[c].toString().toUpperCase().trim() : '';
                 
-                if (row[2] && row[2].toString().trim() && !row[2].toString().toLowerCase().includes('total')) {
-                  currentCity = row[2].toString().trim()
+                if (cell0.includes('NAME OF EVACUATION CENTER') || cell1.includes('NAME OF EVACUATION CENTER')) {
+                  nameCol = c;
+                } else if (cell0.includes('LOCATION') || cell1.includes('LOCATION')) {
+                  locationCol = c;
+                } else if (cell0.includes('FLOOR AREA') || cell1.includes('FLOOR AREA')) {
+                  floorAreaCol = c;
+                } else if (cell0.includes('STORAGE CAPACITY') || cell1.includes('STORAGE CAPACITY')) {
+                  ffpStorageCol = c;
+                } else if (cell0.includes('COVID-19 FACILITY') || cell1.includes('COVID-19 FACILITY') || cell0.includes('COVID FACILITY') || cell1.includes('COVID FACILITY')) {
+                  covidCol = c;
+                } else if (cell0.includes('ISOLATION') || cell1.includes('ISOLATION')) {
+                  isolationCol = c;
+                } else if (cell0.includes('REMARKS') || cell1.includes('REMARKS')) {
+                  remarksCol = c;
                 }
                 
-                const ecName = row[16] ? row[16].toString().trim() : ''
-                if (!ecName || ecName.toLowerCase() === 'sub-total' || ecName.toLowerCase() === 'grand total' || ecName.toLowerCase().includes('total')) continue
+                // Vulnerability columns
+                if (cell0.includes('VULNERABILITY') || cell1.includes('VULNERABILITY')) {
+                  if (cell1.includes('HUMAN') || cell0.includes('HUMAN')) vulnHumanCol = c;
+                  else if (cell1.includes('NATURAL') || cell0.includes('NATURAL')) vulnNaturalCol = c;
+                  else if (cell1.includes('OTHERS') || cell1.includes('OTHER') || cell0.includes('OTHERS') || cell0.includes('OTHER')) vulnOthersCol = c;
+                } else {
+                  if (cell1.includes('HUMAN-INDUCED')) vulnHumanCol = c;
+                  if (cell1.includes('NATURAL HAZARD')) vulnNaturalCol = c;
+                  if (cell1.includes('OTHERS') || cell1.includes('OTHER')) vulnOthersCol = c;
+                }
                 
-                const barangay = row[9] ? row[9].toString().trim() : ''
-                const insideFamiliesCum = parseInt(row[20]) || 0
-                const insideFamiliesNow = parseInt(row[21]) || 0
-                const insidePersonsCum = parseInt(row[22]) || 0
-                const insidePersonsNow = parseInt(row[23]) || 0
-                const originOfIdps = row[18] ? row[18].toString().trim() : ''
-                const address = row[17] ? row[17].toString().trim() : ''
-                const remarks = row[26] ? row[26].toString().trim() : ''
-                const status = (insideFamiliesNow > 0 || insidePersonsNow > 0) ? 'Active' : 'Inactive'
+                // Capacity columns
+                if (cell0.includes('CAPACITY') || cell1.includes('CAPACITY')) {
+                  if (cell1.includes('FAMILY') || cell0.includes('FAMILY')) capFamilyCol = c;
+                  else if (cell1.includes('INDIVIDUAL') || cell0.includes('INDIVIDUAL')) capIndividualCol = c;
+                } else {
+                  if (cell1.includes('FAMILY')) capFamilyCol = c;
+                  if (cell1.includes('INDIVIDUAL')) capIndividualCol = c;
+                }
                 
-                importedRows.push({
-                  city: currentCity,
-                  barangay,
-                  evacuationCenterName: ecName,
-                  evacuationCenterAddress: address,
-                  insideFamiliesCum: insideFamiliesCum.toString(),
-                  insideFamiliesNow: insideFamiliesNow.toString(),
-                  insidePersonsCum: insidePersonsCum.toString(),
-                  insidePersonsNow: insidePersonsNow.toString(),
-                  originOfIdps,
-                  status,
-                  remarks
-                })
-              }
-            } else if (isInventoryTemplate) {
-              let nameCol = -1
-              let locCol = -1
-              let famCol = -1
-              let indCol = -1
-              
-              for (let r = 0; r < Math.min(3, rawData.length); r++) {
-                const row = rawData[r]
-                if (!row) continue
-                row.forEach((cell, c) => {
-                  if (!cell) return
-                  const str = cell.toString().toUpperCase()
-                  if (str.includes('NAME OF EVACUATION CENTER')) nameCol = c
-                  if (str.includes('LOCATION')) locCol = c
-                  if (str.includes('FAMILY')) famCol = c
-                  if (str.includes('INDIVIDUAL')) indCol = c
-                })
+                // Comfort Room columns
+                if (cell0.includes('COMFORT ROOM') || cell1.includes('COMFORT ROOM')) {
+                  if (cell1.includes('FEMALE') || cell0.includes('FEMALE')) crFemaleCol = c;
+                  else if (cell1.includes('MALE') || cell0.includes('MALE')) crMaleCol = c;
+                  else if (cell1.includes('COMMON') || cell0.includes('COMMON')) crCommonCol = c;
+                } else {
+                  if (cell1.includes('FEMALE')) crFemaleCol = c;
+                  if (cell1.includes('MALE')) crMaleCol = c;
+                  if (cell1.includes('COMMON')) crCommonCol = c;
+                }
+                
+                // Water Source columns
+                if (cell0.includes('WATER') || cell1.includes('WATER')) {
+                  if (cell1.includes('POTABLE') && !cell1.includes('NON-POTABLE')) waterPotableCol = c;
+                  else if (cell1.includes('NON-POTABLE')) waterNonPotableCol = c;
+                } else {
+                  if (cell1.includes('POTABLE') && !cell1.includes('NON-POTABLE')) waterPotableCol = c;
+                  if (cell1.includes('NON-POTABLE')) waterNonPotableCol = c;
+                }
               }
               
-              if (nameCol !== -1 && locCol !== -1) {
-                let currentCity = ''
+              if (nameCol !== -1) {
+                let currentCity = '';
                 for (let r = 2; r < rawData.length; r++) {
-                  const row = rawData[r]
-                  if (!row) continue
+                  const row = rawData[r];
+                  if (!row) continue;
                   
-                  const nonEmpties = row.map((cell, idx) => cell !== undefined && cell !== null && cell !== '' ? idx : -1).filter(idx => idx !== -1)
+                  // Check if section header or data row
+                  const nonEmpties = row.map((cell, idx) => cell !== undefined && cell !== null && cell !== '' ? idx : -1).filter(idx => idx !== -1);
+                  if (nonEmpties.length === 0) continue;
                   
-                  if (nonEmpties.length === 1) {
-                    const idx = nonEmpties[0]
-                    const val = row[idx].toString().trim()
-                    if (val.toUpperCase().startsWith('PROVINCE OF') || val.toUpperCase().startsWith('PROVINCIAL')) {
-                      continue
-                    } else {
-                      currentCity = val
+                  if (nonEmpties.length === 1 || (nonEmpties.length === 2 && nonEmpties[0] === 1 && nonEmpties[1] === 2 && row[1] && !row[2])) {
+                    const idx = nonEmpties[0] === 0 ? nonEmpties[1] : nonEmpties[0];
+                    if (idx !== undefined && row[idx]) {
+                      const val = row[idx].toString().trim();
+                      if (val.toUpperCase().startsWith('PROVINCE OF') || val.toUpperCase().startsWith('PROVINCIAL')) {
+                        continue;
+                      } else {
+                        currentCity = val;
+                      }
                     }
-                  } else if (nonEmpties.length > 1) {
-                    const ecName = row[nameCol] ? row[nameCol].toString().trim() : ''
-                    if (!ecName || ecName.toLowerCase().includes('total') || ecName.toLowerCase() === 'name of evacuation center') continue
+                  } else {
+                    const ecName = row[nameCol] ? row[nameCol].toString().trim() : '';
+                    if (!ecName || ecName.toLowerCase().includes('total') || ecName.toLowerCase() === 'name of evacuation center' || ecName.toLowerCase() === 'sub-total') continue;
                     
-                    const numCell = row[nonEmpties[0]].toString().trim()
-                    if (isNaN(Number(numCell)) && !numCell.includes('/') && numCell.length > 3) {
-                      continue
+                    const numCell = row[nonEmpties[0]] ? row[nonEmpties[0]].toString().trim() : '';
+                    if (isNaN(Number(numCell)) && !numCell.includes('/') && numCell.length > 5 && ecName === numCell) {
+                      currentCity = ecName;
+                      continue;
                     }
-                    const location = row[locCol] ? row[locCol].toString().trim() : ''
-                    const barangay = location.split(',')[0].trim()
-                    const famCap = row[famCol] ? row[famCol].toString().trim() : ''
-                    const indCap = row[indCol] ? row[indCol].toString().trim() : ''
-                    const remarks = (famCap || indCap) ? `Capacity: ${famCap ? famCap + ' families' : ''}${famCap && indCap ? ', ' : ''}${indCap ? indCap + ' individuals' : ''}` : ''
                     
-                    let resolvedCity = currentCity
+                    const location = locationCol !== -1 && row[locationCol] ? row[locationCol].toString().trim() : '';
+                    const barangay = location ? location.split(',')[0].trim() : '';
+                    
+                    let resolvedCity = currentCity;
                     if (!resolvedCity && location) {
-                      const lowerLoc = location.toLowerCase()
-                      const found = LGU_NAMES.find(l => lowerLoc.includes(l.toLowerCase()))
-                      if (found) resolvedCity = found
+                      const lowerLoc = location.toLowerCase();
+                      const foundLgu = LGU_NAMES.find(l => lowerLoc.includes(l.toLowerCase()));
+                      if (foundLgu) resolvedCity = foundLgu;
                     }
-
+                    
+                    // Normalize Used As Covid Facility
+                    let usedCovidVal = 'NO';
+                    if (covidCol !== -1 && row[covidCol]) {
+                      const covVal = row[covidCol].toString().toUpperCase().trim();
+                      if (covVal === 'YES' || covVal === '1' || covVal === 'Y' || covVal === 'TRUE') usedCovidVal = 'YES';
+                    }
+                    
                     importedRows.push({
                       city: resolvedCity,
                       barangay,
                       evacuationCenterName: ecName,
                       evacuationCenterAddress: location,
+                      vulnerabilityHumanInduced: vulnHumanCol !== -1 && row[vulnHumanCol] ? row[vulnHumanCol].toString().trim() : '',
+                      vulnerabilityNaturalHazard: vulnNaturalCol !== -1 && row[vulnNaturalCol] ? row[vulnNaturalCol].toString().trim() : '',
+                      vulnerabilityOthers: vulnOthersCol !== -1 && row[vulnOthersCol] ? row[vulnOthersCol].toString().trim() : '',
+                      floorArea: floorAreaCol !== -1 && row[floorAreaCol] ? row[floorAreaCol].toString().trim() : '',
+                      totalCapacityFamily: capFamilyCol !== -1 && row[capFamilyCol] ? row[capFamilyCol].toString().trim() : '',
+                      totalCapacityIndividual: capIndividualCol !== -1 && row[capIndividualCol] ? row[capIndividualCol].toString().trim() : '',
+                      comfortRoomsFemale: crFemaleCol !== -1 && row[crFemaleCol] ? row[crFemaleCol].toString().trim() : '',
+                      comfortRoomsMale: crMaleCol !== -1 && row[crMaleCol] ? row[crMaleCol].toString().trim() : '',
+                      comfortRoomsCommon: crCommonCol !== -1 && row[crCommonCol] ? row[crCommonCol].toString().trim() : '',
+                      waterSourcePotable: waterPotableCol !== -1 && row[waterPotableCol] ? row[waterPotableCol].toString().trim() : '',
+                      waterSourceNonPotable: waterNonPotableCol !== -1 && row[waterNonPotableCol] ? row[waterNonPotableCol].toString().trim() : '',
+                      ffpStorageCapacity: ffpStorageCol !== -1 && row[ffpStorageCol] ? row[ffpStorageCol].toString().trim() : '',
+                      usedAsCovidFacility: usedCovidVal,
+                      isolationBedCapacity: isolationCol !== -1 && row[isolationCol] ? row[isolationCol].toString().trim() : '',
                       insideFamiliesCum: '0',
                       insideFamiliesNow: '0',
                       insidePersonsCum: '0',
                       insidePersonsNow: '0',
                       originOfIdps: '',
+                      officer: '',
+                      contact: '',
+                      cooling_areas: false,
+                      mobile_kitchen: false,
+                      mobile_water: false,
+                      first_aid: false,
                       status: 'Active',
-                      remarks
-                    })
+                      remarks: remarksCol !== -1 && row[remarksCol] ? row[remarksCol].toString().trim() : ''
+                    });
                   }
                 }
               }
@@ -2346,6 +2472,174 @@ useEffect(() => {
     if (!config) return
 
     const workbook = new ExcelJS.Workbook()
+
+    if (activeCategoryModal === 'evacuationCenters') {
+      const provinces = ['ILOCOS NORTE', 'ILOCOS SUR', 'PANGASINAN', 'LA UNION'];
+      
+      provinces.forEach(provName => {
+        const sheet = workbook.addWorksheet(provName);
+        
+        // Setup headers Row 1
+        const r1 = [
+          '#', 
+          'NAME OF EVACUATION CENTER', 
+          'LOCATION', 
+          'Vulnerability', '', '', 
+          'FLOOR AREA (IN SQ. MTR)\n(Decimal, xxx.xx)', 
+          'TOTAL CAPACITY', '', 
+          'NO. OF COMFORT ROOM /S', '', '', 
+          'SOURCE OF WATER', '', 
+          'TOTAL STORAGE CAPACITY OF NUMBER OF FAMILY FOOD PACKS\n(Number)', 
+          'USED AS COVID-19 FACILITY\n(Dropdown)', 
+          'TOTAL ISOLATION BED CAPACITY (IF USED AS COVID-19 FACILITY)\n(Number)'
+        ];
+        
+        // Setup Row 2
+        const r2 = [
+          '', 
+          '', 
+          '', 
+          'HUMAN-INDUCED HAZARD (Fire, Terrorism, etc)', 
+          'NATURAL HAZARD\n(Earthquake, Typhoon, Flood, Liquefaction, etc)', 
+          'Others', 
+          '', 
+          'FAMILY\n(Number)', 
+          'INDIVIDUAL\n(Number)', 
+          'FEMALE\n(Number)', 
+          'MALE\n(Number)', 
+          'COMMON CR\n(Number)', 
+          'POTABLE\n(Text, Ex. Deep well)', 
+          'NON-POTABLE\n(Text, Ex. River)', 
+          '', 
+          'YES/NO\n(Dropdown)', 
+          'TOTAL ISOLATION BED CAPACITY (IF USED AS COVID-19 FACILITY)\n(Number)'
+        ];
+        
+        const row1 = sheet.addRow(r1);
+        const row2 = sheet.addRow(r2);
+        
+        // Merge headers Row 1 & Row 2
+        sheet.mergeCells('A1:A2');
+        sheet.mergeCells('B1:B2');
+        sheet.mergeCells('C1:C2');
+        sheet.mergeCells('D1:F1'); 
+        sheet.mergeCells('G1:G2'); 
+        sheet.mergeCells('H1:I1'); 
+        sheet.mergeCells('J1:L1'); 
+        sheet.mergeCells('M1:N1'); 
+        sheet.mergeCells('O1:O2'); 
+        sheet.mergeCells('P1:P2'); 
+        sheet.mergeCells('Q1:Q2'); 
+        
+        // Style headers
+        [row1, row2].forEach(r => {
+          r.eachCell(cell => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 9 };
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FF4F46E5' }
+            };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          });
+        });
+        
+        row1.height = 40;
+        row2.height = 40;
+        
+        sheet.columns = [
+          { width: 6 }, 
+          { width: 35 }, 
+          { width: 25 }, 
+          { width: 20 }, 
+          { width: 20 }, 
+          { width: 15 }, 
+          { width: 20 }, 
+          { width: 15 }, 
+          { width: 15 }, 
+          { width: 12 }, 
+          { width: 12 }, 
+          { width: 12 }, 
+          { width: 20 }, 
+          { width: 20 }, 
+          { width: 25 }, 
+          { width: 15 }, 
+          { width: 25 }  
+        ];
+        
+        const provHeaderRow = sheet.addRow(['', `PROVINCE OF ${provName}`, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        provHeaderRow.getCell(2).font = { bold: true, size: 11, color: { argb: 'FF1E293B' } };
+        
+        const provData = region1EvacuationCenters[provName] || {};
+        let seq = 1;
+        
+        Object.keys(provData).forEach(cityName => {
+          const isLguScope = isLGU && user?.city;
+          const isProvScope = isProvincial && userProvince;
+          
+          if (isLguScope && cityName.toLowerCase() !== user.city.toLowerCase()) return;
+          if (isProvScope && provName.toUpperCase() !== userProvince.toUpperCase()) return;
+          
+          const cityRow = sheet.addRow(['', cityName, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+          sheet.mergeCells(`B${cityRow.number}:Q${cityRow.number}`);
+          cityRow.getCell(2).font = { bold: true, color: { argb: 'FF4F46E5' } };
+          cityRow.getCell(2).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E7FF' }
+          };
+          
+          for (let k = 0; k < 2; k++) {
+            const dataRow = sheet.addRow([
+              seq++,
+              '', // Name (empty)
+              '', // Location (empty)
+              '', // Vulnerability Human
+              '', // Vulnerability Natural
+              '', // Vulnerability Others
+              '', // Floor Area
+              '', // Capacity Family
+              '', // Capacity Individual
+              '', // CR Female
+              '', // CR Male
+              '', // CR Common
+              '', // Water Potable
+              '', // Water Non-Potable
+              '', // FFP Storage
+              'NO', // Covid facility default
+              ''  // Isolation capacity
+            ]);
+            
+            dataRow.getCell(1).alignment = { horizontal: 'center' };
+            dataRow.getCell(16).dataValidation = {
+              type: 'list',
+              allowBlank: true,
+              formulae: ['"YES,NO"']
+            };
+          }
+          
+          sheet.addRow([]);
+        });
+      });
+      
+      try {
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Region_1_Inventory_of_Evacuation_Centers_as_of_February_2025.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        showToast('Success', 'Inventory template downloaded with official baseline data.', 'success');
+      } catch (err) {
+        console.error('Inventory template download failed:', err);
+        showToast('Error', 'Failed to generate inventory template.', 'danger');
+      }
+      return;
+    }
+
     const templateSheet = workbook.addWorksheet('Template')
     const dataSheet = workbook.addWorksheet('Data')
     dataSheet.state = 'hidden'
@@ -2369,17 +2663,14 @@ useEffect(() => {
     }))
 
     // Add LGU data to hidden sheet
-    // Restricted to user's scope: SuperAdmin/Regional see all, Provincial see their province, LGUs see only their city
     let lgus = []
     if (isSuperAdmin || isRegional) {
       lgus = LGU_NAMES
     } else if (isProvincial) {
       lgus = getLguNames(userProvince)
     } else if (isLGU) {
-      // For LGU users, strictly show only their city
       lgus = [user?.city].filter(Boolean)
     } else {
-      // Default fallback
       lgus = LGU_NAMES
     }
       
@@ -2395,8 +2686,6 @@ useEffect(() => {
       const barangays = getBarangaysForCity(lgu)
       const col = dataSheet.getColumn(colIndex)
       
-      // Sanitize LGU name for Named Range (no spaces, no special chars)
-      // Excel named ranges must start with a letter or underscore and contain only letters, numbers, dots, and underscores.
       const sanitizedName = 'LGU_' + lgu.replace(/[^a-zA-Z0-9]/g, '_')
       
       col.values = [lgu, ...barangays]
@@ -2407,7 +2696,7 @@ useEffect(() => {
       }
     })
 
-    // Apply data validation to Template sheet (for 100 rows - keep it light but usable)
+    // Apply data validation to Template sheet
     const cityColIndex = config.headers.indexOf('City/Municipality') + 1
     const barangayColIndex = config.headers.indexOf('Barangay') + 1
 
@@ -2427,8 +2716,6 @@ useEffect(() => {
     if (barangayColIndex > 0 && cityColIndex > 0) {
       const cityLetter = templateSheet.getColumn(cityColIndex).letter
       for (let i = 2; i <= 101; i++) {
-        // Formula to match sanitization: "LGU_" & REPLACE chars
-        // Nested SUBSTITUTE to replace common special chars in LGU names
         const indirectFormula = `=INDIRECT("LGU_" & SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(${cityLetter}${i}," ","_"),"(","_"),")","_"),"-","_"))`
         
         templateSheet.getCell(i, barangayColIndex).dataValidation = {
@@ -2916,11 +3203,31 @@ useEffect(() => {
                     ...base,
                     evacuation_center_name: row.evacuationCenterName || '',
                     evacuation_center_address: row.evacuationCenterAddress || '',
+                    vulnerability_human_induced: row.vulnerabilityHumanInduced || '',
+                    vulnerability_natural_hazard: row.vulnerabilityNaturalHazard || '',
+                    vulnerability_others: row.vulnerabilityOthers || '',
+                    floor_area: parseFloat(row.floorArea) || null,
+                    total_capacity_family: parseInt(row.totalCapacityFamily) || null,
+                    total_capacity_individual: parseInt(row.totalCapacityIndividual) || null,
+                    comfort_rooms_female: parseInt(row.comfortRoomsFemale) || null,
+                    comfort_rooms_male: parseInt(row.comfortRoomsMale) || null,
+                    comfort_rooms_common: parseInt(row.comfortRoomsCommon) || null,
+                    water_source_potable: row.waterSourcePotable || '',
+                    water_source_non_potable: row.waterSourceNonPotable || '',
+                    ffp_storage_capacity: parseInt(row.ffpStorageCapacity) || null,
+                    used_as_covid_facility: row.usedAsCovidFacility || 'NO',
+                    isolation_bed_capacity: parseInt(row.isolationBedCapacity) || null,
                     inside_families_cum: parseInt(row.insideFamiliesCum) || 0,
                     inside_families_now: parseInt(row.insideFamiliesNow) || 0,
                     inside_persons_cum: parseInt(row.insidePersonsCum) || 0,
                     inside_persons_now: parseInt(row.insidePersonsNow) || 0,
                     origin_of_idps: row.originOfIdps || '',
+                    officer: row.officer || '',
+                    contact: row.contact || '',
+                    cooling_areas: !!row.cooling_areas,
+                    mobile_kitchen: !!row.mobile_kitchen,
+                    mobile_water: !!row.mobile_water,
+                    first_aid: !!row.first_aid,
                     status: row.status || 'Active'
                   }
                 case 'assistance':
@@ -3123,15 +3430,32 @@ useEffect(() => {
             <tr>
               {!isLGU && <th className="col-city">City</th>}
               <th className="col-barangay">Barangay</th>
-              <th style={{ textAlign: 'center' }}>Evacuation Center Name</th>
-              <th style={{ textAlign: 'center' }}>Evacuation Center Address</th>
-              <th style={{ textAlign: 'center' }}>Inside Families CUM</th>
-              <th style={{ textAlign: 'center' }}>Inside Families NOW</th>
-              <th style={{ textAlign: 'center' }}>Inside Persons CUM</th>
-              <th style={{ textAlign: 'center' }}>Inside Persons NOW</th>
-              <th style={{ textAlign: 'center' }}>Origin of IDPs</th>
+              <th style={{ textAlign: 'center', minWidth: '150px' }}>EC Name</th>
+              <th style={{ textAlign: 'center', minWidth: '150px' }}>EC Address</th>
+              <th style={{ textAlign: 'center', minWidth: '100px' }}>Human Hazard</th>
+              <th style={{ textAlign: 'center', minWidth: '100px' }}>Natural Hazard</th>
+              <th style={{ textAlign: 'center', minWidth: '80px' }}>Other Hazards</th>
+              <th style={{ textAlign: 'center' }}>Floor Area (sq.m)</th>
+              <th style={{ textAlign: 'center' }}>Cap. Family</th>
+              <th style={{ textAlign: 'center' }}>Cap. Individual</th>
+              <th style={{ textAlign: 'center' }}>CR Female</th>
+              <th style={{ textAlign: 'center' }}>CR Male</th>
+              <th style={{ textAlign: 'center' }}>CR Common</th>
+              <th style={{ textAlign: 'center', minWidth: '100px' }}>Water Potable</th>
+              <th style={{ textAlign: 'center', minWidth: '100px' }}>Water Non-Potable</th>
+              <th style={{ textAlign: 'center' }}>FFP Storage</th>
+              <th style={{ textAlign: 'center' }}>COVID Facility</th>
+              <th style={{ textAlign: 'center' }}>Isolation Beds</th>
+              <th style={{ textAlign: 'center' }}>Families CUM</th>
+              <th style={{ textAlign: 'center' }}>Families NOW</th>
+              <th style={{ textAlign: 'center' }}>Persons CUM</th>
+              <th style={{ textAlign: 'center' }}>Persons NOW</th>
+              <th style={{ textAlign: 'center', minWidth: '120px' }}>Origin of IDPs</th>
+              <th style={{ textAlign: 'center', minWidth: '100px' }}>Officer</th>
+              <th style={{ textAlign: 'center', minWidth: '90px' }}>Contact</th>
+              <th style={{ textAlign: 'center', minWidth: '220px' }}>Amenities Available</th>
               <th style={{ textAlign: 'center' }}>Status</th>
-              <th className="col-remarks" style={{ textAlign: 'center' }}>Remarks</th>
+              <th className="col-remarks" style={{ textAlign: 'center', minWidth: '150px' }}>Remarks</th>
               <th className="col-actions" style={{ textAlign: 'center' }}>Actions</th>
             </tr>
           )
@@ -3491,12 +3815,17 @@ useEffect(() => {
                     const found = suggestions.find(c => c.name === val);
                     if (found) {
                       handleRowChange(index, 'evacuationCenterAddress', found.location || '');
-                      if (found.capacity && !row.remarks) {
-                        const famCap = found.capacity.families;
-                        const indCap = found.capacity.individuals;
-                        const capRemark = `Capacity: ${famCap ? famCap + ' families' : ''}${famCap && indCap ? ', ' : ''}${indCap ? indCap + ' individuals' : ''}`;
-                        handleRowChange(index, 'remarks', capRemark);
-                      }
+                      handleRowChange(index, 'floorArea', found.floorArea || '');
+                      handleRowChange(index, 'totalCapacityFamily', found.capacity?.families || '');
+                      handleRowChange(index, 'totalCapacityIndividual', found.capacity?.individuals || '');
+                      handleRowChange(index, 'comfortRoomsFemale', found.crCount?.female || '');
+                      handleRowChange(index, 'comfortRoomsMale', found.crCount?.male || '');
+                      handleRowChange(index, 'comfortRoomsCommon', found.crCount?.common || '');
+                      handleRowChange(index, 'waterSourcePotable', found.waterSource?.potable || '');
+                      handleRowChange(index, 'waterSourceNonPotable', found.waterSource?.nonPotable || '');
+                      handleRowChange(index, 'ffpStorageCapacity', found.foodPackStorageCapacity || '');
+                      handleRowChange(index, 'usedAsCovidFacility', found.usedAsCovidFacility ? 'YES' : 'NO');
+                      handleRowChange(index, 'isolationBedCapacity', found.isolationBedCapacity || '');
                     }
                   }} 
                   placeholder="EC Name" 
@@ -3524,13 +3853,152 @@ useEffect(() => {
                   placeholder="EC Address" 
                 />
               </td>
-              <td><input type="number" min="0" value={row.insideFamiliesCum} onChange={(e) => handleRowChange(index, 'insideFamiliesCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
-              <td><input type="number" min="0" value={row.insideFamiliesNow} onChange={(e) => handleRowChange(index, 'insideFamiliesNow', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
-              <td><input type="number" min="0" value={row.insidePersonsCum} onChange={(e) => handleRowChange(index, 'insidePersonsCum', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
-              <td><input type="number" min="0" value={row.insidePersonsNow} onChange={(e) => handleRowChange(index, 'insidePersonsNow', e.target.value)} placeholder="0" style={{ width: '70px' }} /></td>
-              <td><input type="text" value={row.originOfIdps} onChange={(e) => handleRowChange(index, 'originOfIdps', e.target.value)} placeholder="Origin of IDPs" /></td>
               <td>
-                <select value={row.status} onChange={(e) => handleRowChange(index, 'status', e.target.value)}>
+                <input 
+                  type="text" 
+                  value={row.vulnerabilityHumanInduced} 
+                  onChange={(e) => handleRowChange(index, 'vulnerabilityHumanInduced', e.target.value)} 
+                  placeholder="Fire/etc" 
+                  style={{ width: '90px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.vulnerabilityNaturalHazard} 
+                  onChange={(e) => handleRowChange(index, 'vulnerabilityNaturalHazard', e.target.value)} 
+                  placeholder="Flood/etc" 
+                  style={{ width: '90px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.vulnerabilityOthers} 
+                  onChange={(e) => handleRowChange(index, 'vulnerabilityOthers', e.target.value)} 
+                  placeholder="Others" 
+                  style={{ width: '80px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  value={row.floorArea} 
+                  onChange={(e) => handleRowChange(index, 'floorArea', e.target.value)} 
+                  placeholder="sq.m" 
+                  style={{ width: '70px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.totalCapacityFamily} 
+                  onChange={(e) => handleRowChange(index, 'totalCapacityFamily', e.target.value)} 
+                  placeholder="Fam" 
+                  style={{ width: '60px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.totalCapacityIndividual} 
+                  onChange={(e) => handleRowChange(index, 'totalCapacityIndividual', e.target.value)} 
+                  placeholder="Ind" 
+                  style={{ width: '60px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.comfortRoomsFemale} 
+                  onChange={(e) => handleRowChange(index, 'comfortRoomsFemale', e.target.value)} 
+                  placeholder="F" 
+                  style={{ width: '50px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.comfortRoomsMale} 
+                  onChange={(e) => handleRowChange(index, 'comfortRoomsMale', e.target.value)} 
+                  placeholder="M" 
+                  style={{ width: '50px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.comfortRoomsCommon} 
+                  onChange={(e) => handleRowChange(index, 'comfortRoomsCommon', e.target.value)} 
+                  placeholder="C" 
+                  style={{ width: '50px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.waterSourcePotable} 
+                  onChange={(e) => handleRowChange(index, 'waterSourcePotable', e.target.value)} 
+                  placeholder="Potable" 
+                  style={{ width: '90px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="text" 
+                  value={row.waterSourceNonPotable} 
+                  onChange={(e) => handleRowChange(index, 'waterSourceNonPotable', e.target.value)} 
+                  placeholder="Non-Potable" 
+                  style={{ width: '90px' }}
+                />
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.ffpStorageCapacity} 
+                  onChange={(e) => handleRowChange(index, 'ffpStorageCapacity', e.target.value)} 
+                  placeholder="FFPs" 
+                  style={{ width: '70px' }}
+                />
+              </td>
+              <td>
+                <select 
+                  value={row.usedAsCovidFacility} 
+                  onChange={(e) => handleRowChange(index, 'usedAsCovidFacility', e.target.value)}
+                  style={{ width: '65px' }}
+                >
+                  <option value="NO">NO</option>
+                  <option value="YES">YES</option>
+                </select>
+              </td>
+              <td>
+                <input 
+                  type="number" 
+                  value={row.isolationBedCapacity} 
+                  onChange={(e) => handleRowChange(index, 'isolationBedCapacity', e.target.value)} 
+                  placeholder="Beds" 
+                  disabled={row.usedAsCovidFacility !== 'YES'}
+                  style={{ width: '60px' }}
+                />
+              </td>
+              <td><input type="number" min="0" value={row.insideFamiliesCum} onChange={(e) => handleRowChange(index, 'insideFamiliesCum', e.target.value)} placeholder="0" style={{ width: '60px' }} /></td>
+              <td><input type="number" min="0" value={row.insideFamiliesNow} onChange={(e) => handleRowChange(index, 'insideFamiliesNow', e.target.value)} placeholder="0" style={{ width: '60px' }} /></td>
+              <td><input type="number" min="0" value={row.insidePersonsCum} onChange={(e) => handleRowChange(index, 'insidePersonsCum', e.target.value)} placeholder="0" style={{ width: '60px' }} /></td>
+              <td><input type="number" min="0" value={row.insidePersonsNow} onChange={(e) => handleRowChange(index, 'insidePersonsNow', e.target.value)} placeholder="0" style={{ width: '60px' }} /></td>
+              <td><input type="text" value={row.originOfIdps} onChange={(e) => handleRowChange(index, 'originOfIdps', e.target.value)} placeholder="Origin of IDPs" style={{ width: '100px' }} /></td>
+              <td><input type="text" value={row.officer} onChange={(e) => handleRowChange(index, 'officer', e.target.value)} placeholder="OIC" style={{ width: '90px' }} /></td>
+              <td><input type="text" value={row.contact} onChange={(e) => handleRowChange(index, 'contact', e.target.value)} placeholder="Contact" style={{ width: '80px' }} /></td>
+              <td>
+                <div style={{ display: 'flex', gap: '8px', fontSize: '0.725rem', whiteSpace: 'nowrap', alignItems: 'center' }}>
+                  <label><input type="checkbox" checked={!!row.cooling_areas} onChange={(e) => handleRowChange(index, 'cooling_areas', e.target.checked)} /> AC</label>
+                  <label><input type="checkbox" checked={!!row.mobile_kitchen} onChange={(e) => handleRowChange(index, 'mobile_kitchen', e.target.checked)} /> Kitchen</label>
+                  <label><input type="checkbox" checked={!!row.mobile_water} onChange={(e) => handleRowChange(index, 'mobile_water', e.target.checked)} /> Water</label>
+                  <label><input type="checkbox" checked={!!row.first_aid} onChange={(e) => handleRowChange(index, 'first_aid', e.target.checked)} /> FirstAid</label>
+                </div>
+              </td>
+              <td>
+                <select value={row.status} onChange={(e) => handleRowChange(index, 'status', e.target.value)} style={{ width: '80px' }}>
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
